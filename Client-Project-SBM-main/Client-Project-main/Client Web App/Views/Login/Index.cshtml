@@ -1,0 +1,61 @@
+﻿@model Client_Web_App.Models.LoginViewModel
+
+@{
+    ViewBag.Title = "Login";
+}
+
+<link rel="stylesheet" href="~/Content/login.css" />
+
+<div class="card-container">
+    <div class="card login-form-card" style="width: 21rem;">
+        <div class="card-body">
+            <h3 class="card-title login-title mb-3">Login</h3>
+
+            @using (Html.BeginForm("Index", "Login", FormMethod.Post, new { @class = "needs-validation" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <div class="field-container">
+                        @Html.TextBoxFor(m => m.Username, new { @class = "form-control", placeholder = "User Name" })
+                        @Html.ValidationMessageFor(m => m.Username, "", new { @class = "error" })
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="field-container">
+                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Password", id = "password" })
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "pswd-error" })
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="field-container">
+                        <input type="hidden" id="g-recaptcha-response" name="RecaptchaToken" />
+                        @Html.ValidationMessageFor(m => m.RecaptchaToken, "", new { @class = "error" })
+                        <div class="g-recaptcha" data-sitekey="6Ld9bIIrAAAAAP88S3Mdc5TVVnzqKRep7cqRIxli"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <label class="form-check-label" for="showPassword">
+                        <input type="checkbox" class="form-check-input" id="showPassword" onclick="togglePassword()" />
+                        Show password
+                    </label>
+                </div>
+
+                <button type="submit" class="btn button">Login</button>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+        function togglePassword() {
+            var pwdField = document.getElementById("password");
+            pwdField.type = (pwdField.type === "password") ? "text" : "password";
+        }
+    </script>
+}

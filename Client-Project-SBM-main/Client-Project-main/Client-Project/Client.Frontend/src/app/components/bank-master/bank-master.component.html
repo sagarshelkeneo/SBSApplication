@@ -1,0 +1,90 @@
+<h2 class="pt-4 fs-1">Bank Master</h2>
+
+<div class="btn-container pt-md-5 pt-3 px-md-5 px-3 pb-2">
+    <button *ngIf="createAccess" data-bs-toggle="modal" data-bs-target="#bankMaster-modal" class="add-btn btn btn-outline-primary mb-2"
+        (click)="addBankMasterGetDto()">Add
+    </button>
+    <button class="add-btn btn btn-outline-primary margin-left mb-2" (click)="
+        exportToPdf()">
+        <i class="fa-solid fa-file-pdf"></i> Print to PDF
+    </button>
+    <button class="add-btn btn btn-outline-primary margin-left mb-2" (click)="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> Print to Excel
+    </button>
+    <div class="input-group mb-2">
+        <input #searchInput (input)="setSearchValue(searchInput.value)" type="text" class="form-control input-search" placeholder="Search: Bank Name" aria-label="Search by Bank Name" aria-describedby="search-btn">
+        <div class="input-group-append">
+            <span class="input-group-text btn-search" id="search-btn" (click)="onSearch()">Search</span>
+        </div>
+    </div>
+</div>
+<app-table [data]="data" [displayedColumns]="displayedColumns" [columnsInfo]="columnsInfo">
+</app-table>
+
+<ng-template #actionTemplateRef let-row>
+    <i class="fa-regular fa-eye icon" data-bs-toggle="modal" data-bs-target="#bankMaster-modal"
+        (click)="viewBankMasterGetDto(row)"></i>
+    <i *ngIf="editAccess" class="fa-regular fa-pen-to-square icon" data-bs-toggle="modal" data-bs-target="#bankMaster-modal"
+        (click)="editCompanyMasterGetDto(row)"></i>
+    <i *ngIf="deleteAccess" class="fa-solid fa-trash icon" (click)="deleteRowData(row.r_id)"></i>
+</ng-template>
+
+<div class="modal fade" [formGroup]="bankMasterForm" id="bankMaster-modal" data-bs-backdrop="static"
+    data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <form class="modal-content">
+            <div class="modal-header d-flex justify-content-between">
+                <h1 *ngIf="modalMode === 'view'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">View</h1>
+                <h1 *ngIf="modalMode === 'edit'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">Edit</h1>
+                <h1 *ngIf="modalMode === 'add'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">Add</h1>
+                <button type="reset" class="btn close-btn" data-bs-dismiss="modal" aria-label="Close"
+                    (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="bankName" class="mb-1">Bank Name <span *ngIf="modalMode === 'edit' || modalMode === 'add'"
+                            style="color: red;">*</span>
+                        <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.bankMasterForm.get('bankName')?.hasError('required') &&
+                    (this.bankMasterForm.get('bankName')?.dirty ||
+                      this.bankMasterForm.get('bankName')?.touched)
+                  " style="color: red">Required</span>
+                  <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.bankMasterForm.get('bankName')?.hasError('maxlength') &&
+                    (this.bankMasterForm.get('bankName')?.dirty ||
+                      this.bankMasterForm.get('bankName')?.touched)
+                  " style="color: red">Max 50 Characters</span>
+                    </label>
+                    <input type="text" class="form-control" formControlName="bankName" placeholder="Bank Name">
+                </div>
+                <div class="mb-3">
+                    <label for="branch" class="mb-1">Branch <span *ngIf="modalMode === 'edit' || modalMode === 'add'"
+                            style="color: red;">*</span>
+                        <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.bankMasterForm.get('branch')?.hasError('required') &&
+                    (this.bankMasterForm.get('branch')?.dirty ||
+                      this.bankMasterForm.get('branch')?.touched)
+                  " style="color: red">Required</span>
+                  <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.bankMasterForm.get('branch')?.hasError('maxlength') &&
+                    (this.bankMasterForm.get('branch')?.dirty ||
+                      this.bankMasterForm.get('branch')?.touched)
+                  " style="color: red">Max 50 Characters</span>
+                    </label>
+                    <input type="text" class="form-control" formControlName="branch" placeholder="Name">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button *ngIf="modalMode !== 'view'" class="add-btn btn btn-outline-primary" type="button"
+                    (click)="saveBankMasterGetDto()">Save</button>
+                <button class="btn btn-outline-danger" data-bs-dismiss="modal" aria-label="Close" type="reset"
+                    (click)="closeModal()">
+                    {{(modalMode === 'view'?'Close':'Cancel')}}</button>
+            </div>
+        </form>
+    </div>
+</div>

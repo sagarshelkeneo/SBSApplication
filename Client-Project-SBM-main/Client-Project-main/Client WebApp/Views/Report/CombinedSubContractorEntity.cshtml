@@ -1,0 +1,91 @@
+﻿@using Client.Application.Features.PaymentReports.Dtos
+@model List<CombinedSubcontractorReportDto>
+
+@{
+    ViewData["Title"] = "Combined Sub-Contractor Entity";
+}
+
+<h2 class="pt-4 fs-1">Combined Sub-Contractor Entity Reports</h2>
+
+<div class="">
+
+    <!-- Export Buttons -->
+    <div class="d-flex justify-content-between flex-wrap my-3">
+        <div>
+            <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
+                <i class="fa-solid fa-file-pdf"></i> Export PDF
+            </button>
+            <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
+                <i class="fa-solid fa-file-excel"></i> Export Excel
+            </button>
+        </div>
+    </div>
+
+    <!-- Report Table Section -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i> Combined Sub-Contractor Entity
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover align-middle dataTable" id="reportTable">
+                    <thead class="text-center">
+                        <tr>
+                            <th>Sr. No.</th>
+                            <th>Date</th>
+                            <th>Sub-Contractor</th>
+                            <th>Quantity</th>
+                            <th>Cash Amount</th>
+                            <th>Balance Amount</th>
+                            <th>Paid Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="text-center"></td>
+                                    <td>
+                                        @(DateTime.TryParse(item.R_Date, out var dateVal)
+                                            ? dateVal.ToString("dd-MMM-yyyy")
+                                            : item.R_Date)
+                                    </td>
+                                    <td>@item.SubContractorName</td>
+                                    <td class="text-end">@((item.Quantity ?? 0).ToString("N0"))</td>
+                                    <td class="text-end">@((item.CashAmount ?? 0).ToString("N2"))</td>
+                                    <td class="text-end">@((item.BalanceAmount ?? 0).ToString("N2"))</td>
+                                    <td class="text-end text-success fw-semibold">@((item.PaidAmount ?? 0).ToString("N2"))</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center fs-5 text-danger">No Records Found</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            initializeGenericDataTable({
+                tableSelector: '#reportTable',
+                customInfoId: 'reportTable_info_custom',
+                columnDefs: [
+                    { orderable: false, targets: 0 }
+                ],
+                columnsSearchable: [false, true, true, true, true, true, true],
+                order: [[1, 'asc']],
+                destroy: true
+            });
+        });
+    </script>
+}

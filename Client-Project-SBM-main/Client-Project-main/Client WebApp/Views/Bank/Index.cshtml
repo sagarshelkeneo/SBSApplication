@@ -1,0 +1,184 @@
+﻿@model Client_WebApp.Models.Master.BankViewModel
+
+@{
+    ViewData["Title"] = "Banks";
+}
+
+<h2 class="pt-4 fs-1">Banks</h2>
+
+<div>
+    <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#bank-modal" onclick="setModalMode('add')">
+        <i class="fa-solid fa-plus"></i> Add
+    </button>
+
+    <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+    </button>
+    <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> Export Excel
+    </button>
+
+    <!-- Filters -->
+    <div class="card mb-2">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label>Bank Name</label>
+                    <input type="text" name="searchText" class="form-control" placeholder="Search..." value="@ViewData["searchText"]" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+                    <a href="@Url.Action("Index", new { companyId = Model.CompanyId })" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="bank-modal" tabindex="-1" aria-labelledby="bankModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="bankModalLabel">Add Bank</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form id="bankForm" asp-action="CreateOrEdit" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" id="Id" name="Id" value="@Model.Bank.R_id" />
+                        <input type="hidden" id="CompanyId" name="CompanyId" value="@Model.CompanyId" />
+
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <label for="BankName" class="form-label">Bank Name</label>
+                                    <input type="text" class="form-control" id="BankName" name="BankName" value="@Model.Bank.R_bankName" required />
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <label for="BankBranch" class="form-label">Bank Branch</label>
+                                    <input type="text" class="form-control" id="BankBranch" name="BankBranch" value="@Model.Bank.R_branch" required />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" id="saveButton" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bank Table -->
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-table me-1"></i>Bank Table</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover dataTable" id="bankTable">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Sr. No.</th>
+                            <th>Bank Name</th>
+                            <th>Bank Branch</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Banks != null && Model.Banks.Any())
+                        {
+                            foreach (var bank in Model.Banks)
+                            {
+                                <tr>
+                                    <td></td>
+                                    <td>@bank.R_bankName</td>
+                                    <td>@bank.R_branch</td>
+                                    <td class="text-center">
+                                        <div class="action-icons">
+                                            <i class="fa-regular fa-eye cursor-pointer text-success" data-bs-toggle="modal" data-bs-target="#bank-modal" onclick="viewBank(@bank.R_id)"></i>
+                                            <i class="fa-regular fa-pen-to-square cursor-pointer" data-bs-toggle="modal" data-bs-target="#bank-modal" onclick="editBank(@bank.R_id)"></i>
+                                            <i class="fa-solid fa-trash cursor-pointer text-danger" onclick="showDeleteModal(@bank.R_id, '@Url.Action("Delete", "Bank")')"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center fs-5">No Records</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            initializeGenericDataTable({
+                tableSelector: '#bankTable',
+                customInfoId: 'bankTable_info_custom',
+                columnDefs: [
+                    { orderable: false, targets: 0 }, // Sr. No.
+                    { orderable: false, targets: -1 } // Actions column
+                ],
+                columnsSearchable: [false, true, true, false], // Sr. No., Bank Name, Bank Branch, Actions
+                order: [[1, 'asc']], // default order by Bank Name
+                actionCallbacks: {
+                    '.fa-eye': viewBank,
+                    '.fa-pen-to-square': editBank,
+                    '.fa-trash': function (id) { showDeleteModal(id, '@Url.Action("Delete", "Bank")'); }
+                }
+            });
+        });
+
+        function setModalMode(mode) {
+            const modalLabel = document.getElementById("bankModalLabel");
+            modalLabel.innerText = mode === 'add' ? 'Add Bank' : (mode === 'edit' ? 'Edit Bank' : 'View Bank');
+
+            if (mode === 'view') {
+                $("#bankForm input, #bankForm select").prop("readonly", true).prop("disabled", true);
+                $("#saveButton").hide();
+            } else {
+                $("#bankForm input, #bankForm select").prop("readonly", false).prop("disabled", false);
+                $("#saveButton").show();
+            }
+        }
+
+        function getBank(id) {
+            $.ajax({
+                url: '/Bank/GetBank',
+                type: 'GET',
+                data: { id: id },
+                success: function (data) {
+                    $('#Id').val(data.id);
+                    $('#BankName').val(data.bankName);
+                    $('#BankBranch').val(data.bankBranch);
+                    $('#bank-modal').modal('show');
+                },
+                error: function () {
+                    alert("Failed to load bank data.");
+                }
+            });
+        }
+
+        function editBank(id) {
+            setModalMode('edit');
+            getBank(id);
+        }
+
+        function viewBank(id) {
+            setModalMode('view');
+            getBank(id);
+        }
+    </script>
+}

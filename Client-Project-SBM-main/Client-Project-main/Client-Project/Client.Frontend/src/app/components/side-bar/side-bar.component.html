@@ -1,0 +1,188 @@
+<aside class="offcanvas offcanvas-start offcanvas-width" tabindex="-1" id="sideBar" aria-labelledby="sideBarLabel">
+    <div class="offcanvas-header">
+        <div></div>
+        <button type="button" class="btn" data-bs-dismiss="offcanvas" aria-label="Close">
+            <i class="fa-solid fa-xmark fs-5"></i>
+        </button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="accordion" id="profile-accordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="profile">
+                    <button class="accordion-button userName" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        <i class="fa-solid fa-user"></i>&nbsp;{{user}}
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="profile"
+                    data-bs-parent="#profile-accordion">
+                    <div class="accordion-body">
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-toggle="modal"
+                            data-bs-target="#change-modal">Change
+                            Password</a>
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-toggle="modal"
+                            data-bs-target="#mail-modal">Send Email</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="checkConfigAccess()" class="accordion mt-2" id="config-accordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="config">
+                    <button class="accordion-button userName" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#config-collapse" aria-expanded="true" aria-controls="config-collapse">
+                        Config
+                    </button>
+                </h2>
+                <div id="config-collapse" class="accordion-collapse collapse" aria-labelledby="profile"
+                    data-bs-parent="#config-accordion">
+                    <div class="accordion-body">
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-dismiss="offcanvas"
+                            routerLink="/companyMaster">Company</a>
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-dismiss="offcanvas"
+                            routerLink="/roleMaster">Role</a>
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-dismiss="offcanvas"
+                            routerLink="/roleAccessMaster">Role Access</a>    
+                    </div>
+                </div>
+            </div>
+        </div>
+        <a class="btn sideBar-nav-links mt-2" data-bs-dismiss="offcanvas" routerLink="/home">Home</a>
+        <div *ngIf="checkMasterAccess()" class="accordion mt-2" id="master-accordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="master">
+                    <button class="accordion-button userName" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapse-master" aria-expanded="true" aria-controls="collapse-master">
+                        Master
+                    </button>
+                </h2>
+                <div id="collapse-master" class="accordion-collapse collapse" aria-labelledby="master"
+                    data-bs-parent="#master-accordion">
+                    <div class="accordion-body">
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-dismiss="offcanvas"
+                            routerLink="/bankMaster">Bank</a>
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-dismiss="offcanvas"
+                            routerLink="/userMaster">User</a>
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-dismiss="offcanvas"
+                            routerLink="/product">Product</a>
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-dismiss="offcanvas"
+                            routerLink="/subContractor">SubContractor</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <a *ngIf="checkNormalAccess()" class="btn sideBar-nav-links mt-2" data-bs-dismiss="offcanvas" routerLink="/invoice">Invoice</a>
+        <a *ngIf="checkNormalAccess()" class="btn sideBar-nav-links mt-2" data-bs-dismiss="offcanvas" routerLink="/payment">Payment</a>
+        <a *ngIf="checkNormalAccess()" class="btn sideBar-nav-links mt-2" data-bs-dismiss="offcanvas" routerLink="/additionalEntity">Additional Entity</a>
+        <div *ngIf="checkReportAccess()" class="accordion mt-2" id="report-accordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="report">
+                    <button class="accordion-button userName" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapse-report" aria-expanded="true" aria-controls="collapse-report">
+                        Reports
+                    </button>
+                </h2>
+                <div id="collapse-report" class="accordion-collapse collapse" aria-labelledby="report"
+                    data-bs-parent="#report-accordion">
+                    <div class="accordion-body">
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-dismiss="offcanvas"
+                            routerLink="/paidReport">Paid</a>
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-dismiss="offcanvas"
+                            routerLink="/unpaidReport">Un-Paid</a>
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-dismiss="offcanvas"
+                            routerLink="/productWiseReport">Product Wise</a>
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-dismiss="offcanvas"
+                            routerLink="/subContractorWiseReport">Sub-Contractor Wise</a>
+                        <a class="btn sideBar-nav-inner-links mt-2" data-bs-dismiss="offcanvas"
+                            routerLink="/combinedSubcontractorEntityReport">Combined Sub-Contractor Entity Report</a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<div class="modal fade" [formGroup]="userChangeForm" id="change-modal" data-bs-backdrop="static"
+    data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <form class="modal-content">
+            <div class="modal-header d-flex justify-content-between">
+                <h1 style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">
+                    Change Password</h1>
+                <button type="reset" class="btn close-btn" data-bs-dismiss="modal" aria-label="Close"
+                    (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="currentPassword" class="mb-1">Current Password <span style="color: red;">*</span>
+                        <span *ngIf="
+                    this.userChangeForm.get('currentPassword')?.hasError('required') &&
+                    (this.userChangeForm.get('currentPassword')?.dirty ||
+                      this.userChangeForm.get('currentPassword')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <input type="text" class="form-control" placeholder="Current Password"
+                        formControlName="currentPassword">
+                </div>
+
+                <div class="mb-3">
+                    <label for="newPassword" class="mb-1">New Password <span style="color: red;">*</span>
+                        <span *ngIf="
+                    this.userChangeForm.get('newPassword')?.hasError('required') &&
+                    (this.userChangeForm.get('newPassword')?.dirty ||
+                      this.userChangeForm.get('newPassword')?.touched)
+                  " style="color: red">Required</span>
+                        <span *ngIf="
+                    this.userChangeForm.get('newPassword')?.hasError('pattern') &&
+                    (this.userChangeForm.get('newPassword')?.dirty ||
+                      this.userChangeForm.get('newPassword')?.touched)
+                  " style="color: red">Should
+                            contain
+                            atleast 1 capital letter, 1 numeric, 1 small letter, and 1 alphanumeric character (Between
+                            4-10
+                            digits)</span>
+                    </label>
+                    <input type="text" class="form-control" placeholder="New Password" formControlName="newPassword">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="add-btn btn btn-outline-primary" type="button" (click)="saveUserGetDto()">Save</button>
+                <button class="btn btn-outline-danger" data-bs-dismiss="modal" aria-label="Close" type="reset"
+                    (click)="closeModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" [formGroup]="emailForm" id="mail-modal" data-bs-backdrop="static" data-bs-keyboard="false"
+    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <form class="modal-content">
+            <div class="modal-header d-flex justify-content-between">
+                <h1 style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">
+                    Email</h1>
+                <button type="reset" class="btn close-btn" data-bs-dismiss="modal" aria-label="Close"
+                    (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="toEmail" class="mb-1">To Email<span style="color: red;">*</span>
+                        <span *ngIf="
+                    this.emailForm.get('toEmail')?.hasError('required') &&
+                    (this.emailForm.get('toEmail')?.dirty ||
+                      this.emailForm.get('toEmail')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <input type="text" class="form-control" placeholder="To Email"
+                        formControlName="toEmail">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="add-btn btn btn-outline-primary" type="button" (click)="saveUserGetDto()">Save</button>
+                <button class="btn btn-outline-danger" data-bs-dismiss="modal" aria-label="Close" type="reset"
+                    (click)="closeModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>

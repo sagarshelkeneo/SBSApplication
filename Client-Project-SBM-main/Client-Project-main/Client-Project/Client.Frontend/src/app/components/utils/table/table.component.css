@@ -1,0 +1,32 @@
+.thead{
+    background-color: var(--color-5f5fee);
+    border-top-color: var(--color-5f5fee);
+    border-bottom-color: var(--color-5f5fee);
+}
+.trow{
+    border-color: #dee2e6;
+}
+.border-left-color{
+    border-left-color:var(--color-5f5fee);
+}
+.border-right-color{
+    border-right-color:var(--color-5f5fee);
+}
+.mat-header-cell {
+    color: var(--color-ffffff);
+}
+.table {
+    text-wrap: nowrap;
+}
+table tr.odd-row td {
+   background-color: var(--color-ffffff);
+   color: var(--color-000000);
+}
+table tr.even-row td {
+  background-color: var(--color-f2f2f2);
+  color: var(--color-000000);
+}
+
+::ng-deep .cdk-overlay-pane {
+    background-color: var(--color-f5f5f5);
+}

@@ -1,0 +1,163 @@
+﻿@model Client_WebApp.Models.AdditionalEntityViewModel
+
+@{
+    ViewData["Title"] = "Additional Entity";
+}
+
+<h2 class="pt-4 fs-1">Additional Entity</h2>
+
+<div class="">
+
+    <!-- Add / Export Buttons -->
+    <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#additionalEntity-modal" onclick="setModalMode('add')">
+        <i class="fa-solid fa-plus"></i> Add
+    </button>
+    <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+    </button>
+    <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> Export Excel
+    </button>
+
+    <!-- Filters -->
+    <div class="card mb-2">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label>Search</label>
+                    <input type="text" name="searchText" class="form-control" placeholder="Search by Type or Sub-Contractor..." value="@ViewData["searchText"]" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <partial name="_AdditionalEntityModal" model="Model" />
+
+    <!-- Table -->
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-table me-1"></i> Additional Entity Table</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover dataTable" id="additionalEntityTable">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Sr. No.</th>
+                            <th>Date</th>
+                            <th>Sub-Contractor</th>
+                            <th>Type</th>
+                            <th>Quantity</th>
+                            <th>Amount</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.AdditionalEntities != null && Model.AdditionalEntities.Any())
+                        {
+                            int srNo = 1;
+                            foreach (var item in Model.AdditionalEntities)
+                            {
+                                <tr>
+                                    <td>@srNo</td>
+                                    <td>@item.R_date.ToString("dd-MMM-yyyy")</td>
+                                    <td>@item.R_subContractorName</td>
+                                    <td>@item.R_type</td>
+                                    <td>@item.R_quantity</td>
+                                    <td>@item.R_amount</td>
+                                    <td class="text-center">
+                                        <div class="action-icons">
+                                            <i class="fa-regular fa-eye cursor-pointer text-success" onclick="viewAdditionalEntity(@item.R_id)"></i>
+                                            <i class="fa-regular fa-pen-to-square cursor-pointer" onclick="editAdditionalEntity(@item.R_id)"></i>
+                                            <i class="fa-solid fa-trash cursor-pointer text-danger" onclick="showDeleteModal(@item.R_id, '@Url.Action("Delete", "AdditionalEntity")')"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                                srNo++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center fs-5">No Records</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            initializeGenericDataTable({
+                tableSelector: '#additionalEntityTable',
+                customInfoId: 'additionalEntityTable_info_custom',
+                columnDefs: [
+                    { orderable: false, targets: 0 },
+                    { orderable: false, targets: -1 }
+                ],
+                columnsSearchable: [false, true, true, true, true, true, false]
+            });
+        });
+
+        function setModalMode(mode) {
+            const modalLabel = document.getElementById("additionalEntityModalLabel");
+            modalLabel.innerText = mode === 'add' ? 'Add Additional Entity' : (mode === 'edit' ? 'Edit Additional Entity' : 'View Additional Entity');
+
+            if (mode === 'view') {
+                $("#additionalEntityForm input, #additionalEntityForm select").prop("readonly", true).prop("disabled", true);
+                $("#saveButton").hide();
+            } else {
+                $("#additionalEntityForm input, #additionalEntityForm select").prop("readonly", false).prop("disabled", false);
+                $("#saveButton").show();
+            }
+        }
+
+        function getAdditionalEntity(id) {
+            $.ajax({
+                url: '/AdditionalEntity/GetAdditionalEntity',
+                type: 'GET',
+                data: { id: id },
+                success: function (data) {
+                    $('#Id').val(data.id);
+
+                    if (data.date) {
+                        const date = new Date(data.date);
+                        const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+                            .toISOString()
+                            .split('T')[0];
+                        $('#Date').val(localDate);
+                    } else {
+                        $('#Date').val('');
+                    }
+
+                    $('#SubContractorId').val(data.subContractorId);
+                    $('#Type').val(data.type);
+                    $('#Quantity').val(data.quantity);
+                    $('#Amount').val(data.amount);
+
+                    $('#additionalEntity-modal').modal('show');
+                },
+                error: function () {
+                    alert("Failed to load data.");
+                }
+            });
+        }
+
+        function editAdditionalEntity(id) {
+            setModalMode('edit');
+            getAdditionalEntity(id);
+        }
+
+        function viewAdditionalEntity(id) {
+            setModalMode('view');
+            getAdditionalEntity(id);
+        }
+    </script>
+}

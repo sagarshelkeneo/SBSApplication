@@ -1,0 +1,98 @@
+﻿@using Client.Application.Features.PaymentReports.Dtos
+@model List<UnpaidReportDto>
+
+@{
+    ViewData["Title"] = "Unpaid";
+}
+
+<h2 class="pt-4 fs-1">Unpaid Reports</h2>
+
+<div class="pt-3 px-3 pb-2">
+
+    <!-- Export Buttons -->
+    <div class="mb-3">
+        <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
+            <i class="bi bi-file-earmark-pdf"></i> Print to PDF
+        </button>
+        <button class="btn btn-outline-success mb-2 ms-2" onclick="exportToExcel()">
+            <i class="bi bi-file-earmark-excel"></i> Print to Excel
+        </button>
+        <button class="btn btn-outline-primary mb-2 ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#filter-container">
+            Filters <i class="bi bi-chevron-down"></i>
+        </button>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body collapse @(ViewContext.HttpContext.Request.Query.Any() ? "show" : "")" id="filter-container">
+            <form method="get" class="row g-3" asp-action="Unpaid">
+                <div class="col-md-3">
+                    <label class="form-label">From Date</label>
+                    <input type="date" name="fromDate" class="form-control" value="@(ViewContext.HttpContext.Request.Query["fromDate"])" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">To Date</label>
+                    <input type="date" name="toDate" class="form-control" value="@(ViewContext.HttpContext.Request.Query["toDate"])" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Sub-Contractor Name</label>
+                    <input type="text" name="subcontractorName" class="form-control" placeholder="Sub-Contractor Name" value="@(ViewContext.HttpContext.Request.Query["subcontractorName"])" />
+                </div>
+                <div class="col-md-12 mt-2">
+                    <button type="submit" class="btn btn-outline-primary mb-2 me-2">Search</button>
+                    <a asp-action="Unpaid" class="btn btn-outline-secondary mb-2">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Report Table -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i> Unpaid Report
+        </div>
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped table-hover align-middle text-nowrap" id="reportTable">
+                <thead class="text-center">
+                    <tr>
+                        <th>Sr. No.</th>
+                        <th>Sub-Contractor</th>
+                        <th>Invoice Date</th>
+                        <th class="text-end">Invoice Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        for (int i = 0; i < Model.Count; i++)
+                        {
+                            var item = Model[i];
+                            <tr>
+                                <td class="text-center"></td>
+                                <td>@(item.SubContractor ?? "-")</td>
+                                <td>@(item.InvoiceDate?.ToString("dd-MMM-yy") ?? "-")</td>
+                                <td class="text-end text-danger fw-semibold">@item.InvoiceAmount?.ToString("N2")</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            initializeGenericDataTable({
+                tableSelector: '#reportTable',
+                customInfoId: 'reportTable_info_custom',
+                columnDefs: [{ orderable: false, targets: 0 }],
+                columnsSearchable: [false, true, true, true],
+                order: [[1, 'asc']],
+                destroy: true,
+                language: { emptyTable: "No Records Found" }
+            });
+        });
+    </script>
+}

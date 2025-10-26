@@ -1,0 +1,173 @@
+﻿@model Client_WebApp.Models.Master.ProductViewModel
+
+@{
+    ViewData["Title"] = "Products";
+}
+
+<h2 class="pt-4 fs-1">Products</h2>
+
+<div>
+    <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#product-modal" onclick="setModalMode('add')">
+        <i class="fa-solid fa-plus"></i> Add
+    </button>
+
+    <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+    </button>
+
+    <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> Export Excel
+    </button>
+
+    <!-- Filter Section -->
+    <div class="card mb-2">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label>Product Name</label>
+                    <input type="text" name="searchText" class="form-control" placeholder="Search..." value="@ViewData["searchText"]" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+                    <a href="@Url.Action("Index", new { companyId = Model.CompanyId })" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal fade" id="product-modal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-md modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="productModalLabel">Add Product</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form id="productForm" asp-action="CreateOrEdit" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" id="Id" name="Id" value="@Model.Product.R_id" />
+                        <input type="hidden" id="CompanyId" name="CompanyId" value="@Model.CompanyId" />
+
+                        <div class="mb-3">
+                            <label for="Description" class="form-label">Product Name</label>
+                            <input type="text" class="form-control" id="Description" name="Description" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="UnitPrice" class="form-label">Unit Price</label>
+                            <input type="number" class="form-control" id="UnitPrice" name="UnitPrice" step="0.01" required />
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" id="saveButton" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-table me-1"></i>Product Table</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover dataTable" id="productTable">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Sr. No.</th>
+                            <th>Product Name</th>
+                            <th>Unit Price</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Products != null && Model.Products.Any())
+                        {
+                            foreach (var product in Model.Products)
+                            {
+                                <tr>
+                                    <td></td>
+                                    <td>@product.R_description</td>
+                                    <td>@product.R_unitPrice</td>
+                                    <td class="text-center">
+                                        <i class="fa-regular fa-eye text-success cursor-pointer" onclick="viewProduct(@product.R_id)" data-bs-toggle="modal" data-bs-target="#product-modal"></i>
+                                        <i class="fa-regular fa-pen-to-square cursor-pointer" onclick="editProduct(@product.R_id)" data-bs-toggle="modal" data-bs-target="#product-modal"></i>
+                                        <i class="fa-solid fa-trash text-danger cursor-pointer" onclick="showDeleteModal(@product.R_id, '@Url.Action("Delete", "Product")')"></i>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="4" class="text-center fs-5">No Records</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            initializeGenericDataTable({
+                tableSelector: '#productTable',
+                customInfoId: 'productTable_info_custom',
+                columnDefs: [
+                    { orderable: false, targets: 0 },
+                    { orderable: false, targets: -1 }
+                ],
+                columnsSearchable: [false, true, true, false],
+                order: [[1, 'asc']],
+                actionCallbacks: {
+                    '.fa-eye': viewProduct,
+                    '.fa-pen-to-square': editProduct,
+                    '.fa-trash': function (id) { showDeleteModal(id, '@Url.Action("Delete", "Product")'); }
+                }
+            });
+        });
+
+        function setModalMode(mode) {
+            const modalLabel = $("#productModalLabel");
+            modalLabel.text(mode === 'add' ? 'Add Product' : (mode === 'edit' ? 'Edit Product' : 'View Product'));
+
+            if (mode === 'view') {
+                $("#productForm input").prop("readonly", true).prop("disabled", true);
+                $("#saveButton").hide();
+            } else {
+                $("#productForm input").prop("readonly", false).prop("disabled", false);
+                $("#saveButton").show();
+            }
+        }
+
+        function getProduct(id) {
+            $.ajax({
+                url: '/Product/GetProduct',
+                type: 'GET',
+                data: { id: id },
+                success: function (data) {
+                    $('#Id').val(data.id);
+                    $('#Description').val(data.description);
+                    $('#UnitPrice').val(data.unitPrice);
+                },
+                error: function () {
+                    alert("Failed to load product data.");
+                }
+            });
+        }
+
+        function editProduct(id) {
+            setModalMode('edit');
+            getProduct(id);
+        }
+
+        function viewProduct(id) {
+            setModalMode('view');
+            getProduct(id);
+        }
+    </script>
+}

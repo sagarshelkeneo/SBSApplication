@@ -1,0 +1,137 @@
+<h2 class="pt-4 fs-1">Additional Entity</h2>
+
+<div class="btn-container pt-md-5 pt-3 px-md-5 px-3 pb-2">
+    <button *ngIf="createAccess" data-bs-toggle="modal" data-bs-target="#AdditionalEntity-modal" class="add-btn btn btn-outline-primary mb-2"
+        (click)="addAdditionalEntityGetDto()">Add
+    </button>
+    <button class="add-btn btn btn-outline-primary margin-left mb-2" (click)="
+        exportToPdf()">
+        <i class="fa-solid fa-file-pdf"></i> Print to PDF
+    </button>
+    <button class="add-btn btn btn-outline-primary margin-left mb-2" (click)="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> Print to Excel
+    </button>
+    <div class="input-group mb-2">
+        <input #searchInput (input)="setSearchValue(searchInput.value)" type="text" class="form-control input-search" placeholder="Search: Sub-Contractor Name OR Type" aria-label="Search by Sub-Contractor Name OR Type" aria-describedby="search-btn">
+        <div class="input-group-append">
+            <span class="input-group-text btn-search" id="search-btn" (click)="onSearch()">Search</span>
+        </div>
+    </div>
+</div>
+<app-table [data]="data" [displayedColumns]="displayedColumns" [columnsInfo]="columnsInfo">
+</app-table>
+
+<ng-template #dateTemplateRef let-row>
+    {{row.r_date | date : 'dd-MMM-yy'}}
+</ng-template>
+
+<ng-template #actionTemplateRef let-row>
+    <i class="fa-regular fa-eye icon" data-bs-toggle="modal" data-bs-target="#AdditionalEntity-modal"
+        (click)="viewAdditionalEntityGetDto(row)"></i>
+    <i *ngIf="editAccess" class="fa-regular fa-pen-to-square icon" data-bs-toggle="modal" data-bs-target="#AdditionalEntity-modal"
+        (click)="editCompanyMasterGetDto(row)"></i>
+    <i *ngIf="deleteAccess" class="fa-solid fa-trash icon" (click)="deleteRowData(row.r_id)"></i>
+</ng-template>
+
+<div class="modal fade" [formGroup]="additionalEntityForm" id="AdditionalEntity-modal" data-bs-backdrop="static"
+    data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <form class="modal-content">
+            <div class="modal-header d-flex justify-content-between">
+                <h1 *ngIf="modalMode === 'view'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">View</h1>
+                <h1 *ngIf="modalMode === 'edit'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">Edit</h1>
+                <h1 *ngIf="modalMode === 'add'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">Add</h1>
+                <button type="reset" class="btn close-btn" data-bs-dismiss="modal" aria-label="Close"
+                    (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="date" class="mb-1">Date <span *ngIf="modalMode !== 'view'"
+                            style="color: red;">*</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.additionalEntityForm.get('date')?.hasError('required') &&
+                    (this.additionalEntityForm.get('date')?.dirty ||
+                      this.additionalEntityForm.get('date')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <p-datepicker id="date" formControlName="date" placeholder="dd-MM-yy"
+                        dateFormat="dd-mm-yy" />
+                </div>
+                <div class="mb-3" *ngIf="modalMode !== 'edit'">
+                    <label for="subContractorId" class="mb-1">Sub-Contractor <span *ngIf="modalMode !== 'view'"
+                            style="color: red;">*</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.additionalEntityForm.get('subContractorId')?.hasError('required') &&
+                    (this.additionalEntityForm.get('subContractorId')?.dirty ||
+                      this.additionalEntityForm.get('subContractorId')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <select id="subContractorId" class="form-control" formControlName="subContractorId">
+                        <option value="">--Select--</option>
+                        <option *ngFor="let subContractor of subContractors" value="{{subContractor.id}}">
+                            {{subContractor.name}}</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="type" class="mb-1">Type <span *ngIf="modalMode === 'edit' || modalMode === 'add'"
+                            style="color: red;">*</span>
+                        <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.additionalEntityForm.get('type')?.hasError('required') &&
+                    (this.additionalEntityForm.get('type')?.dirty ||
+                      this.additionalEntityForm.get('type')?.touched)
+                  " style="color: red">Required</span>
+                  <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.additionalEntityForm.get('type')?.hasError('maxlength') &&
+                    (this.additionalEntityForm.get('type')?.dirty ||
+                      this.additionalEntityForm.get('type')?.touched)
+                  " style="color: red">Max 50 Characters</span>
+                    </label>
+                    <input type="text" class="form-control" formControlName="type" placeholder="Type">
+                </div>
+                <div class="mb-3">
+                    <label for="amount" class="mb-1">Amount <span *ngIf="modalMode !== 'view'"
+                            style="color: red;">*</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.additionalEntityForm.get('amount')?.hasError('required') &&
+                    (this.additionalEntityForm.get('amount')?.dirty ||
+                      this.additionalEntityForm.get('amount')?.touched)
+                  " style="color: red">Required</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.additionalEntityForm.get('amount')?.hasError('pattern') &&
+                    (this.additionalEntityForm.get('amount')?.dirty ||
+                      this.additionalEntityForm.get('amount')?.touched)
+                  " style="color: red">Invalid Price</span>
+                    </label>
+                    <input type="text" id="amount" class="form-control" placeholder="Amount"
+                        formControlName="amount" />
+                </div>
+                <div class="mb-3">
+                    <label for="quantity" class="mb-1">Quantity <span *ngIf="modalMode !== 'view'"
+                            style="color: red;">*</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.additionalEntityForm.get('quantity')?.hasError('required') &&
+                    (this.additionalEntityForm.get('quantity')?.dirty ||
+                      this.additionalEntityForm.get('quantity')?.touched)
+                  " style="color: red">Required</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.additionalEntityForm.get('quantity')?.hasError('pattern') &&
+                    (this.additionalEntityForm.get('quantity')?.dirty ||
+                      this.additionalEntityForm.get('quantity')?.touched)
+                  " style="color: red">Invalid Quantity</span>
+                    </label>
+                    <input type="text" id="quantity" class="form-control" formControlName="quantity"/>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button *ngIf="modalMode !== 'view'" class="add-btn btn btn-outline-primary" type="button"
+                    (click)="saveAdditionalEntityGetDto()">Save</button>
+                <button class="btn btn-outline-danger" data-bs-dismiss="modal" aria-label="Close" type="reset"
+                    (click)="closeModal()">
+                    {{(modalMode === 'view'?'Close':'Cancel')}}</button>
+            </div>
+        </form>
+    </div>
+</div>

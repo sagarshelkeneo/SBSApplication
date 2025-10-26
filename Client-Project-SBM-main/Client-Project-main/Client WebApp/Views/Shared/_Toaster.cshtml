@@ -1,0 +1,36 @@
+﻿@* -----------------------------------------------------------
+   Shared partial for showing success/error toast messages
+   Usage: Place this inside your Layout (e.g. _Layout.cshtml)
+           or in specific views (e.g. Login/Index.cshtml)
+   ----------------------------------------------------------- *@
+
+@if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null)
+{
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+        <div id="toastMessage"
+             class="toast align-items-center text-white border-0"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-semibold">
+                    @(TempData["SuccessMessage"] ?? TempData["ErrorMessage"])
+                </div>
+                <button type="button"
+                        class="btn-close btn-close-white me-2 m-auto"
+                        data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var toastEl = document.getElementById('toastMessage');
+            var isSuccess = '@(TempData["SuccessMessage"] != null ? "true" : "false")' === 'true';
+            toastEl.classList.add(isSuccess ? 'bg-success' : 'bg-danger');
+            var toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            toast.show();
+        });
+    </script>
+}

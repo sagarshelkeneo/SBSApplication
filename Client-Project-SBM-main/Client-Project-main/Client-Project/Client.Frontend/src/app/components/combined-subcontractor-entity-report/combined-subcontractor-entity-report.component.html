@@ -1,0 +1,38 @@
+ <h2 class="pt-4 fs-1">Combined Sub-Contractor Entity Reports</h2>
+
+<div class="pt-md-5 pt-3 px-md-5 px-3 pb-2">
+  <button class="add-btn btn btn-outline-primary mb-2 printPdf" (click)="exportToPdf()">
+    <i class="fa-solid fa-file-pdf"></i> Print to PDF
+  </button>
+   <button class="add-btn btn btn-outline-primary mb-2 margin-left"
+    (click)="exportToExcel()">
+    <i class="fa-solid fa-file-excel"></i> Print to Excel
+  </button>
+</div>
+
+<app-table [data]="data" [displayedColumns]="displayedColumns" [columnsInfo]="columnsInfo">
+</app-table>
+
+<ng-template #dateTemplateRef let-row>
+    {{ row.r_Date | date : 'dd-MMM-yy'}}
+</ng-template>
+
+<ng-template #nameTemplateRef let-row>
+    {{ row.subContractorName || '-'}}
+</ng-template>
+
+<ng-template #quatityTemplateRef let-row>
+    {{ row.quantity || '0'}}
+</ng-template>
+
+<ng-template #cashTemplateRef let-row>
+    {{ row.cashAmount || '0'}}
+</ng-template>
+
+<ng-template #balanceTemplateRef let-row>
+    {{ row.balanceAmount || '0'}}
+</ng-template>
+
+<ng-template #paidTemplateRef let-row>
+    {{ row.paidAmount || '0'}}
+</ng-template>

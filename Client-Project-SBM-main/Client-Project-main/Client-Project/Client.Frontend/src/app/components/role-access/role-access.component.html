@@ -1,0 +1,42 @@
+<h2 class="pt-4 fs-1">Role Access</h2>
+<div class="btn-container pt-md-5 pt-3 px-md-5 px-3 pb-2">
+    <div class="input-group mb-2">
+        <select #searchInput class="form-control input-search">
+            <option value="">--Select--</option>
+            <option *ngFor="let role of roles" value="{{role.id}}">{{role.roleName}}</option>
+        </select>
+        <div class="input-group-append">
+            <span class="input-group-text btn-search" id="search-btn" (click)="onSearch(searchInput.value)">Search</span>
+        </div>
+    </div>
+</div>
+<div class="card-container pt-3 px-md-5 px-3">
+    <form class="card mb-2" #roleAccessForm="ngForm" (ngSubmit)="saveRoleAccess(roleAccessForm,d.a_id)" *ngFor="let d of data">
+        <div class="card-body">
+            <div class="screenName">{{d.a_screenName}}</div>
+            <hr>
+            <div class="checkbox-container">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="d.a_screenName+'-createAccess'" name="createAccess" [(ngModel)]="d.a_createAccess" [disabled]="!editAccess">
+                    <label class="form-check-label" [htmlFor]="d.a_screenName+'-createAccess'">Add</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="d.a_screenName+'-viewAccess'" name="viewAccess" [(ngModel)]="d.a_viewAccess" [disabled]="!editAccess">
+                    <label class="form-check-label" [htmlFor]="d.a_screenName+'-viewAccess'">View</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="d.a_screenName+'-editAccess'" name="editAccess" [(ngModel)]="d.a_editAccess" [disabled]="!editAccess">
+                    <label class="form-check-label" [htmlFor]="d.a_screenName+'-editAccess'">Edit</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="d.a_screenName+'-deleteAccess'" name="deleteAccess" [(ngModel)]="d.a_deleteAccess" [disabled]="!editAccess">
+                    <label class="form-check-label" [htmlFor]="d.a_screenName+'-deleteAccess'">Delete</label>
+                </div>
+            </div>
+            <hr *ngIf="editAccess">
+            <div *ngIf="editAccess">
+                <button class="add-btn btn btn-outline-primary" type="submit">Save</button>
+            </div>
+        </div>
+    </form>
+</div>

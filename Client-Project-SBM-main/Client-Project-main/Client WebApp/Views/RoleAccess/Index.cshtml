@@ -1,0 +1,135 @@
+﻿ @model IEnumerable<Client_WebApp.Models.Config.RoleDetails>
+@{
+    ViewData["Title"] = "Role Access Master";
+}
+
+<div class="container py-4">
+    <h2 class="text-center mb-4">Role Access</h2>
+
+    <!-- Dropdown -->
+    <div class="row justify-content-center mb-3">
+        <div class="col-md-4">
+            <div class="input-group">
+                <select id="userDropdown" class="form-select">
+                    <option value="">-- Select Role --</option>
+                    @foreach (var item in Model)
+                    {
+                        <option value="@item.Id">@item.RoleName</option>
+                    }
+                </select>
+                <button class="btn btn-primary" id="btnSearch">Search</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards Container -->
+    <div class="row" id="cardsContainer">
+        <!-- AJAX will populate cards here -->
+    </div>
+</div>
+
+<!-- Bootstrap Toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+    <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body">✅ Changes saved successfully!</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Handle search
+            $('#btnSearch').click(function () {
+                const userId = $('#userDropdown').val();
+
+                if (!userId) {
+                    alert("Please select a role.");
+                    return;
+                }
+
+                $.ajax({
+                    url: '/RoleAccess/GetRoleAccessByUser',
+                    type: 'GET',
+                    data: { userId: userId },
+                    success: function (response) {
+
+                        $('#cardsContainer').empty();
+
+                        if (!response.success || !response.result || response.result.length === 0) {
+                            $('#cardsContainer').append('<p class="text-center text-muted">No access data found for this role.</p>');
+                            return;
+                        }
+
+                        $.each(response.result, function (index, module) {
+                            var card = `
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="card shadow-sm h-100" data-id="${module.id}">
+                                                        <div class="card-header bg-primary text-white">
+                                                           <input type="hidden" class="hidden-aid" value="${module.a_id}" />
+
+
+                                                            <strong>${module.a_screenName}</strong>
+                                                        </div>
+                                                        <div class="card-body text-start">
+                                                            <h6 class="card-title text-secondary mb-3">Permissions</h6>
+                                                            <div class="d-flex flex-column gap-1 ps-2">
+                                                                <label><input type="checkbox" class="chk-create" ${module.a_createAccess ? "checked" : ""}> Create</label>
+                                                                <label><input type="checkbox" class="chk-view" ${module.a_viewAccess ? "checked" : ""}> View</label>
+                                                                <label><input type="checkbox" class="chk-edit" ${module.a_editAccess ? "checked" : ""}> Edit</label>
+                                                                <label><input type="checkbox" class="chk-delete" ${module.a_deleteAccess ? "checked" : ""}> Delete</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-footer text-center">
+                                                            <button class="btn btn-outline-primary btn-sm btn-save px-4">Save</button>
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                            $('#cardsContainer').append(card);
+                        });
+                    },
+                    error: function () {
+                        alert("Error fetching role access data.");
+                    }
+                });
+            });
+
+            // Handle Save click (delegated event for dynamic cards)
+            $(document).on('click', '.btn-save', function () {
+                const card = $(this).closest('.card');
+                const moduleId = card.data('id');
+                const roleId = $('#userDropdown').val();
+                const aId = card.find('.hidden-aid').val(); // <-- Get A_Id from hidden input
+
+                // Prepare data for API
+                const payload = {
+                    Id: aId,
+                    ViewAccess: card.find('.chk-view').is(':checked'),
+                    CreateAccess: card.find('.chk-create').is(':checked'),
+                    EditAccess: card.find('.chk-edit').is(':checked'),
+                    DeleteAccess: card.find('.chk-delete').is(':checked'),
+                };
+
+                $.ajax({
+                    url: '/RoleAccess/UpdateRoleAccess',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function (response) {
+                        if (response.success) {
+                            const toast = new bootstrap.Toast(document.getElementById('successToast'));
+                            toast.show();
+                        } else {
+                            alert("Failed to update role access.");
+                        }
+                    },
+                    error: function () {
+                        alert("Error saving role access.");
+                    }
+                });
+            });
+        });
+    </script>
+}

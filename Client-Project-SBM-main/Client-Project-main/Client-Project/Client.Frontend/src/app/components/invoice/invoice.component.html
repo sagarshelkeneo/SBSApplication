@@ -1,0 +1,268 @@
+<h2 class="pt-4 fs-1">Invoice</h2>
+
+<div class="pt-md-5 pt-3 px-md-5 px-3 pb-2">
+    <button class="add-btn btn btn-outline-primary mb-2" *ngIf="createAccess" (click)="addInvoiceGetDto()" data-bs-toggle="modal" data-bs-target="#invoice-modal">
+        <i class="fa-solid fa-plus"></i> Add
+    </button>&nbsp;&nbsp;
+    <button class="add-btn btn btn-outline-primary mb-2 printPdf" (click)="exportToPdf()">
+        <i class="fa-solid fa-file-pdf"></i> Print to PDF
+    </button>
+    <button class="add-btn btn btn-outline-primary mb-2 margin-left" (click)="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> Print to Excel
+    </button>
+    <!-- <button class="add-btn btn btn-outline-primary margin-left mb-2" data-bs-toggle="collapse"
+        data-bs-target="#filter-container">
+        Filters<i class="fa-solid fa-angle-down"></i>
+    </button>  -->
+    <div class="card mb-2">
+        <div class="card-body" id="filter-container">
+            <form class="filters" [formGroup]="filterForm" (ngSubmit)="onSearch()">
+                <div class="mb-3">
+                    <p class="mb-1">From date</p>
+                    <p-datepicker formControlName="FromDate" placeholder="dd-MM-yy" dateFormat="dd-mm-yy" />
+                </div>
+                <div class="mb-3">
+                    <p class="mb-1">To date</p>
+                    <p-datepicker formControlName="ToDate" placeholder="dd-MM-yy" dateFormat="dd-mm-yy" />
+                </div>
+                <div class="mb-3">
+                    <p class="mb-1">Sub-Contractor OR Invoice no.</p>
+                    <input type="text" class="form-control" placeholder="Sub-Contractor/Invoice No."
+                        aria-label="Search by Sub-Contractor Name OR Invoice No." aria-describedby="search-btn"
+                        formControlName="subContractorName" />
+                </div>
+                <div>
+                    <button type="submit" class="add-btn btn btn-outline-primary mb-3">Search</button>
+                    <button type="reset" class="add-btn btn btn-outline-primary mb-3 margin-left"
+                        (click)="resetFilter()">Reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<ng-template #srNoTemplateRef let-row>
+  {{ row.srNo }}
+</ng-template>
+
+
+<app-table [data]="data" [displayedColumns]="displayedColumns" [columnsInfo]="columnsInfo">
+</app-table>
+
+<ng-template #actionTemplateRef let-row>
+    <i class="fa-regular fa-eye icon" data-bs-toggle="modal" data-bs-target="#invoice-modal"
+        (click)="viewAndEditInvoiceGetDto(row,'view')"></i>
+    <i class="fa-regular fa-pen-to-square icon" data-bs-toggle="modal" *ngIf="editAccess"
+        data-bs-target="#invoice-modal" (click)="viewAndEditInvoiceGetDto(row,'edit')"></i>
+    <i class="fa-solid fa-trash icon" *ngIf="deleteAccess" (click)="deleteRowData(row.r_id)"></i>
+</ng-template>
+
+<ng-template #invoiceDateTemplateRef let-row>
+    {{ row.r_invoiceDate | date : 'dd-MMM-yy'}}
+</ng-template>
+
+<div class="modal fade" [formGroup]="invoiceForm" id="invoice-modal" data-bs-backdrop="static" data-bs-keyboard="false"
+    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <form class="modal-content">
+            <div class="modal-header d-flex justify-content-between">
+                <h1 *ngIf="modalMode === 'edit'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">Edit</h1>
+                <h1 *ngIf="modalMode === 'add'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">Add</h1>
+                <h1 *ngIf="modalMode === 'view'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">View</h1>
+                <button type="reset" class="btn close-btn" data-bs-dismiss="modal" aria-label="Close"
+                    (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3" *ngIf="modalMode !== 'edit'">
+                    <label for="invoiceNo." class="mb-1">Invoice No. <span style="color: red;">*</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('invoiceNo')?.hasError('required') &&
+                    (this.invoiceForm.get('invoiceNo')?.dirty ||
+                      this.invoiceForm.get('invoiceNo')?.touched)
+                  " style="color: red">Required</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('invoiceNo')?.hasError('pattern') &&
+                    (this.invoiceForm.get('invoiceNo')?.dirty ||
+                      this.invoiceForm.get('invoiceNo')?.touched)
+                  " style="color: red">Invalid Invoic</span>
+                    </label>
+                    <input type="text" id="invoiceNo" class="form-control" placeholder="Invoice No."
+                        formControlName="invoiceNo">
+                </div>
+                <div class="mb-3">
+                    <label for="invoiceDate" class="mb-1">Invoice Date <span *ngIf="modalMode !== 'view'"
+                            style="color: red;">*</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('invoiceDate')?.hasError('required') &&
+                    (this.invoiceForm.get('invoiceDate')?.dirty ||
+                      this.invoiceForm.get('invoiceDate')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <p-datepicker id="invoiceDate" formControlName="invoiceDate" placeholder="dd-MM-yy"
+                        dateFormat="dd-mm-yy" />
+                </div>
+                <div class="mb-3" *ngIf="modalMode !== 'edit'">
+                    <label for="subcontractorId" class="mb-1">Sub-Contractor <span *ngIf="modalMode !== 'view'"
+                            style="color: red;">*</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('subcontractorId')?.hasError('required') &&
+                    (this.invoiceForm.get('subcontractorId')?.dirty ||
+                      this.invoiceForm.get('subcontractorId')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <select id="subcontractorId" class="form-control" formControlName="subcontractorId">
+                        <option value="">--Select--</option>
+                        <option *ngFor="let subContractor of subContractors" value="{{subContractor.id}}">
+                            {{subContractor.name}}</option>
+                    </select>
+                </div>
+                
+<div class="mb-3">
+                    <label for="paymentMode" class="mb-1">Invoice Type <span *ngIf="modalMode !== 'view'"
+                            style="color: red;">*</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('paymentMode')?.hasError('required') &&
+                    (this.invoiceForm.get('paymentMode')?.dirty ||
+                      this.invoiceForm.get('paymentMode')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <div class="form-check">
+                        <input class="form-check-input" formControlName="paymentMode" type="radio" value="CASH"
+                            name="paymentMode" id="Cash">
+                        <label class="form-check-label" for="Cash">
+                            Cash
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" formControlName="paymentMode" type="radio" value="BALANCE"
+                            name="paymentMode" id="Balance">
+                        <label class="form-check-label" for="Balance">
+                            Balance
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="productId" class="mb-1">Product <span *ngIf="modalMode !== 'view'"
+                            style="color: red;">*</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('productId')?.hasError('required') &&
+                    (this.invoiceForm.get('productId')?.dirty ||
+                      this.invoiceForm.get('productId')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <select #productId id="productId" class="form-control" formControlName="productId"
+                        (change)="setUnitAmount(productId.value)">
+                        <option value="">--Select--</option>
+                        <option *ngFor="let product of products" value="{{product.r_id+'_'+product.r_unitPrice}}">
+                            {{product.r_description}}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="unitAmount" class="mb-1">Unit Price <span *ngIf="modalMode !== 'view'"
+                            style="color: red;">*</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('unitAmount')?.hasError('required') &&
+                    (this.invoiceForm.get('unitAmount')?.dirty ||
+                      this.invoiceForm.get('unitAmount')?.touched)
+                  " style="color: red">Required</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('unitAmount')?.hasError('pattern') &&
+                    (this.invoiceForm.get('unitAmount')?.dirty ||
+                      this.invoiceForm.get('unitAmount')?.touched)
+                  " style="color: red">Invalid Price</span>
+                    </label>
+                    <input type="text" id="unitAmount" class="form-control" placeholder="Unit Price"
+                        formControlName="unitAmount" (input)="calculateTotalAmount()" />
+                </div>
+                <div class="mb-3">
+                    <label for="quantity" class="mb-1">Quantity <span *ngIf="modalMode !== 'view'"
+                            style="color: red;">*</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('quantity')?.hasError('required') &&
+                    (this.invoiceForm.get('quantity')?.dirty ||
+                      this.invoiceForm.get('quantity')?.touched)
+                  " style="color: red">Required</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('quantity')?.hasError('pattern') &&
+                    (this.invoiceForm.get('quantity')?.dirty ||
+                      this.invoiceForm.get('quantity')?.touched)
+                  " style="color: red">Invalid Quantity</span>
+                    </label>
+                    <input type="text" id="quantity" class="form-control" formControlName="quantity"
+                        (input)="calculateTotalAmount()">
+                </div>
+                <div class="mb-3">
+                    <label for="totalAmount" class="mb-1">Total Amount <span *ngIf="modalMode !== 'view'"
+                            style="color: red;">*</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('totalAmount')?.hasError('required') &&
+                    (this.invoiceForm.get('totalAmount')?.dirty ||
+                      this.invoiceForm.get('totalAmount')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <input type="text" id="totalAmount" class="form-control" formControlName="totalAmount"
+                        (input)="calculateCommissionAmount()">
+                </div>
+                <div class="mb-3">
+                    <label for="commissionPercentage" class="mb-1">Commission Percentage <span
+                            style="color: red;">*</span>
+                        <!-- <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('commissionPercentage')?.hasError('required') &&
+                    (this.invoiceForm.get('commissionPercentage')?.dirty ||
+                      this.invoiceForm.get('commissionPercentage')?.touched)
+                  " style="color: red">Required</span> -->
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('commissionPercentage')?.hasError('pattern') &&
+                    (this.invoiceForm.get('commissionPercentage')?.dirty ||
+                      this.invoiceForm.get('commissionPercentage')?.touched)
+                  " style="color: red">Invalid Percentage</span>
+                    </label>
+                    <input type="text" id="commissionPercentage" class="form-control"
+                        placeholder="Commission Percentage" formControlName="commissionPercentage"
+                        (input)="calculateCommissionAmount()" />
+                </div>
+                <div class="mb-3">
+                    <label for="commissionAmount" class="mb-1">Commission Amount <span style="color: red;">*</span>
+                        <!-- <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('commissionAmount')?.hasError('required') &&
+                    (this.invoiceForm.get('commissionAmount')?.dirty ||
+                      this.invoiceForm.get('commissionAmount')?.touched)
+                  " style="color: red">Required</span> -->
+                  <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('commissionAmount')?.hasError('pattern') &&
+                    (this.invoiceForm.get('commissionAmount')?.dirty ||
+                      this.invoiceForm.get('commissionAmount')?.touched)
+                  " style="color: red">Invalid Amount</span>
+                    </label>
+                    <input type="text" id="commissionAmount" class="form-control" formControlName="commissionAmount">
+                </div>
+                
+                <!-- <div class="mb-3">
+                    <label for="status" class="mb-1">Status <span *ngIf="modalMode !== 'view'"
+                            style="color: red;">*</span>
+                        <span *ngIf="modalMode !== 'view' &&
+                    this.invoiceForm.get('status')?.hasError('required') &&
+                    (this.invoiceForm.get('status')?.dirty ||
+                      this.invoiceForm.get('status')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <select id="status" class="form-control" formControlName="status">
+                        <option value="">--Select--</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Pending">Pending</option>
+                    </select>
+                </div> -->
+            </div>
+            <div class="modal-footer">
+                <button class="add-btn btn btn-outline-primary" type="button" *ngIf="modalMode !== 'view'"
+                    (click)="saveInvoiceGetDto()">Save</button>
+                <button class="btn btn-outline-danger" data-bs-dismiss="modal" aria-label="Close" type="reset"
+                    (click)="closeModal()">
+                    {{(modalMode !== 'view')?'Cancle':'Close'}}</button>
+            </div>
+        </form>
+    </div>
+</div>

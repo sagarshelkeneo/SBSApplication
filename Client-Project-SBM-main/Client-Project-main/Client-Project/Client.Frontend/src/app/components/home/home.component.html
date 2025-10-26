@@ -1,0 +1,17 @@
+<div id="home">
+    <div *ngIf="checkReportAccess()" class="card m-3" style="width: 18rem;">
+        <div class="card-body" routerLink="/paidReport">Paid Report<i class="fa-solid fa-file-zipper icon"></i></div>
+    </div>
+    <div *ngIf="checkReportAccess()" class="card m-3" style="width: 18rem;">
+        <div class="card-body" routerLink="/unpaidReport">Unpaid Report<i class="fa-solid fa-file-zipper icon"></i></div>
+    </div>
+    <div *ngIf="checkReportAccess()" class="card m-3" style="width: 18rem;">
+        <div class="card-body" routerLink="/productWiseReport">Product Wise Report<i class="fa-solid fa-file-zipper icon"></i></div>
+    </div>
+    <div *ngIf="checkReportAccess()" class="card m-3" style="width: 18rem;">
+        <div class="card-body" routerLink="/subContractorWiseReport">Sub-Contractor Wise Report<i class="fa-solid fa-file-zipper icon"></i></div>
+    </div>
+    <div *ngIf="checkReportAccess()" class="card m-3" style="width: 18rem;">
+        <div class="card-body" routerLink="/combinedSubcontractorEntityReport">Combined Sub-Contractor Entity Report<i class="fa-solid fa-file-zipper icon"></i></div>
+    </div>
+</div>

@@ -1,0 +1,176 @@
+﻿@model Client_WebApp.Models.Master.SubContractorViewModel
+
+@{
+    ViewData["Title"] = "Subcontractor";
+}
+
+<h2 class="pt-4 fs-1">Subcontractors</h2>
+
+<div class="">
+
+    <!-- Add / Export Buttons -->
+    <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#subcontractor-modal" onclick="setModalMode('add')">
+        <i class="fa-solid fa-plus"></i> Add
+    </button>
+
+    <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+    </button>
+    <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> Export Excel
+    </button>
+
+    <!-- Filters -->
+    <div class="card mb-2">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label>Subcontractor Name</label>
+                    <input type="text" name="searchText" class="form-control" placeholder="Search..." value="@ViewData["searchText"]" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+                    <a href="@Url.Action("Index", new { companyId = Model.CompanyId })" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="subcontractor-modal" tabindex="-1" aria-labelledby="subcontractorModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-md modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="subcontractorModalLabel">Add Subcontractor</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form id="subcontractorForm" asp-action="CreateOrEdit" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" id="Id" name="Id" value="@Model.SubContractor.Id" />
+                        <input type="hidden" id="CompanyId" name="CompanyId" value="@Model.CompanyId" />
+
+                        <div class="mb-3">
+                            <label for="Name" class="form-label">Subcontractor Name</label>
+                            <input type="text" class="form-control" id="Name" name="Name" value="@Model.SubContractor.Name" required />
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" id="saveButton" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Subcontractor Table -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            Subcontractor Table
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover dataTable" id="subcontractorTable">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Sr. No.</th>
+                            <th>Subcontractor Name</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.SubContractors != null && Model.SubContractors.Any())
+                        {
+                            foreach (var sub in Model.SubContractors)
+                            {
+                                <tr>
+                                    <td></td>
+                                    <td>@sub.Name</td>
+                                    <td class="text-center">
+                                        <div class="action-icons">
+                                            <i class="fa-regular fa-eye cursor-pointer text-success" data-bs-toggle="modal" data-bs-target="#subcontractor-modal" onclick="viewSubcontractor(@sub.Id)"></i>
+                                            <i class="fa-regular fa-pen-to-square cursor-pointer" data-bs-toggle="modal" data-bs-target="#subcontractor-modal" onclick="editSubcontractor(@sub.Id)"></i>
+                                            <i class="fa-solid fa-trash cursor-pointer text-danger" onclick="showDeleteModal(@sub.Id, '@Url.Action("Delete", "SubContractor")')"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="3" class="text-center fs-5">No Records</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            initializeGenericDataTable({
+                tableSelector: '#subcontractorTable',
+                customInfoId: 'subcontractorTable_info_custom',
+                columnDefs: [
+                    { orderable: false, targets: 0 },
+                    { orderable: false, targets: -1 }
+                ],
+                columnsSearchable: [false, true, false],
+                order: [[1, 'asc']],
+                actionCallbacks: {
+                    '.fa-eye': viewSubcontractor,
+                    '.fa-pen-to-square': editSubcontractor,
+                    '.fa-trash': function (id) { showDeleteModal(id, '@Url.Action("Delete", "SubContractor")'); }
+                }
+            });
+        });
+
+        function setModalMode(mode) {
+            const modalLabel = document.getElementById("subcontractorModalLabel");
+            modalLabel.innerText = mode === 'add' ? 'Add Subcontractor' : (mode === 'edit' ? 'Edit Subcontractor' : 'View Subcontractor');
+
+            if (mode === 'view') {
+                $("#subcontractorForm input, #subcontractorForm select").prop("readonly", true).prop("disabled", true);
+                $("#saveButton").hide();
+            } else {
+                $("#subcontractorForm input, #subcontractorForm select").prop("readonly", false).prop("disabled", false);
+                $("#saveButton").show();
+            }
+        }
+
+        function getSubcontractor(id) {
+            $.ajax({
+                url: '/SubContractor/GetSubcontractor',
+                type: 'GET',
+                data: { id: id },
+                success: function (data) {
+                    $('#Id').val(data.id);
+                    $('#Name').val(data.name);
+                    $('#subcontractor-modal').modal('show');
+                },
+                error: function () {
+                    alert("Failed to load subcontractor data.");
+                }
+            });
+        }
+
+        function editSubcontractor(id) {
+            setModalMode('edit');
+            getSubcontractor(id);
+        }
+
+        function viewSubcontractor(id) {
+            setModalMode('view');
+            getSubcontractor(id);
+        }
+    </script>
+}

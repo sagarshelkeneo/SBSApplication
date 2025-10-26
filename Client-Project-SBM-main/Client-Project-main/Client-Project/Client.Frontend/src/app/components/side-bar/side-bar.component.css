@@ -1,0 +1,38 @@
+.userName {
+    background-color: var(--color-5f5fee);
+    border-color: var(--color-f5f5f5);
+    color: var(--color-f5f5f5);
+    border-radius: 5px;
+}
+.offcanvas-width {
+    width: 100%;
+  }
+.offcanvas-header{
+    display: flex;
+    justify-content: space-between;
+}
+@media (min-width: 320px) {
+.offcanvas-width {
+    width: 300px;
+}
+}
+.sideBar-nav-links{
+display: block;
+text-decoration: none;
+border: 2px solid var(--color-5f5fee);
+color: var(--color-5f5fee);
+}
+.sideBar-nav-inner-links {
+    display: block;
+    text-decoration: none;
+    border: 2px solid var(--color-8888f3);
+    color: var(--color-8888f3);
+}
+.sideBar-nav-inner-links:hover{
+    color: var(--color-f5f5f5);
+    background-color: var(--color-8888f3);
+}
+.sideBar-nav-links:hover{
+    color: var(--color-f5f5f5);
+    background-color: var(--color-5f5fee);
+}

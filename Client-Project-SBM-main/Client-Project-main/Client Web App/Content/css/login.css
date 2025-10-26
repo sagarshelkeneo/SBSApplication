@@ -1,0 +1,44 @@
+﻿.card-container {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-form-card {
+    box-shadow: 3px 3px 7px #7e7edd;
+}
+
+.login-title {
+    text-align: center;
+    color: #5f5fee;
+}
+
+.error {
+    color: red;
+    font-size: 12px;
+}
+
+.pswd-error {
+    color: red;
+    font-size: 12px;
+}
+
+.button {
+    width: 100%;
+    color: #5f5fee;
+    border-color: #5f5fee;
+}
+
+.button:hover {
+    background-color: #5f5fee;
+    color: whitesmoke;
+}
+
+.field-container {
+    position: relative;
+}
+
+input:focus {
+    box-shadow: 0 0 2px #5f5fee;
+}

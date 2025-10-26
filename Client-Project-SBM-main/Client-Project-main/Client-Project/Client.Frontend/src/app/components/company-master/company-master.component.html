@@ -1,0 +1,132 @@
+<h2 class="pt-4 fs-1">Company Master</h2>
+
+<div class="btn-container pt-md-5 pt-3 px-md-5 px-3 pb-2">
+    <button *ngIf="createAccess" data-bs-toggle="modal" data-bs-target="#companyMaster-modal" class="add-btn btn btn-outline-primary mb-2"
+        (click)="addCompanyMasterGetDto()">Add
+    </button>
+    <button class="add-btn btn btn-outline-primary margin-left mb-2" (click)="
+        exportToPdf()">
+        <i class="fa-solid fa-file-pdf"></i> Print to PDF
+    </button>
+    <button class="add-btn btn btn-outline-primary margin-left mb-2" (click)="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> Print to Excel
+    </button>
+    <div class="input-group mb-2">
+        <input #searchInput (input)="setSearchValue(searchInput.value)" type="text" class="form-control input-search" placeholder="Search: Company Name" aria-label="Search by Company Name" aria-describedby="search-btn">
+        <div class="input-group-append">
+            <span class="input-group-text btn-search" id="search-btn" (click)="onSearch()">Search</span>
+        </div>
+    </div>
+</div>
+<app-table [data]="data" [displayedColumns]="displayedColumns" [columnsInfo]="columnsInfo">
+</app-table>
+
+<ng-template #actionTemplateRef let-row>
+    <i class="fa-regular fa-eye icon" data-bs-toggle="modal" data-bs-target="#companyMaster-modal"
+        (click)="viewCompanyMasterGetDto(row)"></i>
+    <i *ngIf="editAccess" class="fa-regular fa-pen-to-square icon" data-bs-toggle="modal" data-bs-target="#companyMaster-modal"
+        (click)="editCompanyMasterGetDto(row)"></i>
+    <i *ngIf="deleteAccess" class="fa-solid fa-trash icon" (click)="deleteRowData(row.id)"></i>
+</ng-template>
+
+<div class="modal fade" [formGroup]="companyMasterForm" id="companyMaster-modal" data-bs-backdrop="static"
+    data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <form class="modal-content">
+            <div class="modal-header d-flex justify-content-between">
+                <h1 *ngIf="modalMode === 'view'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">View</h1>
+                <h1 *ngIf="modalMode === 'edit'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">Edit</h1>
+                <h1 *ngIf="modalMode === 'add'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">Add</h1>
+                <button type="reset" class="btn close-btn" data-bs-dismiss="modal" aria-label="Close"
+                    (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="name" class="mb-1">Name <span *ngIf="modalMode === 'edit' || modalMode === 'add'"
+                            style="color: red;">*</span>
+                        <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.companyMasterForm.get('name')?.hasError('required') &&
+                    (this.companyMasterForm.get('name')?.dirty ||
+                      this.companyMasterForm.get('name')?.touched)
+                  " style="color: red">Required</span>
+                  <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.companyMasterForm.get('name')?.hasError('maxlength') &&
+                    (this.companyMasterForm.get('name')?.dirty ||
+                      this.companyMasterForm.get('name')?.touched)
+                  " style="color: red">Max 20 Characters</span>
+                    </label>
+                    <input type="text" class="form-control" formControlName="name" placeholder="Name">
+                </div>
+                <div class="mb-3">
+                    <label for="phone" class="mb-1">Phone No. <span *ngIf="modalMode === 'edit' || modalMode === 'add'"
+                            style="color: red;">*</span>
+                        <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.companyMasterForm.get('phone')?.hasError('required') &&
+                    (this.companyMasterForm.get('phone')?.dirty ||
+                      this.companyMasterForm.get('phone')?.touched)
+                  " style="color: red">Required</span>
+                        <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.companyMasterForm.get('phone')?.hasError('pattern') &&
+                    (this.companyMasterForm.get('phone')?.dirty ||
+                      this.companyMasterForm.get('phone')?.touched)
+                  " style="color: red">Invalid number</span>
+                    </label>
+                    <input type="text" class="form-control" formControlName="phone" placeholder="Phone No.">
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="mb-1">Email <span *ngIf="modalMode === 'edit' || modalMode === 'add'"
+                            style="color: red;">*</span>
+                        <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.companyMasterForm.get('email')?.hasError('required') &&
+                    (this.companyMasterForm.get('email')?.dirty ||
+                      this.companyMasterForm.get('email')?.touched)
+                  " style="color: red">Required</span>
+                        <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.companyMasterForm.get('email')?.hasError('email') &&
+                    (this.companyMasterForm.get('email')?.dirty ||
+                      this.companyMasterForm.get('email')?.touched)
+                  " style="color: red">Invalid Email</span>
+                  <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.companyMasterForm.get('email')?.hasError('maxlength') &&
+                    (this.companyMasterForm.get('email')?.dirty ||
+                      this.companyMasterForm.get('email')?.touched)
+                  " style="color: red">Max 70 Characters</span>
+                    </label>
+                    <input type="email" class="form-control" formControlName="email" placeholder="Email">
+                </div>
+                <div class="mb-3">
+                    <label for="address" class="mb-1">Address <span *ngIf="modalMode === 'edit' || modalMode === 'add'"
+                            style="color: red;">*</span>
+                        <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.companyMasterForm.get('address')?.hasError('required') &&
+                    (this.companyMasterForm.get('address')?.dirty ||
+                      this.companyMasterForm.get('address')?.touched)
+                  " style="color: red">Required</span>
+                  <span *ngIf="
+                    modalMode !== 'view' &&
+                    this.companyMasterForm.get('address')?.hasError('maxlength') &&
+                    (this.companyMasterForm.get('address')?.dirty ||
+                      this.companyMasterForm.get('address')?.touched)
+                  " style="color: red">Max 255 Characters</span>
+                    </label>
+                    <textarea formControlName="address" class="form-control" placeholder="Address"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button *ngIf="modalMode !== 'view'" class="add-btn btn btn-outline-primary" type="button"
+                    (click)="saveCompanyMasterGetDto()">Save</button>
+                <button class="btn btn-outline-danger" data-bs-dismiss="modal" aria-label="Close" type="reset"
+                    (click)="closeModal()">
+                    {{(modalMode === 'view'?'Close':'Cancel')}}</button>
+            </div>
+        </form>
+    </div>
+</div>

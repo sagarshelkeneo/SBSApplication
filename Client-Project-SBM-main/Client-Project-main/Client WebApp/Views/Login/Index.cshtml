@@ -1,0 +1,206 @@
+﻿@model Client_WebApp.Models.LoginViewModel
+@{
+    Layout = "_LoginLayout";
+}
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <style>
+        /* ===== Page Background ===== */
+        body {
+            background: linear-gradient(135deg, #03045e, #a2d2ff);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* ===== Card Styling ===== */
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+            animation: fadeInUp 0.8s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* ===== Title ===== */
+        .login-title {
+            font-weight: 700;
+            color: #1d2671;
+        }
+
+        /* ===== Form Inputs ===== */
+        .form-floating input {
+            border-radius: 12px;
+        }
+
+        input.form-control:focus {
+            border-color: #1d2671;
+            box-shadow: 0 0 8px rgba(29, 38, 113, 0.4);
+        }
+
+        /* ===== Eye Icon Animation ===== */
+        .eye-icon i {
+            font-size: 1.3rem;
+            color: #6c757d;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .eye-icon i.open {
+            transform: rotateY(180deg);
+            color: #1d2671;
+        }
+
+        /* ===== Login Button ===== */
+        .btn-login {
+            background: linear-gradient(90deg, #203a43, #2c5364);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn-login:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(29, 38, 113, 0.3);
+        }
+
+        /* ===== reCAPTCHA Adjust ===== */
+        .g-recaptcha {
+            transform: scale(0.95);
+            transform-origin: center;
+        }
+    </style>
+</head>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
+            <div class="card border-0 login-card">
+                <div class="card-header bg-white text-center border-0">
+                    <h3 class="my-3 login-title">Welcome Back</h3>
+                    <p class="text-muted mb-0">Login to access your dashboard</p>
+                </div>
+
+                <form id="loginForm" asp-action="Index" method="post">
+                    <div class="card-body p-4">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Username -->
+                        <div class="form-floating mb-3">
+                            <input asp-for="Username" class="form-control" placeholder="Username" />
+                            <label for="Username">Username</label>
+                            <span asp-validation-for="Username" class="text-danger"></span>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="form-floating mb-3 position-relative">
+                            <input asp-for="Password" type="password" class="form-control pe-5" id="PasswordInput" placeholder="Password" />
+                            <label for="Password">Password</label>
+                            <button type="button"
+                                    class="btn eye-icon position-absolute top-50 end-0 translate-middle-y me-3 p-0 border-0 bg-transparent"
+                                    id="togglePassword">
+                                <i class="bi bi-eye-slash"></i>
+                            </button>
+                            <span asp-validation-for="Password" class="text-danger text-sm-start"></span>
+                        </div>
+
+                        <!-- reCAPTCHA -->
+                        <div class="mb-3">
+                            <input type="hidden" asp-for="RecaptchaToken" id="recaptchaToken" />
+                            <div class="g-recaptcha" data-sitekey="@ViewBag.SiteKey" data-callback="recaptchaCallback"></div>
+                            <span asp-validation-for="RecaptchaToken" class="text-danger ms-2 text-sm-start"></span>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-login btn-lg shadow-sm">Login</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Toaster")
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+    <script>
+        // Disable live validation (only validate on submit)
+        $.validator.setDefaults({
+            onkeyup: false,
+            onclick: false,
+            onfocusout: false
+        });
+
+        // reCAPTCHA validation
+        var recaptchaValidation = $("span[data-valmsg-for='RecaptchaToken']");
+        
+        document.getElementById("loginForm").addEventListener("submit", function (e) {
+            var recaptchaResponse = grecaptcha.getResponse();
+
+            if (recaptchaResponse.length === 0) {
+                e.preventDefault();
+                // alert("Please complete the reCAPTCHA.");
+                recaptchaValidation.text("Please verify you are not a robot.");
+            } else {
+                recaptchaValidation.text("");
+                document.getElementById("recaptchaToken").value = recaptchaResponse;
+            }
+        });
+
+        window.recaptchaCallback = function () {
+            recaptchaValidation.text("");
+            document.getElementById("recaptchaToken").value = grecaptcha.getResponse();
+        };
+
+        // Eye icon toggle
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('PasswordInput');
+        const eyeIcon = togglePassword.querySelector('i');
+
+        togglePassword.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            eyeIcon.classList.toggle('bi-eye');
+            eyeIcon.classList.toggle('bi-eye-slash');
+            eyeIcon.classList.toggle('open');
+        });
+
+        // Hide server-side validation when user starts typing
+        const passwordValidation = $("span[data-valmsg-for='Password']");
+        passwordInput.addEventListener('input', () => {
+            passwordValidation.text(''); // Clear the validation message
+        });
+
+        const usernameInput = document.getElementById('Username');
+        const usernameValidation = $("span[data-valmsg-for='Username']");
+        usernameInput.addEventListener('input', () => {
+            usernameValidation.text('');
+        });
+    </script>
+}

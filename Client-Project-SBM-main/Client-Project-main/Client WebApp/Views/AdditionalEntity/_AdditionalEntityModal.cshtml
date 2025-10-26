@@ -1,0 +1,75 @@
+﻿@model Client_WebApp.Models.AdditionalEntityViewModel
+
+<!-- Modal -->
+<div class="modal fade" id="additionalEntity-modal" tabindex="-1" aria-labelledby="additionalEntityModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-3 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="additionalEntityModalLabel">Add Additional Entity</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form asp-action="CreateOrEdit" method="post" id="additionalEntityForm">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" asp-for="AdditionalEntity.Id" id="Id" />
+                    <input type="hidden" asp-for="AdditionalEntity.CompanyId" id="CompanyId" value="@Model.CompanyId" />
+
+                    <div class="row g-3">
+
+                        <!-- Date -->
+                        <div class="col-md-6">
+                            <label asp-for="AdditionalEntity.Date" class="form-label">Date</label>
+                            <input asp-for="AdditionalEntity.Date" type="date" class="form-control" id="Date" />
+                            <span asp-validation-for="AdditionalEntity.Date" class="text-danger"></span>
+                        </div>
+
+                        <!-- Sub-Contractor -->
+                        <div class="col-md-6">
+                            <label asp-for="AdditionalEntity.SubContractorId" class="form-label">Sub-Contractor</label>
+                            <select asp-for="AdditionalEntity.SubContractorId" class="form-select" id="SubContractorId">
+                                <option value="">-- Select Sub-Contractor --</option>
+                                @foreach (var sc in Model.SubContractors)
+                                {
+                                    <option value="@sc.Id">@sc.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="AdditionalEntity.SubContractorId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Type -->
+                        <div class="col-md-6">
+                            <label asp-for="AdditionalEntity.Type" class="form-label">Type</label>
+                            <input asp-for="AdditionalEntity.Type" class="form-control" id="Type" placeholder="Enter Type" />
+                            <span asp-validation-for="AdditionalEntity.Type" class="text-danger"></span>
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="col-md-6">
+                            <label asp-for="AdditionalEntity.Quantity" class="form-label">Quantity</label>
+                            <input asp-for="AdditionalEntity.Quantity" type="number" min="0" class="form-control" id="Quantity" placeholder="Enter Quantity" />
+                            <span asp-validation-for="AdditionalEntity.Quantity" class="text-danger"></span>
+                        </div>
+
+                        <!-- Amount -->
+                        <div class="col-md-6">
+                            <label asp-for="AdditionalEntity.Amount" class="form-label">Amount</label>
+                            <input asp-for="AdditionalEntity.Amount" type="number" step="0.01" min="0" class="form-control" id="Amount" placeholder="Enter Amount" />
+                            <span asp-validation-for="AdditionalEntity.Amount" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <button type="submit" class="btn btn-success px-4" id="saveButton">Save</button>
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

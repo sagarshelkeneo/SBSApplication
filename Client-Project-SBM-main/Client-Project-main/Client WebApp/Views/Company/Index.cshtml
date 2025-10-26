@@ -1,0 +1,231 @@
+﻿@model Client_WebApp.Models.Config.CompanyViewModel
+@{
+    ViewData["Title"] = "Company";
+}
+
+<h2 class="pt-4 fs-1">Company Master</h2>
+
+<div class="">
+    <!-- Add / Export Buttons -->
+    <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#company-modal" onclick="setModalMode('add')">
+        <i class="fa-solid fa-plus"></i> Add
+    </button>
+
+    <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+    </button>
+    <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> Export Excel
+    </button>
+
+    <!-- Filters -->
+    <div class="card mb-2">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label>Company Name</label>
+                    <input type="text" name="searchText" class="form-control" placeholder="Search..." value="@ViewData["searchText"]" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="company-modal" tabindex="-1" aria-labelledby="companyModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="companyModalLabel">Add Company</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form id="companyForm" asp-action="CreateOrEdit" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" id="CompanyId" name="Id" value="@Model.CompanyDto.Id" />
+
+                        <div class="mb-3">
+                            <label for="Name" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="Name" name="Name" value="@Model.CompanyDto.Name" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="Address" class="form-label">Address</label>
+                            <input type="text" class="form-control" id="Address" name="Address" value="@Model.CompanyDto.Address" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="Phone" class="form-label">Phone</label>
+                            <input type="text" class="form-control" id="Phone" name="Phone" value="@Model.CompanyDto.Phone" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="Email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="Email" name="Email" value="@Model.CompanyDto.Email" required />
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" id="saveButton" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Table -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            Company Table
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover dataTable" id="companyTable">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Sr. No.</th>
+                            <th>Company Name</th>
+                            <th>Address</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.CompanyDtos != null && Model.CompanyDtos.Any())
+                        {
+                            int count = 1;
+                            foreach (var company in Model.CompanyDtos)
+                            {
+                                <tr>
+                                    <td>@count</td>
+                                    <td>@company.Name</td>
+                                    <td>@company.Address</td>
+                                    <td>@company.Phone</td>
+                                    <td>@company.Email</td>
+                                    <td class="text-center">
+                                        <div class="action-icons">
+                                            <i class="fa-regular fa-eye cursor-pointer text-success"
+                                               data-bs-toggle="modal"
+                                               data-bs-target="#company-modal"
+                                               onclick="viewCompany(@company.Id)"></i>
+                                            <i class="fa-regular fa-pen-to-square cursor-pointer"
+                                               data-bs-toggle="modal"
+                                               data-bs-target="#company-modal"
+                                               onclick="editCompany(@company.Id)"></i>
+                                            <i class="fa-solid fa-trash cursor-pointer text-danger"
+                                               onclick="showDeleteModal(@company.Id, '@Url.Action("Delete", "Company")')"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                                count++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center fs-5">No Records</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+    <!-- DataTables CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            initializeGenericDataTable({
+                tableSelector: '#companyTable',
+                customInfoId: 'companyTable_info_custom',
+                columnDefs: [
+                    { orderable: false, targets: 0 },
+                    { orderable: false, targets: -1 }
+                ],
+                columnsSearchable: [false, true, true, true, true, false],
+                order: [[1, 'asc']],
+                destroy: true,
+                actionCallbacks: {
+                    '.fa-eye': viewCompany,
+                    '.fa-pen-to-square': editCompany,
+                    '.fa-trash': function (id) { showDeleteModal(id, '@Url.Action("Delete", "Company")'); }
+                }
+            });
+        });
+
+
+            // $('#companyTable').DataTable({
+            //     columnDefs: [
+            //         { orderable: false, targets: [0, -1] }
+            //     ],
+            //     order: [[1, 'asc']],
+            //     destroy: true // ensures it reinitializes cleanly
+            // });
+
+
+
+        function setModalMode(mode) {
+            const modalLabel = document.getElementById("companyModalLabel");
+            modalLabel.innerText = mode === 'add' ? 'Add Company' : (mode === 'edit' ? 'Edit Company' : 'View Company');
+
+            if (mode === 'view') {
+                $("#companyForm input").prop("readonly", true).prop("disabled", true);
+                $("#saveButton").hide();
+            } else {
+                $("#companyForm input").prop("readonly", false).prop("disabled", false);
+                $("#saveButton").show();
+            }
+        }
+
+        function getCompany(id) {
+            $.ajax({
+                url: '/Company/GetCompany',
+                type: 'GET',
+                data: { id: id },
+                success: function (data) {
+                    $('#CompanyId').val(data.id);
+                    $('#Name').val(data.name);
+                    $('#Address').val(data.address);
+                    $('#Phone').val(data.phone);
+                    $('#Email').val(data.email);
+                    $('#company-modal').modal('show');
+                },
+                error: function () {
+                    alert("Failed to load company data.");
+                }
+            });
+        }
+
+        function editCompany(id) {
+            setModalMode('edit');
+            getCompany(id);
+        }
+
+        function viewCompany(id) {
+            setModalMode('view');
+            getCompany(id);
+        }
+    </script>
+}

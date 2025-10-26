@@ -1,0 +1,434 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>@ViewData["Title"] - SB Admin Layout</title>
+
+    <!-- Bootstrap & Custom Styles -->
+    <link href="~/css/styles.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" crossorigin="anonymous" />
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+</head>
+
+<body class="sb-nav-fixed">
+    <!-- Top Navbar -->
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+        <a class="navbar-brand ps-3" href="@Url.Action("Index", "Home")">Start Bootstrap</a>
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <ul class="navbar-nav ms-auto me-3 me-lg-4">
+            <li class="nav-item">
+                <form asp-controller="Login" asp-action="Logout" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </form>
+            </li>
+        </ul>
+
+
+        <!-- Search -->
+@*          <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
+             <div class="input-group">
+                 <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." />
+                 <button class="btn btn-primary" type="button"><i class="fas fa-search"></i></button>
+             </div>
+         </form>
+ *@
+        <!-- Profile Dropdown -->
+@*         <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button"
+                   data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><a class="dropdown-item" href="#">Activity Log</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li><a class="dropdown-item" href="#">Logout</a></li>
+                </ul>
+            </li>
+        </ul> *@
+    </nav>
+
+    <!-- Layout Wrapper -->
+    <div id="layoutSidenav">
+        <!-- Side Navigation -->
+        <div id="layoutSidenav_nav">
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+                        <div class="sb-sidenav-menu-heading">Core</div>
+                        <a class="nav-link" href="@Url.Action("Index", "Home")">
+                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            Home
+                        </a>
+
+                        <div class="sb-sidenav-menu-heading">Interface</div>
+                        <a class="nav-link collapsed" href="#super" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
+                           aria-expanded="false" aria-controls="collapseLayouts">
+                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                            SuperAdmin
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="javascript:void(0)" onclick="openChangePasswordModal()">Change Password</a>
+                                <a class="nav-link" href="javascript:void(0)" onclick="openSendEmailModal()">Send Email</a>
+
+                                @* <a class="nav-link" href="#super">Change Password</a> *@
+                                @* <a class="nav-link" href="#super">Send Email</a> *@
+                            </nav>
+                        </div>
+
+                        <a class="nav-link collapsed" href="#config" data-bs-toggle="collapse" data-bs-target="#configLayouts"
+                           aria-expanded="false" aria-controls="configLayouts">
+                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                            Config
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="configLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="@Url.Action("Index", "Company")">Company</a>
+                                <a class="nav-link" href="@Url.Action("Index", "Role")">Role</a>
+                                <a class="nav-link" href="@Url.Action("Index", "RoleAccess")">Role Access</a>
+                            </nav>
+                        </div>
+
+                        <a class="nav-link collapsed" href="#master" data-bs-toggle="collapse" data-bs-target="#masterLayouts"
+                           aria-expanded="false" aria-controls="masterLayouts">
+                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                            Master
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="masterLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="@Url.Action("Index", "Bank")">Bank</a>
+                                <a class="nav-link" href="@Url.Action("Index", "User")">User</a>
+                                <a class="nav-link" href="@Url.Action("Index", "Product")">Product</a>
+                                <a class="nav-link" href="@Url.Action("Index", "SubContractor")">Sub Contractor</a>
+                            </nav>
+                        </div>
+
+                        <a class="nav-link collapsed" href="#reports" data-bs-toggle="collapse" data-bs-target="#reportLayouts"
+                           aria-expanded="false" aria-controls="reportLayouts">
+                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                            Reports
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="reportLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="@Url.Action("Paid", "Report")">Paid</a>
+                                <a class="nav-link" href="@Url.Action("Unpaid", "Report")">Un-Paid</a>
+                                <a class="nav-link" href="@Url.Action("ProductWise", "Report")">Product Wise</a>
+                                <a class="nav-link" href="@Url.Action("SubContractorWise", "Report")">Sub-Contractor Wise</a>
+                                <a class="nav-link" href="@Url.Action("CombinedSubContractorEntity", "Report")">Combined Sub-Contractor Entity Report</a>
+                            </nav>
+                        </div>
+
+                        <div class="sb-sidenav-menu-heading">Addons</div>
+                        <a class="nav-link" href="@Url.Action("Index", "Invoice")">
+                            <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                            Invoice
+                        </a>
+                        <a class="nav-link" href="@Url.Action("Index", "Payment")">
+                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                            Payment
+                        </a>
+
+                        <a class="nav-link" href="@Url.Action("Index", "AdditionalEntity")">
+                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                            Additional Entity
+                        </a>
+                    </div>
+                </div>
+                <div class="sb-sidenav-footer">
+                    <div class="small">Logged in as:</div>
+                    <div class="small fw-bold text-uppercase text-light">@ViewBag.Username</div>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div id="layoutSidenav_content">
+            <main class="p-4">
+                @RenderBody()
+            </main>
+
+            <footer class="py-4 bg-light mt-auto">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted">Copyright &copy; Your Website 2025</div>
+                        <div>
+                            <a href="#">Privacy Policy</a>
+                            &middot;
+                            <a href="#">Terms &amp; Conditions</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordContainer"></div>
+
+    <!-- Send Email Modal Container -->
+    <div id="sendEmailContainer"></div>
+
+    <!-- Generic Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-danger">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete?
+                </div>
+                <div class="modal-footer">
+                    <form id="deleteForm" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="deleteId" name="id" />
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toaster Message -->
+    @if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null)
+    {
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+            <div id="toastMessage"
+                 class="toast align-items-center text-white border-0"
+                 role="alert"
+                 aria-live="assertive"
+                 aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        @(TempData["SuccessMessage"] ?? TempData["ErrorMessage"])
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                            data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var toastEl = document.getElementById('toastMessage');
+                var isSuccess = '@TempData["SuccessMessage"]' !== '';
+                toastEl.classList.add(isSuccess ? 'bg-success' : 'bg-danger');
+                var toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                toast.show();
+            });
+        </script>
+    }
+
+    <!-- Load jQuery -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+    <!-- DataTables CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+
+    <!-- Load Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="~/js/scripts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+    <script src="~/assets/demo/chart-area-demo.js"></script>
+    <script src="~/assets/demo/chart-bar-demo.js"></script>
+    @RenderSection("Scripts", required: false)
+     @* <script src="~/js/datatables-simple-demo.js"></script> *@
+
+ <script>
+   const pageTitle = "@(ViewData["Title"] ?? "")";
+
+   function initializeGenericDataTable(config) {
+    const tableSelector = config.tableSelector;       // e.g., '#invoiceTable'
+    const customInfoId = config.customInfoId || 'table_info_custom';
+    const pageLength = config.pageLength || 5;
+    const lengthMenu = config.lengthMenu || [5, 10, 25, 50];
+    const order = config.order || [[1, 'asc']];
+    const columnDefs = config.columnDefs || [];
+    const columnsSearchable = config.columnsSearchable || [];
+    const info = config.info || false;
+
+    const table = $(tableSelector).DataTable({
+        pageLength: pageLength,
+        lengthMenu: lengthMenu,
+        columnDefs: columnDefs,
+        order: order,
+        pagingType: 'full',
+        searching: true,
+        info: info,
+        search: {
+            smart: true,
+            regex: false,
+            caseInsensitive: true
+        },
+        columns: columnsSearchable.map(searchable => ({ searchable: searchable })),
+        language: {
+            paginate: {
+                first: '<i class="fa-solid fa-angle-left"></i><i class="fa-solid fa-angle-left"></i>',
+                previous: '<i class="fa-solid fa-chevron-left"></i>',
+                next: '<i class="fa-solid fa-chevron-right"></i>',
+                last: '<i class="fa-solid fa-angle-right"></i><i class="fa-solid fa-angle-right"></i>'
+            }
+        },
+        drawCallback: function () {
+            const api = this.api();
+            const pageInfo = api.page.info();
+
+            // Update Sr. No.
+            api.rows({ page: 'current' }).nodes().each(function (row, i) {
+                $('td:eq(0)', row).html(pageInfo.start + i + 1);
+            });
+
+            // Remove previous custom info
+            $('#' + customInfoId).remove();
+
+            const start = pageInfo.recordsTotal === 0 ? 0 : pageInfo.start + 1;
+            const end = pageInfo.end;
+
+            // Insert custom info above pagination
+            $(tableSelector + '_paginate').before(
+                `<div id="${customInfoId}" class="dataTables_info mb-2">
+                    ${start}-${end} of ${pageInfo.recordsTotal}
+                 </div>`
+            );
+            }
+            });
+            return table;
+        }
+
+
+        function showDeleteModal(entityId, actionUrl) {
+            // Set the hidden id
+            $('#deleteId').val(entityId);
+
+            // Set the form action dynamically
+            $('#deleteForm').attr('action', actionUrl);
+
+            // Show the modal
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            deleteModal.show();
+        }
+
+        function exportToPdf() {
+            // Import jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Get the table
+            const table = document.querySelector(".dataTable");
+
+            // Get only visible rows after filtering / pagination
+            const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
+                .filter(row => row.style.display !== "none");
+
+            // Prepare data for autoTable
+            const data = visibleRows.map(row => {
+                const cells = Array.from(row.querySelectorAll("td"));
+                return cells.slice(0, -1).map(td => td.innerText);
+            });
+
+            // Column headers
+            const headerCells = Array.from(table.querySelectorAll("thead th"));
+            const headers = [headerCells.slice(0, -1).map(th => th.innerText.trim())];
+            // const headers = [["Sr. No.", "Invoice Date", "Invoice No.", "Sub-contractor Name", "Product Name", "Commission Amount", "Total Amount"]];
+
+            // Generate table in PDF
+            doc.autoTable({
+                head: headers,
+                body: data,
+                startY: 20,
+                styles: { fontSize: 10 },
+                headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+            });
+
+            // Title
+            doc.setFontSize(14);
+            const dynamicTitle = `${pageTitle} Report`;
+            doc.text(dynamicTitle, 14, 15);
+
+            // Open PDF in new tab
+            const pdfUrl = doc.output('bloburl');
+            window.open(pdfUrl, '_blank');
+
+            // Save PDF
+            // doc.save("Invoice_Report.pdf");
+        }
+
+        function exportToExcel() {
+            const table = document.querySelector(".dataTable");
+
+            // Get only visible rows after filtering/pagination
+            const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
+                .filter(row => row.style.display !== "none");
+
+            // Prepare data for Excel
+            const data = [];
+            // Headers
+            const headers = Array.from(table.querySelectorAll("thead th")).slice(0, -1).map(th => th.innerText);
+            data.push(headers);
+
+            // Rows
+            visibleRows.forEach(row => {
+                const cells = Array.from(row.querySelectorAll("td")).slice(0, -1).map(td => td.innerText);
+                data.push(cells);
+            });
+
+            // Create workbook and worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, pageTitle);
+
+            const fileName = pageTitle.replace(/\s+/g, "_") + "_Report.xlsx";
+
+            // Generate Excel file and trigger download
+            XLSX.writeFile(wb, fileName);
+        }
+
+        function openChangePasswordModal() {
+            $.get('/User/ChangeUserPassword', function (data) {
+                $('#changePasswordContainer').html(data);
+                $('#change-password-modal').modal('show');
+            }).fail(function () {
+                alert("Failed to load Change Password form.");
+            });
+        }
+
+        function openSendEmailModal() {
+            $.get('/User/SendEmail', function (data) {
+                $('#sendEmailContainer').html(data);
+                $('#send-email-modal').modal('show');
+            }).fail(function () {
+                alert("Failed to load Send Email form.");
+            });
+        }
+
+    </script>
+</body>
+</html>

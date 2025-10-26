@@ -1,0 +1,99 @@
+﻿@using Client.Application.Features.PaymentReports.Dtos
+@model List<SubcontractorWiseReportDto>
+
+@{
+    ViewData["Title"] = "Sub-Contractor Wise";
+}
+
+<h2 class="pt-4 fs-1">Sub-Contractor Wise Reports</h2>
+
+<div class="pt-3 px-3 pb-2">
+
+    <!-- Export Buttons -->
+    <div class="mb-3">
+        <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">Print to PDF</button>
+        <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">Print to Excel</button>
+        <button class="btn btn-outline-primary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#filter-container">
+            Filters <i class="fa-solid fa-angle-down"></i>
+        </button>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-3">
+        <div class="card-body collapse" id="filter-container">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label>From Date</label>
+                    <input type="date" name="fromDate" class="form-control" value="@(ViewContext.HttpContext.Request.Query["fromDate"])" />
+                </div>
+                <div class="col-md-3">
+                    <label>To Date</label>
+                    <input type="date" name="toDate" class="form-control" value="@(ViewContext.HttpContext.Request.Query["toDate"])" />
+                </div>
+                <div class="col-md-3">
+                    <label>Sub-Contractor Name</label>
+                    <input type="text" name="subcontractorName" class="form-control" value="@(ViewContext.HttpContext.Request.Query["subcontractorName"])" />
+                </div>
+                <div class="col-md-3 align-self-end">
+                    <button type="submit" class="btn btn-outline-primary mb-2">Search</button>
+                    <a href="@Url.Action("SubContractorWise")" class="btn btn-outline-secondary mb-2">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Report Table -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i> Sub-Contractor Wise
+        </div>
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped table-hover align-middle dataTable" id="reportTable">
+                <thead class="text-center">
+                    <tr>
+                        <th>Sr. No.</th>
+                        <th>Sub-Contractor</th>
+                        <th>Month-Year</th>
+                        <th>Cash Amount</th>
+                        <th>Balance Amount</th>
+                        <th>Paid Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                        <tr>
+                            <td class="text-center"></td>
+                            <td>@item.SubContractorName</td>
+                            <td>@item.MonthAndYear</td>
+                            <td class="text-end">@item.CashAmount.ToString("N2")</td>
+                            <td class="text-end">@item.BalanceAmount.ToString("N2")</td>
+                            <td class="text-end text-success fw-semibold">@item.PaidAmount.ToString("N2")</td>
+                        </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            initializeGenericDataTable({
+                tableSelector: '#reportTable',
+                customInfoId: 'reportTable_info_custom',
+                columnDefs: [{ orderable: false, targets: 0 }],
+                columnsSearchable: [false, true, true, true, true, true],
+                order: [[1, 'asc']],
+                destroy: true,
+                language: {
+                    emptyTable: "No Records Found"
+                }
+            });
+        });
+    </script>
+}

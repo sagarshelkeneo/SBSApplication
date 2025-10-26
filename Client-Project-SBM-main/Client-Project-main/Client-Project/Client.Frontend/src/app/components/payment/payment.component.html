@@ -1,0 +1,210 @@
+<h2 class="pt-4 fs-1">Payment</h2>
+
+<div class="pt-md-5 pt-3 px-md-5 px-3 pb-2">
+  <button class="add-btn btn btn-outline-primary mb-2" *ngIf="createAccess" (click)="addPaymentGetDto()" data-bs-toggle="modal" data-bs-target="#payment-modal">
+        <i class="fa-solid fa-plus"></i> Add
+    </button>&nbsp;&nbsp;
+  <button class="add-btn btn btn-outline-primary mb-2 printPdf" (click)="exportToPdf()">
+    <i class="fa-solid fa-file-pdf"></i> Print to PDF
+  </button>
+   <button class="add-btn btn btn-outline-primary mb-2 margin-left"
+    (click)="exportToExcel()">
+    <i class="fa-solid fa-file-excel"></i> Print to Excel
+  </button>
+  <!-- <button class="add-btn btn btn-outline-primary margin-left mb-2" data-bs-toggle="collapse" data-bs-target="#filter-container">
+    Filters<i class="fa-solid fa-angle-down"></i>
+  </button> -->
+  <div class="card mb-2">
+    <div class="card-body" id="filter-container">
+      <form class="filters" [formGroup]="filterForm" (ngSubmit)="onSearch()">
+        <div class="row mb-3">
+          <div class="col-auto">
+            <label class="me-3">
+              <input type="radio" formControlName="durationType" value="day"> Day
+            </label>
+            <label>
+              <input type="radio" formControlName="durationType" value="date"> Duration
+            </label>
+          </div>
+        </div>
+          <div class="mb-3" *ngIf="filterForm.get('durationType')?.value=='day'">
+            <p class="mb-1">Date</p>
+            <p-date-picker formControlName="DayDate"  placeholder="dd-MM-yy" dateFormat="dd-mm-yy"></p-date-picker>
+          </div>
+  
+          <div class="d-flex gap-3" *ngIf="filterForm.get('durationType')?.value=='date'">
+            <div class="mb-3">
+              <p class="mb-1">From Date</p>
+              <p-date-picker formControlName="FromDate" placeholder="dd-MM-yy" dateFormat="dd-mm-yy"></p-date-picker>
+            </div>
+            <div class="mb-3">
+              <p class="mb-1">To Date</p>
+              <p-date-picker formControlName="ToDate" placeholder="dd-MM-yy" dateFormat="dd-mm-yy"></p-date-picker>
+            </div>
+          </div>
+          <div class="mb-3">
+            <p class="mb-1">Bank name</p>
+            <input type="text" class="form-control" placeholder="Bank name" aria-label="Search by Bank name" aria-describedby="search-btn" formControlName="bankName"/>
+          </div>
+          <div>
+            <button type="submit" class="add-btn btn btn-outline-primary mb-3">Search</button>
+            <button type="reset" class="add-btn btn btn-outline-primary mb-3 margin-left" (click)="resetFilter()">Reset</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<app-table [data]="data" [displayedColumns]="displayedColumns" [columnsInfo]="columnsInfo">
+</app-table>
+
+<ng-template #dateTemplateRef let-row>
+  {{row.r_paymentDate ? (row.r_paymentDate | date : 'dd-MMM-yy') : `${(row.r_fromDate | date : 'dd-MMM-yy')} - ${(row.r_toDate | date : 'dd-MMM-yy')}`}}
+</ng-template>
+
+<ng-template #bankTemplateRef let-row>
+    {{row.r_bankName || '-'}}
+</ng-template>
+
+<ng-template #actionTemplateRef let-row>
+    <i class="fa-regular fa-eye icon" data-bs-toggle="modal" data-bs-target="#payment-modal"
+        (click)="viewPaymentGetDto(row)"></i>
+    <i *ngIf="editAccess" class="fa-regular fa-pen-to-square icon" data-bs-toggle="modal" data-bs-target="#payment-modal"
+        (click)="editPaymentGetDto(row)"></i>
+    <i *ngIf="deleteAccess" class="fa-solid fa-trash icon" (click)="deleteRowData(row.r_id)"></i>
+</ng-template>
+
+<div class="modal fade" [formGroup]="paymentForm" id="payment-modal" data-bs-backdrop="static" data-bs-keyboard="false"
+    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <form class="modal-content">
+            <div class="modal-header d-flex justify-content-between">
+                <h1 *ngIf="modalMode === 'edit'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">Edit</h1>
+                <h1 *ngIf="modalMode === 'add'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">Add</h1>
+                <h1 *ngIf="modalMode === 'view'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">View</h1>
+                <button type="reset" class="btn close-btn" data-bs-dismiss="modal" aria-label="Close"
+                    (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3" *ngIf="modalMode !== 'edit'">
+                  <label for="invoiceNo" class="mb-1">Invoice No. </label>
+                  <p-autocomplete #autoComplete placeholder="Search: Invoice No." formControlName="invoiceNo" [suggestions]="invoiceIds"
+                    (completeMethod)="search($event)" (onSelect)="calculateAmountByInvoiceNo(autoComplete.value)" />
+                </div>
+                <div class="row mb-3">
+                  <div class="col-auto">
+                    <label class="me-3">
+                      <input type="radio" formControlName="durationType" value="day" (change)="setDateValidators(this.paymentForm.get('durationType')?.value)"> Day
+                    </label>
+                    <label>
+                      <input type="radio" formControlName="durationType" value="date" (change)="setDateValidators(this.paymentForm.get('durationType')?.value)"> Duration
+                    </label>
+                  </div>
+                </div>
+                @if (paymentForm.get('durationType')?.value == 'date') {
+                <div class="mb-3"> <!-- *ngIf="modalMode !== 'edit'" -->
+                  <label for="fromDate" class="mb-1">
+                    From Date <span style="color: red;">*</span>
+                    <span *ngIf="this.paymentForm.get('fromDate')?.hasError('required')
+                                      && (this.paymentForm.get('fromDate')?.dirty
+                                      || this.paymentForm.get('fromDate')?.touched)" style="color: red">
+                      Required
+                    </span>
+                  </label>
+                  <p-datepicker id="fromDate" formControlName="fromDate" placeholder="dd-MM-yy" dateFormat="dd-mm-yy"
+                    (onSelect)="calculateAmount()" />
+                </div>
+                <div class="mb-3">
+                  <label for="toDate" class="mb-1">
+                    To Date <span style="color: red;">*</span>
+                    <span *ngIf="this.paymentForm.get('toDate')?.hasError('required')
+                                      && (this.paymentForm.get('toDate')?.dirty
+                                      || this.paymentForm.get('toDate')?.touched)" style="color: red">
+                      Required
+                    </span>
+                  </label>
+                  <p-datepicker id="toDate" formControlName="toDate" placeholder="dd-MM-yy" dateFormat="dd-mm-yy"
+                    (onSelect)="calculateAmount()" />
+                </div>
+                }
+                @if (paymentForm.get('durationType')?.value=='day') {
+                <div class="mb-3">
+                  <label for="paymentDate" class="mb-1">
+                    Payment Date <span style="color: red;">*</span>
+                    <span *ngIf="this.paymentForm.get('paymentDate')?.hasError('required')
+                                      && (this.paymentForm.get('paymentDate')?.dirty
+                                      || this.paymentForm.get('paymentDate')?.touched)" style="color: red">
+                      Required
+                    </span>
+                  </label>
+                  <p-datepicker id="paymentDate" formControlName="paymentDate" placeholder="dd-MM-yy" dateFormat="dd-mm-yy" />
+                </div>
+                }
+                <div class="mb-3">
+                    <label for="amountPaid" class="mb-1">Amount Paid <span style="color: red;">*</span>
+                        <span *ngIf="
+                    this.paymentForm.get('amountPaid')?.hasError('required') &&
+                    (this.paymentForm.get('amountPaid')?.dirty ||
+                      this.paymentForm.get('amountPaid')?.touched)
+                  " style="color: red">Required</span>
+                        <span *ngIf="
+                    this.paymentForm.get('amountPaid')?.hasError('pattern') &&
+                    (this.paymentForm.get('amountPaid')?.dirty ||
+                      this.paymentForm.get('amountPaid')?.touched)
+                  " style="color: red">Invalid Amount</span>
+                    </label>
+                    <input type="text" id="amountPaid" class="form-control" formControlName="amountPaid"
+                        placeholder="Amount">
+                </div>
+                <!-- <div class="mb-3">
+                    <label for="paymentMode" class="mb-1">Payment Mode <span style="color: red;">*</span>
+                        <span *ngIf="
+                    this.paymentForm.get('paymentMode')?.hasError('required') &&
+                    (this.paymentForm.get('paymentMode')?.dirty ||
+                      this.paymentForm.get('paymentMode')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <select name="paymentMode" id="paymentMode" class="form-control" formControlName="paymentMode">
+                        <option value="">--Select--</option>
+                        <option value="CASH">Cash</option>
+                        <option value="BALANCE">Balance</option>
+                    </select>
+                </div> -->
+                <div class="mb-3"
+                    *ngIf="paymentForm.get('paymentMode')?.value !== 'CASH' && paymentForm.get('paymentMode')?.value !== ''">
+                    <label for="bankId" class="mb-1">Bank Name <span style="color: red;">*</span>
+                        <span *ngIf="
+                    this.paymentForm.get('bankId')?.hasError('required') &&
+                    (this.paymentForm.get('bankId')?.dirty ||
+                      this.paymentForm.get('bankId')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <select name="bankId" id="bankId" class="form-control" formControlName="bankId">
+                        <option value="">--Select--</option>
+                        <option *ngFor="let bank of banks" value="{{bank.r_id}}">{{bank.r_bankName}}</option>
+                    </select>
+                </div>
+                <!-- <div class="mb-3">
+                    <label for="paymentStatus" class="mb-1">Status <span style="color: red;">*</span>
+                        <span *ngIf="
+                    this.paymentForm.get('paymentStatus')?.hasError('required') &&
+                    (this.paymentForm.get('paymentStatus')?.dirty ||
+                      this.paymentForm.get('paymentStatus')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <select name="paymentStatus" id="paymentStatus" class="form-control"
+                        formControlName="paymentStatus">
+                        <option value="">--Select--</option>
+                        <option value="Paid">Paid</option>
+                    </select>
+                </div> -->
+            </div>
+            <div class="modal-footer">
+                <button class="add-btn btn btn-outline-primary" type="button"
+                    (click)="savePaymentGetDto()">Save</button>
+                <button class="btn btn-outline-danger" data-bs-dismiss="modal" aria-label="Close" type="reset"
+                    (click)="closeModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>

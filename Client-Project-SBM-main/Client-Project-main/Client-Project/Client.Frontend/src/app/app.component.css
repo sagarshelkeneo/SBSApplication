@@ -1,0 +1,30 @@
+.navbar {
+    background-color: var(--color-f89fa);
+    box-shadow: 0 1px 5px var(--color-5f5fee);
+}
+
+.logout-btn {
+    color: var(--color-f27474);
+    background-color: var(--color-f5f5f5);
+    border-color: var(--color-f27474);
+}
+
+.logout-btn:hover {
+    background-color: var(--color-f27474);
+    border-color: var(--color-f5f5f5);
+    color: var(--color-f5f5f5);
+    border-radius: 5px;
+}
+
+.sidebar-toggle-btn:hover {
+    background-color: var(--color-5f5fee);
+    border-color:  var(--color-f5f5f5);
+    color:  var(--color-f5f5f5);
+    border-radius: 5px;
+}
+
+.sidebar-toggle-btn {
+    color: var(--color-5f5fee);
+    background-color:  var(--color-f5f5f5);
+    border-color: var(--color-5f5fee);
+}

@@ -1,0 +1,65 @@
+<h2 class="pt-4 fs-1">Role Master</h2>
+
+<div class="btn-container pt-md-5 pt-3 px-md-5 px-3 pb-2">
+    <button *ngIf="createAccess" data-bs-toggle="modal" data-bs-target="#role-modal" class="add-btn btn btn-outline-primary mb-2"
+        (click)="addRoleGetDto()">Add
+    </button>
+    <button class="add-btn btn btn-outline-primary margin-left mb-2" (click)="
+        exportToPdf()">
+        <i class="fa-solid fa-file-pdf"></i> Print to PDF
+    </button>
+    <button class="add-btn btn btn-outline-primary margin-left mb-2" (click)="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> Print to Excel
+    </button>
+</div>
+
+<app-table [data]="data" [displayedColumns]="displayedColumns" [columnsInfo]="columnsInfo">
+</app-table>
+
+<ng-template #actionTemplateRef let-row>
+    <i *ngIf="editAccess" class="fa-regular fa-pen-to-square icon" data-bs-toggle="modal" data-bs-target="#role-modal"
+    (click)="editRoleGetDto(row)"></i>
+    <i *ngIf="deleteAccess" class="fa-solid fa-trash icon" (click)="deleteRowData(row.id)"></i>
+</ng-template>
+
+<div class="modal fade" [formGroup]="roleForm" id="role-modal" data-bs-backdrop="static"
+    data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <form class="modal-content">
+            <div class="modal-header d-flex justify-content-between">
+                <h1 *ngIf="modalMode === 'edit'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">Edit</h1>
+                <h1 *ngIf="modalMode === 'add'" style="color: whitesmoke;" class="modal-title fs-5 fw-bolder">Add</h1>
+                <button type="reset" class="btn close-btn" data-bs-dismiss="modal" aria-label="Close"
+                    (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="roleName" class="mb-1">Role Name <span style="color: red;">*</span>
+                        <span *ngIf="
+                    this.roleForm.get('roleName')?.hasError('required') &&
+                    (this.roleForm.get('roleName')?.dirty ||
+                      this.roleForm.get('roleName')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <input type="text" id="roleName" class="form-control" formControlName="roleName" placeholder="Role Name">
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="mb-1">Description <span style="color: red;">*</span>
+                        <span *ngIf="
+                    this.roleForm.get('description')?.hasError('required') &&
+                    (this.roleForm.get('description')?.dirty ||
+                      this.roleForm.get('description')?.touched)
+                  " style="color: red">Required</span>
+                    </label>
+                    <textarea name="description" id="description" class="form-control" formControlName="description" placeholder="Description"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="add-btn btn btn-outline-primary" type="button"
+                    (click)="saveRoleGetDto()">Save</button>
+                <button class="btn btn-outline-danger" data-bs-dismiss="modal" aria-label="Close" type="reset"
+                    (click)="closeModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>

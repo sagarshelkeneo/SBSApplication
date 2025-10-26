@@ -1,0 +1,51 @@
+<h2 class="pt-4 fs-1">Paid Reports</h2>
+
+<div class="pt-md-5 pt-3 px-md-5 px-3 pb-2">
+  <button class="add-btn btn btn-outline-primary mb-2 printPdf" (click)="exportToPdf()">
+    <i class="fa-solid fa-file-pdf"></i> Print to PDF
+  </button>
+   <button class="add-btn btn btn-outline-primary mb-2 margin-left"
+    (click)="exportToExcel()">
+    <i class="fa-solid fa-file-excel"></i> Print to Excel
+  </button>
+  <button class="add-btn btn btn-outline-primary margin-left mb-2" data-bs-toggle="collapse" data-bs-target="#filter-container">
+    Filters<i class="fa-solid fa-angle-down"></i>
+  </button>
+  <div class="card mb-2">
+    <div class="card-body collapse" id="filter-container">
+      <form class="filters" [formGroup]="filterForm" (ngSubmit)="onFilterSubmit()">
+        <div class="mb-3">
+          <p class="mb-1">From date</p>
+          <p-datepicker id="invoiceDate" formControlName="FromDate" placeholder="dd-MM-yy" dateFormat="dd-mm-yy" />
+        </div>
+        <div class="mb-3">
+          <p class="mb-1">To date</p>
+          <p-datepicker id="invoiceDate" formControlName="ToDate" placeholder="dd-MM-yy" dateFormat="dd-mm-yy" />
+        </div>
+        <div class="mb-3">
+          <p class="mb-1">Sub-Contractor name</p>
+          <input class="form-control" type="text" placeholder="Sub-Contractor Name" formControlName="subContractorName"/>
+        </div>
+        <div class="mb-3">
+          <p class="mb-1">Bank name</p>
+          <input class="form-control" type="text" placeholder="Bank Name" formControlName="bankName"/>
+        </div>
+        <div>
+          <button type="submit" class="add-btn btn btn-outline-primary mb-3">Search</button>
+          <button type="reset" class="add-btn btn btn-outline-primary mb-3 margin-left" (click)="resetFilter()">Reset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<app-table [data]="data" [displayedColumns]="displayedColumns" [columnsInfo]="columnsInfo">
+</app-table>
+
+<ng-template #invoiceDateTemplateRef let-row>
+    {{ row.invoiceDate | date : 'dd-MMM-yy'}}
+</ng-template>
+
+<ng-template #paymentDateTemplateRef let-row>
+    {{ row.paymentDate | date : 'dd-MMM-yy'}}
+</ng-template>

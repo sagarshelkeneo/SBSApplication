@@ -1,0 +1,210 @@
+﻿@model Client_WebApp.Models.Config.RoleViewModel
+@{
+    ViewData["Title"] = "Role";
+}
+
+<h2 class="pt-4 fs-1">Role Master</h2>
+
+<div class="">
+    <!-- Add / Export Buttons -->
+    <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#role-modal" onclick="setModalMode('add')">
+        <i class="fa-solid fa-plus"></i> Add
+    </button>
+
+    <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+    </button>
+    <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> Export Excel
+    </button>
+
+   
+
+    <!-- Modal -->
+    <div class="modal fade" id="role-modal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="roleModalLabel">Add Role</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form id="roleForm" asp-action="CreateOrEdit" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" id="RoleId" name="Id" value="@Model.RoleDto.Id" />
+
+                        <div class="mb-3">
+                            <label for="RoleName" class="form-label">Role Name</label>
+                            <input type="text" class="form-control" id="RoleName" name="RoleName" value="@Model.RoleDto.RoleName" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="Description" class="form-label">Description</label>
+                            <textarea class="form-control" id="Description" name="Description" rows="3">@Model.RoleDto.Description</textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" id="saveButton" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Table -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            Role Table
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover dataTable" id="roleTable">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Sr. No.</th>
+                            <th>Role Name</th>
+                            <th>Description</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.RoleDtos != null && Model.RoleDtos.Any())
+                        {
+                            int count = 1;
+                            foreach (var role in Model.RoleDtos)
+                            {
+                                <tr>
+                                    <td>@count</td>
+                                    <td>@role.RoleName</td>
+                                    <td>@role.Description</td>
+                                    <td class="text-center">
+                                        <div class="action-icons">
+                                            <i class="fa-regular fa-eye cursor-pointer text-success"
+                                               data-bs-toggle="modal"
+                                               data-bs-target="#role-modal"
+                                               onclick="viewRole(@role.Id)"></i>
+                                            <i class="fa-regular fa-pen-to-square cursor-pointer"
+                                               data-bs-toggle="modal"
+                                               data-bs-target="#role-modal"
+                                               onclick="editRole(@role.Id)"></i>
+                                            <i class="fa-solid fa-trash cursor-pointer text-danger"
+                                               onclick="showDeleteModal(@role.Id, '@Url.Action("Delete", "Role")')"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                                count++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center fs-5">No Records</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+    <!-- DataTables CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            initializeGenericDataTable({
+                tableSelector: '#roleTable',
+                customInfoId: 'roleTable_info_custom',
+                columnDefs: [
+                    { orderable: false, targets: 0 },
+                    { orderable: false, targets: -1 }
+                ],
+                columnsSearchable: [false, true, true, false],
+                order: [[1, 'asc']],
+                destroy: true,
+                actionCallbacks: {
+                    '.fa-eye': viewRole,
+                    '.fa-pen-to-square': editRole,
+                    '.fa-trash': function (id) { showDeleteModal(id, '@Url.Action("Delete", "Role")'); }
+                }
+            });
+        });
+
+        function setModalMode(mode) {
+            const modalLabel = document.getElementById("roleModalLabel");
+            modalLabel.innerText = mode === 'add' ? 'Add Role' : (mode === 'edit' ? 'Edit Role' : 'View Role');
+
+            if (mode === 'view') {
+                $("#roleForm input, #roleForm textarea").prop("readonly", true).prop("disabled", true);
+                $("#saveButton").hide();
+            } else {
+                $("#roleForm input, #roleForm textarea").prop("readonly", false).prop("disabled", false);
+                $("#saveButton").show();
+            }
+        }
+
+        function getRole(id) {
+            $.ajax({
+                url: '/Role/GetRole',
+                type: 'GET',
+                data: { id: id },
+                success: function (data) {
+                    $('#RoleId').val(data.id);
+                    $('#RoleName').val(data.roleName);
+                    $('#Description').val(data.description);
+                    $('#role-modal').modal('show');
+                },
+                error: function () {
+                    alert("Failed to load role data.");
+                }
+            });
+        }
+
+        function editRole(id) {
+            setModalMode('edit');
+            getRole(id);
+        }
+
+        function viewRole(id) {
+            setModalMode('view');
+            getRole(id);
+        }
+
+        function exportToExcel() {
+            const table = document.getElementById("roleTable");
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Roles" });
+            XLSX.writeFile(wb, "RoleList.xlsx");
+        }
+
+        function exportToPdf() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Role List", 14, 15);
+            doc.autoTable({
+                html: "#roleTable",
+                startY: 20,
+                theme: "grid",
+                styles: { fontSize: 9 },
+            });
+            doc.save("RoleList.pdf");
+        }
+    </script>
+}

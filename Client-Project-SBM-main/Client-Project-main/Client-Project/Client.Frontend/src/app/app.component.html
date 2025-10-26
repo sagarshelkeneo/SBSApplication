@@ -1,0 +1,17 @@
+@if(checkLogin()){
+<nav #navbar class="navbar">
+  <div class="container-fluid">
+    <a class="navbar-brand btn btn-primary sidebar-toggle-btn"
+      data-bs-toggle="offcanvas" href="#sideBar"
+      role="button" aria-controls="offcanvasExample"
+    >
+      <i class="fa-solid fa-bars-staggered"></i> Menu
+    </a>
+    <a class="btn logout-btn" (click)="logoutUser()">
+        <i class="fa-solid fa-power-off"></i> Logout
+    </a>
+  </div>
+  <app-side-bar></app-side-bar>
+</nav>
+}
+<router-outlet />

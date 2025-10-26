@@ -1,0 +1,283 @@
+﻿@model Client_WebApp.Models.Master.UserViewModel
+@{
+    ViewData["Title"] = "User Master";
+}
+
+<style>
+    #toastStatusMessage {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1055;
+        min-width: 300px;
+    }
+</style>
+
+<h2 class="pt-4 fs-1">User Master</h2>
+
+<div>
+    <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#user-modal" onclick="setModalMode('add')">
+        <i class="fa-solid fa-plus"></i> Add
+    </button>
+    <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+    </button>
+    <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> Export Excel
+    </button>
+
+    <!-- Search -->
+    <div class="card mb-2">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label>User Name</label>
+                    <input type="text" name="searchText" class="form-control" placeholder="Search..." value="@ViewData["searchText"]" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <partial name="_UserModal" model="Model" />
+    <form id="antiForgeryForm">
+        @Html.AntiForgeryToken()
+    </form>
+
+    <div class="toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-3" role="alert" id="toastStatusMessage">
+        <div class="d-flex">
+            <div class="toast-body"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+
+
+    <!-- Table -->
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-table me-1"></i>User Table</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover dataTable" id="userTable">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Sr. No.</th>
+                            <th>User Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Users != null && Model.Users.Any())
+                        {
+                            foreach (var user in Model.Users)
+                            {
+                                <tr>
+                                    <td></td>
+                                    <td>@user.Username</td>
+                                    <td>@user.Email</td>
+                                    <td>@user.RoleName</td>
+                                    <td class="text-center">
+                                        <div class="form-check form-switch d-flex justify-content-center">
+                                            <input class="form-check-input toggle-active"
+                                                   type="checkbox"
+                                                   role="switch"
+                                                   id="activeSwitch_@user.Id"
+                                                   data-id="@user.Id"
+                                                   @(user.isActive == 1 ? "checked" : "")
+                                                   onclick="bindToggleActive()">
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="action-icons">
+                                            <i class="fa-regular fa-eye cursor-pointer text-success" data-bs-toggle="modal" data-bs-target="#user-modal" onclick="viewUser(@user.Id)"></i>
+                                            <i class="fa-regular fa-pen-to-square cursor-pointer" data-bs-toggle="modal" data-bs-target="#user-modal" onclick="editUser(@user.Id)"></i>
+                                            <i class="fa-solid fa-trash cursor-pointer text-danger" onclick="showDeleteModal(@user.Id, '@Url.Action("Delete", "User")')"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="6" class="text-center fs-5">No Records</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            initializeGenericDataTable({
+                tableSelector: '#userTable', // User table ID
+                customInfoId: 'userTable_info_custom', // Custom info element ID (optional)
+                columnDefs: [
+                    { orderable: false, targets: 0 },  // Sr. No. - not sortable
+                    { orderable: false, targets: -1 }  // Actions - not sortable
+                ],
+                columnsSearchable: [false, true, true, true, true, false],
+                // [SrNo, Username, Email, Role, Status, Actions]
+                order: [[1, 'asc']], // Sort by Username
+                destroy: true, // fixed typo
+                actionCallbacks: {
+                    '.fa-eye': viewUser,
+                    '.fa-pen-to-square': editUser,
+                    '.fa-trash': function (id) {
+                        showDeleteModal(id, '@Url.Action("Delete", "User")');
+                    },
+                    '.toggle-active': bindToggleActive
+                }
+            });
+        });
+
+        function setModalMode(mode) {
+            const label = document.getElementById("userModalLabel");
+            label.innerText =
+                mode === 'add'
+                    ? 'Add User'
+                    : mode === 'edit'
+                        ? 'Edit User'
+                        : 'View User';
+
+            if (mode === 'view') {
+                $("#userForm input, #userForm select").prop("readonly", true).prop("disabled", true);
+                $("#saveButton").hide();
+                $("#PasswordField").hide(); // hide password field wrapper
+            }
+            else if (mode === 'edit') {
+                $("#userForm input, #userForm select").prop("readonly", false).prop("disabled", false);
+                $("#PasswordField").hide(); // hide password in edit mode
+                $("#saveButton").show();
+            }
+            else {
+                $("#userForm input, #userForm select").prop("readonly", false).prop("disabled", false);
+                $("#PasswordField").show(); // show password
+                $("#saveButton").show();
+            }
+        }
+
+        function getUser(id) {
+            $.get('/User/GetUser', { id }, function (data) {
+                $('#Id').val(data.id);
+                $('#RoleMasterId').val(data.roleMasterId);
+                $('#Username').val(data.username);
+                $('#Email').val(data.email);
+                $('#IsActive').val(data.isActive);
+                $('#user-modal').modal('show');
+            });
+        }
+
+        function editUser(id) { setModalMode('edit'); getUser(id); }
+        function viewUser(id) { setModalMode('view'); getUser(id); }
+
+        // Handle user status toggle
+        function bindToggleActive() {
+            $('.toggle-active').off('change').on('change', function () {
+                var checkbox = $(this);
+                var userId = checkbox.data('id');
+                var isActive = checkbox.is(':checked') ? 1 : 0;
+
+                var token = $('#antiForgeryForm input[name="__RequestVerificationToken"]').val();
+                var url = '@Url.Action("ToggleUserStatus", "User")';
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        __RequestVerificationToken: token,
+                        id: userId,
+                        isActive: isActive
+                    },
+                    success: function (res) {
+                        var toastEl = $('#toastStatusMessage');
+                        var toastBody = toastEl.find('.toast-body');
+
+                        toastBody.text(res.message);
+                        toastEl.removeClass('bg-success bg-danger')
+                            .addClass(res.success ? 'bg-success' : 'bg-danger');
+
+                        new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
+                    },
+                    error: function () {
+                        checkbox.prop('checked', !checkbox.prop('checked'));
+
+                        var toastEl = $('#toastStatusMessage');
+                        var toastBody = toastEl.find('.toast-body');
+
+                        toastBody.text('Failed to update user status.');
+                        toastEl.removeClass('bg-success bg-danger').addClass('bg-danger');
+
+                        new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
+                    }
+                });
+            });
+        }
+    </script>
+
+     @* Partial View Script Validation script *@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate-unobtrusive/3.2.13/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            // Custom password validation rule
+            $.validator.addMethod("strongPassword", function (value, element) {
+                return this.optional(element)
+                    || /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@@#$%^&\-+=()])(?=\S+$).{4,10}$/.test(value);
+            }, "Password must have 1 capital, 1 small, 1 number, 1 special char, 4-10 chars.");
+
+            // Apply validation to the form
+            $("#userForm").validate({
+                rules: {
+                    RoleMasterId: {
+                        required: true
+                    },
+                    Username: {
+                        required: true
+                    },
+                    Email: {
+                        required: true,
+                        email: true
+                    },
+                    Password: {
+                        // Only validate if field is not empty (since it's "Add only")
+                        strongPassword: function () {
+                            return $("#Password").val().length > 0;
+                        }
+                    }
+                },
+                messages: {
+                    RoleMasterId: {
+                        required: "*Required"
+                    },
+                    Username: {
+                        required: "*Required"
+                    },
+                    Email: {
+                        required: "*Required",
+                        email: "Enter a valid email"
+                    }
+                },
+                errorClass: "text-danger",
+                errorElement: "span",
+                highlight: function (element) {
+                    $(element).addClass("is-invalid");
+                },
+                unhighlight: function (element) {
+                    $(element).removeClass("is-invalid");
+                }
+            });
+        });
+    </script>
+}
+

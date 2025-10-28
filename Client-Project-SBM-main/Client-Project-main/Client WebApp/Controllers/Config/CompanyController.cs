@@ -1,75 +1,16 @@
-﻿//using Client.Domain.Models;
-//using Client_WebApp.Models;
-//using Client_WebApp.Services;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.AspNetCore.Mvc.Rendering;
-//using System;
-//using System.Linq;
-//using System.Threading.Tasks;
-
-//namespace Client_WebApp.Controllers
-//{
-//    public class CompanyController : BaseController
-//    {
-//        private readonly CompanyService _service;
-
-
-
-//        public CompanyController(
-//            CompanyService service
-
-//            )
-//        {
-//            _service = service;
-
-
-//        }
-
-//        public async Task<IActionResult> Index(string durationType, string? companyName)
-//        {
-//            int companyId = CurrentCompanyId;
-
-//            // ✅ Get all companies for the current companyId
-//            var companies = await _service.GetCompanyAsync(companyId);
-
-//            // ✅ Apply optional search filter
-//            if (!string.IsNullOrWhiteSpace(companyName))
-//            {
-//                companies = companies
-//                    .Where(c => c.Name != null &&
-//                                c.Name.Contains(companyName.Trim(), StringComparison.OrdinalIgnoreCase))
-//                    .ToList();
-//            }
-
-
-//            var viewModel = new CompanyViewModel
-//            {
-//                CompanyId = companyId,
-//                CompanyDtos = companies
-//            };
-
-//            // Keep search text in ViewData so input retains value
-//            ViewData["searchText"] = companyName;
-
-//            return View(viewModel);
-
-
-
-//        }
-
-
-//    }
-//}
-
-using Client.Application.Features.Company.Dtos;
+﻿using Client.Application.Features.Company.Dtos;
 using Client.Application.Features.Product.Dtos;
+using Client_WebApp.Middleware;
 using Client_WebApp.Models;
 using Client_WebApp.Models.Config;
+using Client_WebApp.Models.Master;
 using Client_WebApp.Services.Config;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
+using System.Security.Policy;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Client_WebApp.Controllers.Config
 {
@@ -87,6 +28,12 @@ namespace Client_WebApp.Controllers.Config
         {
             try
             {
+                //Check if user has View access for Company module
+                if (!AccessHelper.HasAccess(User, "COMPANY", "View"))
+                {
+                    return RedirectToAction("UnauthorizedAccess", "Home");
+                }
+
                 int companyId = CurrentCompanyId;
                 var companies = await _service.GetCompanyAsync(null);
 
@@ -119,6 +66,18 @@ namespace Client_WebApp.Controllers.Config
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateOrEdit(CompanyDto model)
         {
+            // Check Create or Edit permission
+            if (model.Id > 0)
+            {
+                if (!AccessHelper.HasAccess(User, "COMPANY", "Edit"))
+                    return RedirectToAction("UnauthorizedAccess", "Home");
+            }
+            else
+            {
+                if (!AccessHelper.HasAccess(User, "COMPANY", "Create"))
+                    return RedirectToAction("UnauthorizedAccess", "Home");
+            }
+
             if (!ModelState.IsValid)
             {
                 TempData["ErrorMessage"] = "Validation failed. Please check the input fields.";
@@ -176,6 +135,12 @@ namespace Client_WebApp.Controllers.Config
         {
             try
             {
+                // Check Delete permission
+                if (!AccessHelper.HasAccess(User, "COMPANY", "Delete"))
+                {
+                    return RedirectToAction("UnauthorizedAccess", "Home");
+                }
+
                 int companyId = CurrentCompanyId;
                 int updatedBy = CurrentUserId;
 
@@ -196,6 +161,12 @@ namespace Client_WebApp.Controllers.Config
         {
             try
             {
+                // View check for fetching company data
+                if (!AccessHelper.HasAccess(User, "COMPANY", "View"))
+                {
+                    return RedirectToAction("UnauthorizedAccess", "Home");
+                }
+
                 int companyId = CurrentCompanyId;
                 var companies = await _service.GetCompanyAsync(id);
                 var company = companies.FirstOrDefault();

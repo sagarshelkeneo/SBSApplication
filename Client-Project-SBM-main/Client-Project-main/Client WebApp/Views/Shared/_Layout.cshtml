@@ -1,4 +1,20 @@
-﻿<!DOCTYPE html>
+﻿@{
+    // Get values set by BaseController
+    var username = ViewBag.Username ?? "Guest";
+    var userRole = ViewBag.UserRole ?? "Guest";
+    var userId = ViewBag.UserId ?? 0;
+    var email = ViewBag.Email ?? "";
+    var companyId = ViewBag.CompanyId ?? 0;
+
+    // Access control checks
+    bool CheckConfigAccess() => userRole == "Super Admin" || userRole == "config_user";
+    bool CheckMasterAccess() => userRole == "Super Admin" || userRole == "Admin" || userRole == "Manager";
+    bool CheckNormalAccess() => userRole == "Super Admin" || userRole == "Admin" || userRole == "Manager" || userRole == "data_user";
+    bool CheckReportAccess() => userRole == "Super Admin" || userRole == "Admin" || userRole == "Manager" || userRole == "report_user";
+}
+
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -17,10 +33,16 @@
 <body class="sb-nav-fixed">
     <!-- Top Navbar -->
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-        <a class="navbar-brand ps-3" href="@Url.Action("Index", "Home")">Start Bootstrap</a>
-        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle">
+        <a class="navbar-brand ps-3" href="@Url.Action("Index", "Home")">Smart Billing Management</a>
+        <button class="btn btn-link btn-sm order-1 order-lg-0 ms-5 me-lg-0" id="sidebarToggle">
             <i class="fas fa-bars"></i>
         </button>
+
+        <!-- Center Page Title -->
+        <h4 class="m-4 blockquote d-none d-md-block text-white fw-semibold">
+            @ViewData["Title"]
+        </h4>
+
 
         <ul class="navbar-nav ms-auto me-3 me-lg-4">
             <li class="nav-item">
@@ -32,29 +54,6 @@
                 </form>
             </li>
         </ul>
-
-
-        <!-- Search -->
-@*          <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-             <div class="input-group">
-                 <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." />
-                 <button class="btn btn-primary" type="button"><i class="fas fa-search"></i></button>
-             </div>
-         </form>
- *@
-        <!-- Profile Dropdown -->
-@*         <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button"
-                   data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="#">Settings</a></li>
-                    <li><a class="dropdown-item" href="#">Activity Log</a></li>
-                    <li><hr class="dropdown-divider" /></li>
-                    <li><a class="dropdown-item" href="#">Logout</a></li>
-                </ul>
-            </li>
-        </ul> *@
     </nav>
 
     <!-- Layout Wrapper -->
@@ -64,93 +63,112 @@
             <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
-                        <div class="sb-sidenav-menu-heading">Core</div>
-                        <a class="nav-link" href="@Url.Action("Index", "Home")">
-                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                            Home
-                        </a>
-
-                        <div class="sb-sidenav-menu-heading">Interface</div>
-                        <a class="nav-link collapsed" href="#super" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
-                           aria-expanded="false" aria-controls="collapseLayouts">
-                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                            SuperAdmin
+                        <!-- Profile Section -->
+                        <div class="sb-sidenav-menu-heading">Profile</div>
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseProfile"
+                           aria-expanded="false" aria-controls="collapseProfile">
+                            <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
+                            @username
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
-                        <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                        <div class="collapse" id="collapseProfile" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
                                 <a class="nav-link" href="javascript:void(0)" onclick="openChangePasswordModal()">Change Password</a>
                                 <a class="nav-link" href="javascript:void(0)" onclick="openSendEmailModal()">Send Email</a>
-
-                                @* <a class="nav-link" href="#super">Change Password</a> *@
-                                @* <a class="nav-link" href="#super">Send Email</a> *@
                             </nav>
                         </div>
 
-                        <a class="nav-link collapsed" href="#config" data-bs-toggle="collapse" data-bs-target="#configLayouts"
-                           aria-expanded="false" aria-controls="configLayouts">
-                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                            Config
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="configLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="@Url.Action("Index", "Company")">Company</a>
-                                <a class="nav-link" href="@Url.Action("Index", "Role")">Role</a>
-                                <a class="nav-link" href="@Url.Action("Index", "RoleAccess")">Role Access</a>
-                            </nav>
-                        </div>
-
-                        <a class="nav-link collapsed" href="#master" data-bs-toggle="collapse" data-bs-target="#masterLayouts"
-                           aria-expanded="false" aria-controls="masterLayouts">
-                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                            Master
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="masterLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="@Url.Action("Index", "Bank")">Bank</a>
-                                <a class="nav-link" href="@Url.Action("Index", "User")">User</a>
-                                <a class="nav-link" href="@Url.Action("Index", "Product")">Product</a>
-                                <a class="nav-link" href="@Url.Action("Index", "SubContractor")">Sub Contractor</a>
-                            </nav>
-                        </div>
-
-                        <a class="nav-link collapsed" href="#reports" data-bs-toggle="collapse" data-bs-target="#reportLayouts"
-                           aria-expanded="false" aria-controls="reportLayouts">
-                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                            Reports
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="reportLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="@Url.Action("Paid", "Report")">Paid</a>
-                                <a class="nav-link" href="@Url.Action("Unpaid", "Report")">Un-Paid</a>
-                                <a class="nav-link" href="@Url.Action("ProductWise", "Report")">Product Wise</a>
-                                <a class="nav-link" href="@Url.Action("SubContractorWise", "Report")">Sub-Contractor Wise</a>
-                                <a class="nav-link" href="@Url.Action("CombinedSubContractorEntity", "Report")">Combined Sub-Contractor Entity Report</a>
-                            </nav>
-                        </div>
-
-                        <div class="sb-sidenav-menu-heading">Addons</div>
-                        <a class="nav-link" href="@Url.Action("Index", "Invoice")">
-                            <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                            Invoice
-                        </a>
-                        <a class="nav-link" href="@Url.Action("Index", "Payment")">
-                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                            Payment
+                        <!-- Home -->
+                        <div class="sb-sidenav-menu-heading">Core</div>
+                        <a class="nav-link" href="@Url.Action("Index", "Home")">
+                            <div class="sb-nav-link-icon"><i class="fas fa-home"></i></div>
+                            Home
                         </a>
 
-                        <a class="nav-link" href="@Url.Action("Index", "AdditionalEntity")">
-                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                            Additional Entity
-                        </a>
+                        <!-- Config Section -->
+                        @if (CheckConfigAccess())
+                        {
+                            <div class="sb-sidenav-menu-heading">Configuration</div>
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseConfig"
+                               aria-expanded="false" aria-controls="collapseConfig">
+                                <div class="sb-nav-link-icon"><i class="fas fa-cogs"></i></div>
+                                Config
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseConfig" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" href="@Url.Action("Index", "Company")">Company</a>
+                                    <a class="nav-link" href="@Url.Action("Index", "Role")">Role</a>
+                                    <a class="nav-link" href="@Url.Action("Index", "RoleAccess")">Role Access</a>
+                                </nav>
+                            </div>
+                        }
+
+                        <!-- Master Section -->
+                        @if (CheckMasterAccess())
+                        {
+                            <div class="sb-sidenav-menu-heading">Master</div>
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseMaster"
+                               aria-expanded="false" aria-controls="collapseMaster">
+                                <div class="sb-nav-link-icon"><i class="fas fa-database"></i></div>
+                                Master
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseMaster" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" href="@Url.Action("Index", "Bank")">Bank</a>
+                                    <a class="nav-link" href="@Url.Action("Index", "User")">User</a>
+                                    <a class="nav-link" href="@Url.Action("Index", "Product")">Product</a>
+                                    <a class="nav-link" href="@Url.Action("Index", "SubContractor")">Sub Contractor</a>
+                                </nav>
+                            </div>
+                        }
+
+                        <!-- Reports Section -->
+                        @if (CheckReportAccess())
+                        {
+                            <div class="sb-sidenav-menu-heading">Reports</div>
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseReports"
+                               aria-expanded="false" aria-controls="collapseReports">
+                                <div class="sb-nav-link-icon"><i class="fas fa-file-alt"></i></div>
+                                Reports
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseReports" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" href="@Url.Action("Paid", "Report")">Paid</a>
+                                    <a class="nav-link" href="@Url.Action("Unpaid", "Report")">Un-Paid</a>
+                                    <a class="nav-link" href="@Url.Action("ProductWise", "Report")">Product Wise</a>
+                                    <a class="nav-link" href="@Url.Action("SubContractorWise", "Report")">Sub-Contractor Wise</a>
+                                    <a class="nav-link" href="@Url.Action("CombinedSubContractorEntity", "Report")">Combined Sub-Contractor Entity</a>
+                                </nav>
+                            </div>
+                        }
+
+                        <!-- Normal Access Section -->
+                        @if (CheckNormalAccess())
+                        {
+                            <div class="sb-sidenav-menu-heading">Transactions</div>
+                            <a class="nav-link" href="@Url.Action("Index", "Invoice")">
+                                <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>
+                                Invoice
+                            </a>
+                            <a class="nav-link" href="@Url.Action("Index", "Payment")">
+                                <div class="sb-nav-link-icon"><i class="fas fa-credit-card"></i></div>
+                                Payment
+                            </a>
+                            <a class="nav-link" href="@Url.Action("Index", "AdditionalEntity")">
+                                <div class="sb-nav-link-icon"><i class="fas fa-layer-group"></i></div>
+                                Additional Entity
+                            </a>
+                        }
+
                     </div>
                 </div>
+
                 <div class="sb-sidenav-footer">
                     <div class="small">Logged in as:</div>
-                    <div class="small fw-bold text-uppercase text-light">@ViewBag.Username</div>
+                    <div class="fw-bold text-light text-uppercase">@username</div>
                 </div>
             </nav>
         </div>
@@ -265,63 +283,146 @@
  <script>
    const pageTitle = "@(ViewData["Title"] ?? "")";
 
-   function initializeGenericDataTable(config) {
-    const tableSelector = config.tableSelector;       // e.g., '#invoiceTable'
-    const customInfoId = config.customInfoId || 'table_info_custom';
-    const pageLength = config.pageLength || 5;
-    const lengthMenu = config.lengthMenu || [5, 10, 25, 50];
-    const order = config.order || [[1, 'asc']];
-    const columnDefs = config.columnDefs || [];
-    const columnsSearchable = config.columnsSearchable || [];
-    const info = config.info || false;
+    function initializeGenericDataTable(config) {
+        const tableSelector = config.tableSelector;       // e.g., '#invoiceTable'
+        const customInfoId = config.customInfoId || 'table_info_custom';
+        const pageLength = config.pageLength || 25;
+        const lengthMenu = config.lengthMenu || [5, 10, 25, 50];
+        const order = config.order || [[1, 'asc']];
+        const columnDefs = config.columnDefs || [];
+        const columnsSearchable = config.columnsSearchable || [];
+        const info = config.info || false;
 
-    const table = $(tableSelector).DataTable({
-        pageLength: pageLength,
-        lengthMenu: lengthMenu,
-        columnDefs: columnDefs,
-        order: order,
-        pagingType: 'full',
-        searching: true,
-        info: info,
-        search: {
-            smart: true,
-            regex: false,
-            caseInsensitive: true
-        },
-        columns: columnsSearchable.map(searchable => ({ searchable: searchable })),
-        language: {
-            paginate: {
-                first: '<i class="fa-solid fa-angle-left"></i><i class="fa-solid fa-angle-left"></i>',
-                previous: '<i class="fa-solid fa-chevron-left"></i>',
-                next: '<i class="fa-solid fa-chevron-right"></i>',
-                last: '<i class="fa-solid fa-angle-right"></i><i class="fa-solid fa-angle-right"></i>'
+        const table = $(tableSelector).DataTable({
+            pageLength: pageLength,
+            lengthMenu: lengthMenu,
+            columnDefs: columnDefs,
+            order: order,
+            pagingType: 'full',
+            searching: false,
+            info: info,
+            search: {
+                smart: true,
+                regex: false,
+                caseInsensitive: true
+            },
+            columns: columnsSearchable.map(searchable => ({ searchable: searchable })),
+            language: {
+                paginate: {
+                    first: '<i class="fa-solid fa-angle-left"></i><i class="fa-solid fa-angle-left"></i>',
+                    previous: '<i class="fa-solid fa-chevron-left"></i>',
+                    next: '<i class="fa-solid fa-chevron-right"></i>',
+                    last: '<i class="fa-solid fa-angle-right"></i><i class="fa-solid fa-angle-right"></i>'
+                }
+            },
+            drawCallback: function () {
+                const api = this.api();
+                const pageInfo = api.page.info();
+
+                // Auto alignment based on content type
+                api.rows({ page: 'current' }).nodes().each(function (row) {
+                    $('td', row).each(function () {
+                        const text = $(this).text().trim();
+
+                        // Remove any previous alignment
+                        $(this).removeClass('text-start text-end text-center');
+
+                        // Detect numeric (e.g., 123, 1,234.50)
+                        const isNumeric = $.isNumeric(text.replace(/,/g, ''));
+
+                        // Detect single date formats like 10-Jan-25 or 06-Oct-2024
+                        const isSingleDate = /^(\d{1,2})[-/](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[-/]\d{2,4}$/i.test(text);
+
+                        // Detect date range formats like 08-Jan-25 - 13-Jan-25
+                        const isDateRange = /^(\d{1,2})[-/](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[-/]\d{2,4}\s*-\s*(\d{1,2})[-/](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[-/]\d{2,4}$/i.test(text);
+
+                        if (isNumeric || isSingleDate || isDateRange) {
+                            $(this).addClass('text-end'); // Right align for numbers and dates
+                        } else {
+                            $(this).addClass('text-start'); // Left align for text
+                        }
+                    });
+                });
+
+                // Update Sr. No.
+                api.rows({ page: 'current' }).nodes().each(function (row, i) {
+                    $('td:eq(0)', row).html(pageInfo.start + i + 1);
+                });
+
+                // Custom info display
+                $('#' + customInfoId).remove();
+                const start = pageInfo.recordsTotal === 0 ? 0 : pageInfo.start + 1;
+                const end = pageInfo.end;
+
+                $(tableSelector + '_paginate').before(
+                    `<div id="${customInfoId}" class="dataTables_info mb-2">
+                        ${start}-${end} of ${pageInfo.recordsTotal}
+                        </div>`
+                );
             }
-        },
-        drawCallback: function () {
-            const api = this.api();
-            const pageInfo = api.page.info();
+        });
 
-            // Update Sr. No.
-            api.rows({ page: 'current' }).nodes().each(function (row, i) {
-                $('td:eq(0)', row).html(pageInfo.start + i + 1);
-            });
+        return table;
+    }
 
-            // Remove previous custom info
-            $('#' + customInfoId).remove();
 
-            const start = pageInfo.recordsTotal === 0 ? 0 : pageInfo.start + 1;
-            const end = pageInfo.end;
+   // function initializeGenericDataTable(config) {
+   //  const tableSelector = config.tableSelector;       // e.g., '#invoiceTable'
+   //  const customInfoId = config.customInfoId || 'table_info_custom';
+   //  const pageLength = config.pageLength || 25;
+   //  const lengthMenu = config.lengthMenu || [5, 10, 25, 50];
+   //  const order = config.order || [[1, 'asc']];
+   //  const columnDefs = config.columnDefs || [];
+   //  const columnsSearchable = config.columnsSearchable || [];
+   //  const info = config.info || false;
 
-            // Insert custom info above pagination
-            $(tableSelector + '_paginate').before(
-                `<div id="${customInfoId}" class="dataTables_info mb-2">
-                    ${start}-${end} of ${pageInfo.recordsTotal}
-                 </div>`
-            );
-            }
-            });
-            return table;
-        }
+   //  const table = $(tableSelector).DataTable({
+   //      pageLength: pageLength,
+   //      lengthMenu: lengthMenu,
+   //      columnDefs: columnDefs,
+   //      order: order,
+   //      pagingType: 'full',
+   //      searching: false,
+   //      info: info,
+   //      search: {
+   //          smart: true,
+   //          regex: false,
+   //          caseInsensitive: true
+   //      },
+   //      columns: columnsSearchable.map(searchable => ({ searchable: searchable })),
+   //      language: {
+   //          paginate: {
+   //              first: '<i class="fa-solid fa-angle-left"></i><i class="fa-solid fa-angle-left"></i>',
+   //              previous: '<i class="fa-solid fa-chevron-left"></i>',
+   //              next: '<i class="fa-solid fa-chevron-right"></i>',
+   //              last: '<i class="fa-solid fa-angle-right"></i><i class="fa-solid fa-angle-right"></i>'
+   //          }
+   //      },
+   //      drawCallback: function () {
+   //          const api = this.api();
+   //          const pageInfo = api.page.info();
+
+   //          // Update Sr. No.
+   //          api.rows({ page: 'current' }).nodes().each(function (row, i) {
+   //              $('td:eq(0)', row).html(pageInfo.start + i + 1);
+   //          });
+
+   //          // Remove previous custom info
+   //          $('#' + customInfoId).remove();
+
+   //          const start = pageInfo.recordsTotal === 0 ? 0 : pageInfo.start + 1;
+   //          const end = pageInfo.end;
+
+   //          // Insert custom info above pagination
+   //          $(tableSelector + '_paginate').before(
+   //              `<div id="${customInfoId}" class="dataTables_info mb-2">
+   //                  ${start}-${end} of ${pageInfo.recordsTotal}
+   //               </div>`
+   //          );
+   //          }
+   //          });
+   //          return table;
+   //      }
 
 
         function showDeleteModal(entityId, actionUrl) {

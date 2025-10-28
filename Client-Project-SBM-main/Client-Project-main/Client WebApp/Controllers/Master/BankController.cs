@@ -1,4 +1,5 @@
 ﻿using Client.Application.Features.Bank.Dtos;
+using Client_WebApp.Middleware;
 using Client_WebApp.Models.Master;
 using Client_WebApp.Services.Master;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,11 @@ namespace Client_WebApp.Controllers.Master
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "BANK", "View"))
+                {
+                    return Forbid(); // or redirect to AccessDenied page
+                }
+
                 var banks = await _service.GetAllBanksAsync();
 
                 if (!string.IsNullOrWhiteSpace(searchText))
@@ -46,6 +52,18 @@ namespace Client_WebApp.Controllers.Master
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateOrEdit(Bank model)
         {
+            if (model.Id > 0)
+            {
+                if (!AccessHelper.HasAccess(User, "BANK", "Edit"))
+                    return Forbid();
+            }
+            else
+            {
+                if (!AccessHelper.HasAccess(User, "BANK", "Create"))
+                    return Forbid();
+            }
+
+
             if (!ModelState.IsValid)
             {
                 TempData["ErrorMessage"] = "Validation failed.";
@@ -92,6 +110,9 @@ namespace Client_WebApp.Controllers.Master
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "BANK", "Delete"))
+                    return Forbid();
+
                 await _service.DeleteBankAsync(id, CurrentUserId);
                 TempData["SuccessMessage"] = "Bank deleted successfully!";
             }
@@ -108,6 +129,9 @@ namespace Client_WebApp.Controllers.Master
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "BANK", "View"))
+                    return Forbid();
+
                 var banks = await _service.GetAllBanksAsync(id);
                 var bank = banks.FirstOrDefault();
 

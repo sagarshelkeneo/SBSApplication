@@ -4,19 +4,21 @@
     ViewData["Title"] = "Banks";
 }
 
-<h2 class="pt-4 fs-1">Banks</h2>
+@* <h2 class="pt-4 fs-1">Banks</h2> *@
 
 <div>
-    <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#bank-modal" onclick="setModalMode('add')">
-        <i class="fa-solid fa-plus"></i> Add
-    </button>
+    <div class="my-3">
+        <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#bank-modal" onclick="setModalMode('add')">
+            <i class="fa-solid fa-plus"></i> Add
+        </button>
 
-    <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
-        <i class="fa-solid fa-file-pdf"></i> Export PDF
-    </button>
-    <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
-        <i class="fa-solid fa-file-excel"></i> Export Excel
-    </button>
+        <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
+            <i class="fa-solid fa-file-pdf"></i> Export PDF
+        </button>
+        <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
+            <i class="fa-solid fa-file-excel"></i> Export Excel
+        </button>
+    </div>
 
     <!-- Filters -->
     <div class="card mb-2">

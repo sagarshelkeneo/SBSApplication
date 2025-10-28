@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Client_WebApp.Services.Report;
 using Client.Application.Features.PaymentReports.Dtos;
+using Client_WebApp.Middleware;
 
 namespace Client_WebApp.Controllers.Reports
 {
@@ -17,6 +18,9 @@ namespace Client_WebApp.Controllers.Reports
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "PAIDREPORT", "View"))
+                    return Forbid();
+
                 int? companyId = CurrentCompanyId;
 
                 var reports = await _reportService.GetPaidReportAsync(
@@ -40,6 +44,9 @@ namespace Client_WebApp.Controllers.Reports
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "UNPAIDREPORT", "View"))
+                    return Forbid();
+
                 int? companyId = CurrentCompanyId;
 
                 var reports = await _reportService.GetUnpaidReportAsync(
@@ -62,6 +69,9 @@ namespace Client_WebApp.Controllers.Reports
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "PRODUCTWISEREPORT", "View"))
+                    return Forbid();
+
                 var companyId = CurrentCompanyId;
                 var data = await _reportService.GetProductWiseReportAsync(productName, subcontractorName, companyId, fromDate, toDate);
                 return View(data);
@@ -77,6 +87,9 @@ namespace Client_WebApp.Controllers.Reports
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "SUBCONTRACTORWISEREPORT", "View"))
+                    return Forbid();
+
                 var companyId = CurrentCompanyId;
                 var data = await _reportService.GetSubContractorWiseReportAsync(subcontractorName, companyId, fromDate, toDate);
                 return View(data);
@@ -92,6 +105,9 @@ namespace Client_WebApp.Controllers.Reports
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "COMBINEDREPORT", "View"))
+                    return Forbid();
+
                 var companyId = CurrentCompanyId;
                 var data = await _reportService.GetCombinedSubcontractorReportAsync();
 

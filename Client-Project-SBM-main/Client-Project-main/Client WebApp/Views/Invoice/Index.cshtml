@@ -3,21 +3,23 @@
     ViewData["Title"] = "Invoice";
 }
 
-<h2 class="pt-4 fs-1">Invoices</h2>
+@* <h2 class="pt-4 fs-1">Invoices</h2> *@
 
 <div class="">
 
     <!-- Add / Export Buttons -->
-    <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#invoice-modal" onclick="setModalMode('add')">
-        <i class="fa-solid fa-plus"></i> Add
-    </button>
+    <div class="my-3">
+        <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#invoice-modal" onclick="setModalMode('add')">
+            <i class="fa-solid fa-plus"></i> Add
+        </button>
 
-    <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
-        <i class="fa-solid fa-file-pdf"></i> Export PDF
-    </button>
-    <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
-        <i class="fa-solid fa-file-excel"></i> Export Excel
-    </button>
+        <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
+            <i class="fa-solid fa-file-pdf"></i> Export PDF
+        </button>
+        <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
+            <i class="fa-solid fa-file-excel"></i> Export Excel
+        </button>
+    </div>
 
     <!-- Filters -->
     <div class="card mb-2">
@@ -77,8 +79,8 @@
                             foreach (var invoice in Model.Invoices)
                             {
                                 <tr>
-                                    <td></td>
-                                    <td>@invoice.InvoiceDate.ToShortDateString()</td>
+                                    <td class="text-end"></td>
+                                    <td>@invoice.InvoiceDate.ToString("dd-MMM-yyyy")</td>
                                     <td>@invoice.InvoiceNo</td>
                                     <td>@invoice.SubContractorName</td>
                                     <td>@invoice.ProductName</td>

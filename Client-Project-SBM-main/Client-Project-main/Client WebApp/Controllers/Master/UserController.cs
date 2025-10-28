@@ -1,5 +1,6 @@
 ﻿using Client.Application.Features.User.Dtos;
 using Client.Application.Interfaces;
+using Client_WebApp.Middleware;
 using Client_WebApp.Models.Master;
 using Client_WebApp.Services;
 using Client_WebApp.Services.Config;
@@ -23,6 +24,9 @@ namespace Client_WebApp.Controllers.Master
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "USER", "View"))
+                    return Forbid();
+
                 var companyId = CurrentCompanyId;
                 var users = await _service.GetAllUsersAsync(companyId, null, searchText);
                 var roles = await _roleService.GetRoleAsync();
@@ -44,12 +48,23 @@ namespace Client_WebApp.Controllers.Master
             }
         }
 
-        //Updated usp_sbs_userMaster_insert sp in insert query replace this "SHA2(p_password, 512)"
+        //Updated sp_sbs_userMaster_insert sp in insert query replace this "SHA2(p_password, 512)"
         //to "UNHEX(SHA2(p_password, 512))" and also update input password parameter to "IN p_password varbinary(64)"
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateOrEdit(User model)
         {
+            if (model.Id > 0)
+            {
+                if (!AccessHelper.HasAccess(User, "USER", "Edit"))
+                    return Forbid();
+            }
+            else
+            {
+                if (!AccessHelper.HasAccess(User, "USER", "Create"))
+                    return Forbid();
+            }
+
             if (!ModelState.IsValid)
             {
                 TempData["ErrorMessage"] = "Validation failed.";
@@ -101,6 +116,9 @@ namespace Client_WebApp.Controllers.Master
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "USER", "Delete"))
+                    return Forbid();
+
                 await _service.DeleteUserAsync(id, CurrentUserId, CurrentCompanyId);
                 TempData["SuccessMessage"] = "User deleted successfully!";
             }
@@ -116,6 +134,9 @@ namespace Client_WebApp.Controllers.Master
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "USER", "View"))
+                    return Forbid();
+
                 var users = await _service.GetAllUsersAsync(CurrentCompanyId, id);
                 var user = users.FirstOrDefault();
                 if (user == null) return NotFound(new { message = "User not found." });

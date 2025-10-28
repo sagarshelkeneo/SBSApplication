@@ -1,5 +1,6 @@
 ﻿using Client.Application.Features.Invoice.Dtos;
 using Client_WebApp.Controllers;
+using Client_WebApp.Middleware;
 using Client_WebApp.Models;
 using Client_WebApp.Services;
 using Client_WebApp.Services.Master;
@@ -25,6 +26,9 @@ namespace Client.MVC.Controllers
 
         public async Task<IActionResult> Index(string? searchText, DateTime? FromDate, DateTime? ToDate)
         {
+            if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
+                return Forbid();
+
             int companyId = CurrentCompanyId;
             // Fetch application DTOs from service
             List<Client.Application.Features.Invoice.Dtos.InvoiceDetailsDto> invoicesFromService =
@@ -119,6 +123,17 @@ namespace Client.MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateOrEdit(AddInvoiceViewModel model)
         {
+            if (model.Id > 0)
+            {
+                if (!AccessHelper.HasAccess(User, "INVOICE", "Edit"))
+                    return Forbid();
+            }
+            else
+            {
+                if (!AccessHelper.HasAccess(User, "INVOICE", "Create"))
+                    return Forbid();
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -173,6 +188,9 @@ namespace Client.MVC.Controllers
         [HttpGet]
         public async Task<IActionResult> GetInvoice(int id)
         {
+            if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
+                return Forbid();
+
             int companyId = CurrentCompanyId;
             var invoice = (await _service.GetInvoicesAsync(companyId, id)).FirstOrDefault();
             if (invoice == null) return NotFound();
@@ -210,11 +228,12 @@ namespace Client.MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteInvoice(int id, int companyId, int updatedBy)
         {
-            companyId = CurrentCompanyId;
-            updatedBy = CurrentUserId;
             try
             {
-                await _service.DeleteInvoiceAsync(id, updatedBy, companyId);
+                if (!AccessHelper.HasAccess(User, "INVOICE", "Delete"))
+                    return Forbid();
+
+                await _service.DeleteInvoiceAsync(id, CurrentUserId, CurrentCompanyId);
                 TempData["SuccessMessage"] = "Invoice deleted successfully!";
             }
             catch (Exception ex)

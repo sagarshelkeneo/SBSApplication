@@ -4,7 +4,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="invoiceModalLabel">Add Invoice</h5>
+                <h5 class="modal-title" id="invoiceModalLabel">Add Booking</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
@@ -17,9 +17,14 @@
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label asp-for="InvoiceNo" class="form-label"></label>
+                           @*  <label asp-for="InvoiceNo" class="form-label"></label>
                             <input asp-for="InvoiceNo" class="form-control" id="InvoiceNo" />
-                            <span asp-validation-for="InvoiceNo" class="text-danger"></span>
+                            <span asp-validation-for="InvoiceNo" class="text-danger"></span> *@
+
+                            <label asp-for="InvoiceNo" class="form-label">Receipt Number</label>
+                            <input asp-for="InvoiceNo" class="form-control" id="InvoiceNo" />
+                            <span asp-validation-for="InvoiceNo" class="text-danger">Please enter a valid Receipt Number.</span>
+
                         </div>
                         <div class="col-md-6">
                             <label asp-for="InvoiceDate" class="form-label"></label>

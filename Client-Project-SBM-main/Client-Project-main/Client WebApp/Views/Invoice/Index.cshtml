@@ -1,9 +1,9 @@
 ﻿@model Client_WebApp.Models.InvoiceIndexViewModel
 @{
-    ViewData["Title"] = "Invoice";
+    ViewData["Title"] = "Bookings";
 }
 
-<h2 class="pt-4 fs-1">Invoices</h2>
+<h2 class="pt-4 fs-1">Bookings</h2>
 
 <div class="">
 
@@ -32,7 +32,7 @@
                     <input type="date" name="ToDate" class="form-control" value="@ViewData["ToDate"]" />
                 </div>
                 <div class="col-md-3">
-                    <label>Subcontractor / Invoice No.</label>
+                    <label>Subcontractor / Receipt details</label>
                     <input type="text" name="searchText" class="form-control" placeholder="Search..." value="@ViewData["searchText"]" />
                 </div>
                 <div class="col-md-3 d-flex align-items-end">
@@ -54,7 +54,7 @@
     <div class="card mb-4">
         <div class="card-header">
             <i class="fas fa-table me-1"></i>
-            Invoice Table
+            Booking Table
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -62,10 +62,10 @@
                     <thead class="thead-dark">
                         <tr>
                             <th>Sr. No.</th>
-                            <th>Invoice Date</th>
-                            <th>Invoice No.</th>
-                            <th>Sub-contractor Name</th>
-                            <th>Product Name</th>
+                            <th>Date</th>
+                            <th>Receipt No.</th>
+                            <th>Sub-contractor</th>
+                            <th>Product</th>
                             <th>Commission Amount</th>
                             <th>Total Amount</th>
                             <th class="text-center">Actions</th>

@@ -85,10 +85,13 @@ namespace Client_WebApp.Models
         public int ProductId { get; set; }
         [Display(Name = "Invoice Date")]
         public DateTime InvoiceDate { get; set; }
+        [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
         public decimal Quantity { get; set; }
         [Display(Name = "Unit Amount")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Unit Amount must be greater than 0")]
         public decimal UnitAmount { get; set; }
         [Display(Name = "Total Amount")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Total Amount must be greater than 0")]
         public decimal TotalAmount { get; set; }
         [Display(Name = "Commission Percentage")]
         public decimal CommissionPercentage { get; set; }

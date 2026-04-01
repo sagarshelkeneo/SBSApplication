@@ -210,6 +210,7 @@ namespace Client.MVC.Controllers
                 InvoiceNo = invoice.R_invoiceNo,
                 CompanyId = invoice.R_companyId,
                 SubContractorId = subcontractorId,
+                SubContractorName = invoice.R_subcontractorName,
                 ProductName = invoice.R_productName,
                 ProductId = productId,
                 InvoiceDate = invoice.R_invoiceDate,

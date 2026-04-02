@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Client_WebApp.Models
@@ -14,7 +13,7 @@ namespace Client_WebApp.Models
     public class InvoiceDetailsDto
     {
         public int Id { get; set; }
-        public string InvoiceNo { get; set; }
+        public string? InvoiceNo { get; set; } = null;
         public int CompanyId { get; set; }
         public int SubContractorId { get; set; }
         public string SubContractorName { get; set; }
@@ -34,7 +33,7 @@ namespace Client_WebApp.Models
     {
         public int Id { get; set; }
 
-        public string? InvoiceNo { get; set; }
+        public string? InvoiceNo { get; set; } = null;
 
         [Required]
         public int CompanyId { get; set; }
@@ -77,7 +76,7 @@ namespace Client_WebApp.Models
     {
         public int Id { get; set; }
         [Display(Name = "Invoice No")]
-        public string InvoiceNo { get; set; }
+        public string? InvoiceNo { get; set; } = null;
         public int CompanyId { get; set; }
         [Display(Name = "Sub Contractor")]
         public int SubcontractorId { get; set; }

@@ -175,6 +175,23 @@
                     '.fa-trash': function (id) { showDeleteModal(id, '@Url.Action("Delete", "Company")'); }
                 }
             });
+
+            $("#companyForm").validate({
+                rules: {
+                    Name: { required: true },
+                    Address: { required: true },
+                    Phone: { required: true },
+                    Email: { required: true, email: true }
+                },
+                messages: {
+                    Name: { required: "*Required Company Name" },
+                    Address: { required: "*Required Company Address" },
+                    Phone: { required: "*Required Company Phone" },
+                    Email: { required: "*Required Company Email", email: "Invalid email" }
+                },
+                errorClass: "text-danger",
+                errorElement: "span"
+            });
         });
 
 

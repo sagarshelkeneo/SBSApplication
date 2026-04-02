@@ -130,67 +130,6 @@
 
 
     <script>
-
-        // $(document).ready(function () {
-        //     var table = $('#invoiceTable').DataTable({
-        //         pageLength: 5,
-        //         lengthMenu: [5, 10, 25, 50],
-        //         columnDefs: [
-        //             { orderable: false, targets: 0 },  // Sr. No.
-        //             { orderable: false, targets: -1 } // Actions
-        //         ],
-        //         order: [[1, 'asc']], // sort by Invoice Date
-        //         pagingType: 'full',
-        //         searching: true,
-        //         info: false,          // we'll add custom info
-        //         search: {
-        //             smart: true,        // default, allows substring matching
-        //             regex: false,       // disable regex matching
-        //             caseInsensitive: true
-        //         },
-        //         columns: [
-        //             { searchable: false }, // Sr. No.
-        //             { searchable: true },  // Invoice Date
-        //             { searchable: true },  // Invoice No.
-        //             { searchable: true },  // Sub-contractor Name
-        //             { searchable: true },  // Product Name
-        //             { searchable: true },  // Commission Amount
-        //             { searchable: true },  // Total Amount
-        //             { searchable: false }  // Actions
-        //         ],
-        //         language: {
-        //             paginate: {
-        //                 first: '<i class="fa-solid fa-angle-left"></i><i class="fa-solid fa-angle-left"></i>',
-        //                 previous: '<i class="fa-solid fa-chevron-left"></i>',
-        //                 next: '<i class="fa-solid fa-chevron-right"></i>',
-        //                 last: '<i class="fa-solid fa-angle-right"></i><i class="fa-solid fa-angle-right"></i>'
-        //             }
-        //         },
-        //         drawCallback: function () {
-        //             var api = this.api();
-        //             var pageInfo = api.page.info();
-
-        //             // Update Sr. No.
-        //             api.rows({ page: 'current' }).nodes().each(function (row, i) {
-        //                 $('td:eq(0)', row).html(pageInfo.start + i + 1);
-        //             });
-
-        //             // Remove previous custom info
-        //             $('#invoiceTable_info_custom').remove();
-
-        //             var start = pageInfo.recordsTotal === 0 ? 0 : pageInfo.start + 1;
-        //             var end = pageInfo.end;
-
-        //             // Insert custom info above pagination
-        //             $('#invoiceTable_paginate').before(
-        //                 `<div id="invoiceTable_info_custom" class="dataTables_info mb-2">
-        //                     ${start}-${end} of ${pageInfo.recordsTotal}
-        //                  </div>`
-        //             );
-        //         }
-        //     });
-        // });
-
         $(document).ready(function () {
             initializeGenericDataTable({
                 tableSelector: '#invoiceTable',
@@ -225,6 +164,7 @@
 
         // Set modal mode: add / edit / view
         function setModalMode(mode) {
+            resetForm('#invoiceForm');
             const modalLabel = document.getElementById("invoiceModalLabel");
             modalLabel.innerText = mode === 'add' ? 'Add Invoice' : (mode === 'edit' ? 'Edit Invoice' : 'View Invoice');
 
@@ -233,6 +173,7 @@
                 $("#saveButton").hide();
             } else {
                 $("#invoiceForm input, #invoiceForm select").prop("readonly", false).prop("disabled", false);
+                $("#TotalAmount, #CommissionAmount").prop("readonly", true);
                 $("#saveButton").show();
             }
         }

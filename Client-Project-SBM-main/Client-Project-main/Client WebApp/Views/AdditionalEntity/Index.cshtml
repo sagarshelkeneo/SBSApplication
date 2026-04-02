@@ -109,6 +109,7 @@
         });
 
         function setModalMode(mode) {
+            resetForm('#additionalEntityForm');
             const modalLabel = document.getElementById("additionalEntityModalLabel");
             modalLabel.innerText = mode === 'add' ? 'Add Additional Entity' : (mode === 'edit' ? 'Edit Additional Entity' : 'View Additional Entity');
 

@@ -1,4 +1,5 @@
 ﻿using Client.Application.Features.SubContractor.Dtos;
+using Client_WebApp.Middleware;
 using Client_WebApp.Models.Master;
 using Client_WebApp.Services.Master;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,12 @@ namespace Client_WebApp.Controllers.Master
         {
             try
             {
+                // Restrict View Access for "SUBCONTRACTOR" module
+                if (!AccessHelper.HasAccess(User, "SUBCONTRACTOR", "View"))
+                {
+                    return Forbid();
+                }
+
                 var companyId = CurrentCompanyId;
                 var subcontractors = await _service.GetAllSubContractorAsync(companyId);
 
@@ -51,6 +58,17 @@ namespace Client_WebApp.Controllers.Master
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateOrEdit(SubContractor model)
         {
+            if (model.Id != null && model.Id > 0)
+            {
+                if (!AccessHelper.HasAccess(User, "SUBCONTRACTOR", "Edit"))
+                    return Forbid();
+            }
+            else
+            {
+                if (!AccessHelper.HasAccess(User, "SUBCONTRACTOR", "Create"))
+                    return Forbid();
+            }
+
             if (!ModelState.IsValid)
             {
                 TempData["ErrorMessage"] = "Validation failed. Please check the input fields.";
@@ -101,6 +119,9 @@ namespace Client_WebApp.Controllers.Master
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "SUBCONTRACTOR", "Delete"))
+                    return Forbid();
+
                 int companyId = CurrentCompanyId;
                 int updatedBy = CurrentUserId;
 
@@ -120,6 +141,9 @@ namespace Client_WebApp.Controllers.Master
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "SUBCONTRACTOR", "View"))
+                    return Forbid();
+
                 int companyId = CurrentCompanyId;
 
                 // Call service to get subcontractor by id

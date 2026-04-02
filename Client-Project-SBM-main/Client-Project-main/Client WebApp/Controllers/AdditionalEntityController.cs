@@ -1,5 +1,6 @@
 ﻿using Client.Application.Features.AdditionalEntity.Dtos;
 using Client.Domain.Models;
+using Client_WebApp.Middleware;
 using Client_WebApp.Models;
 using Client_WebApp.Services;
 using Client_WebApp.Services.Master;
@@ -22,6 +23,9 @@ namespace Client_WebApp.Controllers
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "ADDITIONALENTITY", "View"))
+                    return Forbid();
+
                 var companyId = CurrentCompanyId;
                 var entities = await _service.GetAllAsync(companyId);
                 var subContractorService = await _subContractorService.GetAllSubContractorAsync(companyId);
@@ -55,6 +59,17 @@ namespace Client_WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateOrEdit(AdditionalEntityViewModel model)
         {
+            if (model.AdditionalEntity.Id > 0)
+            {
+                if (!AccessHelper.HasAccess(User, "ADDITIONALENTITY", "Edit"))
+                    return Forbid();
+            }
+            else
+            {
+                if (!AccessHelper.HasAccess(User, "ADDITIONALENTITY", "Create"))
+                    return Forbid();
+            }
+
             if (!ModelState.IsValid)
             {
                 TempData["ErrorMessage"] = "Validation failed.";
@@ -107,8 +122,14 @@ namespace Client_WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
+
             try
             {
+
+                if (!AccessHelper.HasAccess(User, "ADDITIONALENTITY", "Delete"))
+                    return Forbid();
+
+
                 await _service.DeleteAsync(id, CurrentUserId, CurrentCompanyId);
                 TempData["SuccessMessage"] = "Additional Entity deleted successfully!";
             }
@@ -124,6 +145,10 @@ namespace Client_WebApp.Controllers
         {
             try
             {
+                if (!AccessHelper.HasAccess(User, "ADDITIONALENTITY", "View"))
+                    return Forbid();
+
+
                 var entities = await _service.GetAllAsync(CurrentCompanyId, id);
                 var entity = entities.FirstOrDefault();
                 if (entity == null) return NotFound(new { message = "Additional Entity not found." });

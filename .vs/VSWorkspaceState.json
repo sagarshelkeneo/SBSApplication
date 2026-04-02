@@ -1,7 +1,12 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Client-Project-SBM-main",
+    "\\Client-Project-SBM-main\\Client-Project-main",
+    "\\Client-Project-SBM-main\\Client-Project-main\\Client-Project",
+    "\\Client-Project-SBM-main\\Client-Project-main\\Client-Project\\Client.Persistence",
+    "\\Client-Project-SBM-main\\Client-Project-main\\Client-Project\\Client.Persistence\\Repositories"
   ],
-  "SelectedNode": "\\C:\\SAGAR\\Projects\\SBS\\SourceCodeGitRepo",
+  "SelectedNode": "\\Client-Project-SBM-main\\Client-Project-main\\Client-Project\\Client.Persistence\\Repositories\\SubContractorRepository.cs",
   "PreviewInSolutionExplorer": false
 }

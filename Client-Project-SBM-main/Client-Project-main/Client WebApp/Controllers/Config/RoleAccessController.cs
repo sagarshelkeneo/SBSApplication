@@ -1,5 +1,6 @@
 ﻿using Client.Application.Features.Role.Dtos;
 using Client.Application.Features.RoleAccessControl.Dtos;
+using Client_WebApp.Middleware;
 using Client_WebApp.Models.Config;
 using Client_WebApp.Services.Config;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,11 @@ namespace Client_WebApp.Controllers.Config
         }
         public async Task<IActionResult> Index()
         {
+            // Check if user has "View" access for Role Access module
+            if (!AccessHelper.HasAccess(User, "ROLEACCESS", "View"))
+            {
+                return RedirectToAction("UnauthorizedAccess", "Home");
+            }
 
             var roles = await _role_service.GetRoleAsync(null);
             List<RoleDetails> rd = new List<RoleDetails>();
@@ -46,6 +52,12 @@ namespace Client_WebApp.Controllers.Config
         [HttpGet]
         public async Task<JsonResult> GetRoleAccessByUser(int userId)
         {
+            // View permission check
+            if (!AccessHelper.HasAccess(User, "ROLEACCESS", "View"))
+            {
+                return Json(new { success = false, message = "Unauthorized to view role access details." });
+            }
+
             // Example data (replace with DB query)
             var data = await _service.GetRoleAccessByRoleIdAsync(userId);
 
@@ -64,15 +76,19 @@ namespace Client_WebApp.Controllers.Config
 
         }
 
-
-
         [HttpPost]
         public async Task<IActionResult> UpdateRoleAccess([FromBody] UpdateRoleAccessDto dto)
         {
+            // Edit permission check
+            if (!AccessHelper.HasAccess(User, "ROLEACCESS", "Edit"))
+            {
+                return Json(new { success = false, message = "You do not have permission to edit role access." });
+            }
+
             if (dto == null)
                 return Json(new { success = false, message = "No data received" });
 
-            dto.UpdatedBy = CurrentCompanyId;
+            dto.UpdatedBy = CurrentUserId;
             var result = await _service.UpdateRoleAccessAsync(dto);
 
             return Json(new { success = result });

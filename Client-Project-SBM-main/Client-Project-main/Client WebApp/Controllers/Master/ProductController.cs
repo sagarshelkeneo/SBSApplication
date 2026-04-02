@@ -1,4 +1,5 @@
 ﻿using Client.Application.Features.Product.Dtos;
+using Client_WebApp.Middleware;
 using Client_WebApp.Models.Master;
 using Client_WebApp.Services.Master;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,13 @@ namespace Client_WebApp.Controllers.Master
         {
             try
             {
+                // Restrict View Access for "PRODUCT" module
+                if (!AccessHelper.HasAccess(User, "PRODUCT", "View"))
+                {
+                    // Redirect unauthorized users to a custom page
+                    return Forbid();
+                }
+
                 var products = await _service.GetProductsAsync(CurrentCompanyId, null, searchText);
 
                 var viewModel = new ProductViewModel
@@ -40,6 +48,18 @@ namespace Client_WebApp.Controllers.Master
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateOrEdit(Product model)
         {
+            // Restrict Create / Edit Access for "PRODUCT" module
+            if (model.Id > 0)
+            {
+                if (!AccessHelper.HasAccess(User, "PRODUCT", "Edit"))
+                    return Forbid();
+            }
+            else
+            {
+                if (!AccessHelper.HasAccess(User, "PRODUCT", "Create"))
+                    return Forbid();
+            }
+
             if (!ModelState.IsValid)
             {
                 TempData["ErrorMessage"] = "Validation failed.";
@@ -90,6 +110,10 @@ namespace Client_WebApp.Controllers.Master
         {
             try
             {
+                // Restrict Delete Access for "PRODUCT" module
+                if (!AccessHelper.HasAccess(User, "PRODUCT", "Delete"))
+                    return Forbid();
+
                 await _service.DeleteProductAsync(id, CurrentUserId, companyId);
                 TempData["SuccessMessage"] = "Product deleted successfully!";
             }
@@ -106,6 +130,10 @@ namespace Client_WebApp.Controllers.Master
         {
             try
             {
+                // Optional: allow only View access here
+                if (!AccessHelper.HasAccess(User, "PRODUCT", "View"))
+                    return Forbid();
+
                 var products = await _service.GetProductsAsync(CurrentCompanyId, id, null);
                 var product = products.FirstOrDefault();
 

@@ -49,14 +49,17 @@
                         <div class="col-md-6">
                             <label asp-for="UnitAmount" class="form-label"></label>
                             <input asp-for="UnitAmount" class="form-control" id="UnitAmount" />
+                            <span asp-validation-for="UnitAmount" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
                             <label asp-for="Quantity" class="form-label"></label>
                             <input asp-for="Quantity" class="form-control" id="Quantity" />
+                            <span asp-validation-for="Quantity" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
                             <label asp-for="TotalAmount" class="form-label"></label>
                             <input asp-for="TotalAmount" class="form-control" id="TotalAmount" readonly />
+                            <span asp-validation-for="TotalAmount" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
                             <label asp-for="CommissionPercentage" class="form-label"></label>

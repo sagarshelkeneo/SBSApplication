@@ -3,10 +3,13 @@ using Client.Domain.Models;
 using Client.Persistence;
 using Client.Persistence.Context;
 using Client.Persistence.Repositories;
+using Client_WebApp.Middleware;
+using Client_WebApp.Models;
 using Client_WebApp.Services;
 using Client_WebApp.Services.Config;
 using Client_WebApp.Services.Master;
 using Client_WebApp.Services.Report;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
@@ -14,6 +17,18 @@ using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Add cookie authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Home/Login";      // redirect if not logged in
+        options.AccessDeniedPath = "/Home/AccessDenied";  // redirect if no permission
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);   // optional
+        options.SlidingExpiration = true;
+    });
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddControllersWithViews();
 
@@ -55,9 +70,9 @@ builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<RoleAccessService>();
 builder.Services.AddScoped<ReportService>();
 
-//// IDbConnection
+// IDbConnection
 //builder.Services.AddScoped<IDbConnection>(sp =>
-//    new MySqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))
+//    new MySqlConnection(connString)
 //);
 
 builder.Services.AddScoped<IDbConnection>(sp => new SqlConnection(connString));
@@ -66,6 +81,7 @@ builder.Services.AddScoped<IDbConnection>(sp => new SqlConnection(connString));
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.Configure<GoogleReCaptchaConfig>(builder.Configuration.GetSection("GoogleReCaptcha"));
 
 // IJwtService
 builder.Services.AddScoped<IJwtService, JwtService>();
@@ -86,10 +102,11 @@ app.UseStaticFiles();
 
 app.UseSession();
 
-//app.UseMiddleware<AuthMiddleware>();
+app.UseMiddleware<AuthMiddleware>();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

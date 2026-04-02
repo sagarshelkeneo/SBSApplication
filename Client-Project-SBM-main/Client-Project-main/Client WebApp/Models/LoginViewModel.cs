@@ -19,6 +19,12 @@ namespace Client_WebApp.Models
         public string Token { get; set; } = string.Empty;
     }
 
+    public class GoogleReCaptchaConfig
+    {
+        public string SiteKey { get; set; } = string.Empty;
+        public string? SecretKey { get; set; }
+    }
+
     public class JwtClaims
     {
         public string User { get; set; }

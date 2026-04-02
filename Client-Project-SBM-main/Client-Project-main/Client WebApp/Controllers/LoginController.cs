@@ -1,16 +1,19 @@
 ﻿using Client_WebApp.Services;
 using Microsoft.AspNetCore.Mvc;
 using Client_WebApp.Models;
+using Microsoft.Extensions.Options;
 
 namespace Client_WebApp.Controllers
 {
     public class LoginController : Controller
     {
         private readonly LoginService _loginService;
+        private readonly GoogleReCaptchaConfig _captchaConfig;
 
-        public LoginController(LoginService loginService)
+        public LoginController(LoginService loginService, IOptions<GoogleReCaptchaConfig> captchaConfig)
         {
             _loginService = loginService;
+            _captchaConfig = captchaConfig.Value;
         }
 
         [HttpGet]
@@ -21,8 +24,8 @@ namespace Client_WebApp.Controllers
 
             TempData.Remove("ErrorMessage");
 
-            ViewBag.SiteKey = "6Lcnv_crAAAAAFHsGMCVbMyu8CgPkp4DGiNrC_SC"; ///"6Ld9bIIrAAAAAP88S3Mdc5TVVnzqKRep7cqRIxli";
-
+            //ViewBag.SiteKey = "6Ld9bIIrAAAAAP88S3Mdc5TVVnzqKRep7cqRIxli";
+            ViewBag.SiteKey = _captchaConfig.SiteKey;
             return View(new LoginViewModel());
         }
 
@@ -30,7 +33,8 @@ namespace Client_WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(LoginViewModel model)
         {
-            ViewBag.SiteKey = "6Lcnv_crAAAAAFHsGMCVbMyu8CgPkp4DGiNrC_SC"; ///"6Ld9bIIrAAAAAP88S3Mdc5TVVnzqKRep7cqRIxli";
+            //ViewBag.SiteKey = "6Ld9bIIrAAAAAP88S3Mdc5TVVnzqKRep7cqRIxli";
+            ViewBag.SiteKey = _captchaConfig.SiteKey;
 
             if (!ModelState.IsValid)
                 return View(model);

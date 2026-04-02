@@ -1,5 +1,6 @@
 ﻿using Client.Application.Features.Payment.Dtos;
 using Client_WebApp.Controllers;
+using Client_WebApp.Middleware;
 using Client_WebApp.Models;
 using Client_WebApp.Services;
 using Client_WebApp.Services.Master;
@@ -25,6 +26,9 @@ namespace Client_WebApp.MVC.Controllers
 
         public async Task<IActionResult> Index(string durationType, DateTime? dayDate, DateTime? fromDate, DateTime? toDate, string bankName)
         {
+            if (!AccessHelper.HasAccess(User, "PAYMENT", "View"))
+                return Forbid();
+
             int companyId = CurrentCompanyId;
 
             // Get all payments
@@ -82,6 +86,17 @@ namespace Client_WebApp.MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateOrEdit(AddPaymentViewModel model)
         {
+            if (model.Id > 0)
+            {
+                if (!AccessHelper.HasAccess(User, "PAYMENT", "Edit"))
+                    return Forbid();
+            }
+            else
+            {
+                if (!AccessHelper.HasAccess(User, "PAYMENT", "Create"))
+                    return Forbid();
+            }
+
             if (!ModelState.IsValid)
             {
                 return Json(new { success = false, message = "Invalid data. Please check your inputs." });
@@ -140,6 +155,9 @@ namespace Client_WebApp.MVC.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPayment(int id)
         {
+            if (!AccessHelper.HasAccess(User, "PAYMENT", "View"))
+                return Forbid();
+
             int companyId = CurrentCompanyId;
 
             var payment = (await _service.GetPaymentsAsync(companyId, id)).FirstOrDefault();
@@ -175,11 +193,12 @@ namespace Client_WebApp.MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeletePayment(int id, int companyId, int updatedBy)
         {
-            companyId = CurrentCompanyId;
-            updatedBy = CurrentUserId;
             try
             {
-                await _service.DeletePaymentAsync(id, updatedBy, companyId);
+                if (!AccessHelper.HasAccess(User, "PAYMENT", "Delete"))
+                    return Forbid();
+
+                await _service.DeletePaymentAsync(id, CurrentUserId, CurrentCompanyId);
                 TempData["SuccessMessage"] = "Payment deleted successfully!";
             }
             catch (Exception ex)

@@ -1,4 +1,5 @@
 ﻿using Client.Application.Features.Role.Dtos;
+using Client_WebApp.Middleware;
 using Client_WebApp.Models;
 using Client_WebApp.Models.Config;
 using Client_WebApp.Services.Config;
@@ -18,11 +19,17 @@ namespace Client_WebApp.Controllers.Config
             _service = service;
         }
 
-        // ✅ GET: Role List with optional search
+        // GET: Role List with optional search
         public async Task<IActionResult> Index()
         {
             try
             {
+                // Check if user has View access for "ROLE MASTER"
+                if (!AccessHelper.HasAccess(User, "ROLE", "View"))
+                {
+                    return RedirectToAction("UnauthorizedAccess", "Home");
+                }
+
                 int companyId = CurrentCompanyId;
 
                 // Fetch all roles for the company
@@ -53,11 +60,24 @@ namespace Client_WebApp.Controllers.Config
         }
 
 
-        // ✅ POST: Create or Edit Role
+        // POST: Create or Edit Role
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateOrEdit(RoleDto model)
         {
+            if (model.Id > 0)
+            {
+                // Check Edit access
+                if (!AccessHelper.HasAccess(User, "ROLE", "Edit"))
+                    return RedirectToAction("UnauthorizedAccess", "Home");
+            }
+            else
+            {
+                // Check Create access
+                if (!AccessHelper.HasAccess(User, "ROLE", "Create"))
+                    return RedirectToAction("UnauthorizedAccess", "Home");
+            }
+
             if (!ModelState.IsValid)
             {
                 TempData["ErrorMessage"] = "Validation failed. Please check the input fields.";
@@ -104,13 +124,17 @@ namespace Client_WebApp.Controllers.Config
             return RedirectToAction(nameof(Index));
         }
 
-        // ✅ POST: Delete Role
+        // POST: Delete Role
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             try
             {
+                // Check Delete access
+                if (!AccessHelper.HasAccess(User, "ROLE", "Delete"))
+                    return RedirectToAction("UnauthorizedAccess", "Home");
+
                 int companyId = CurrentCompanyId;
                 int updatedBy = CurrentUserId;
 
@@ -125,12 +149,16 @@ namespace Client_WebApp.Controllers.Config
             return RedirectToAction(nameof(Index));
         }
 
-        // ✅ GET: Fetch Role by Id (for Edit/View modal)
+        // GET: Fetch Role by Id (for Edit/View modal)
         [HttpGet]
         public async Task<IActionResult> GetRole(int id)
         {
             try
             {
+                // Check View access
+                if (!AccessHelper.HasAccess(User, "ROLE", "View"))
+                    return RedirectToAction("UnauthorizedAccess", "Home");
+
                 int companyId = CurrentCompanyId;
                 var roles = await _service.GetRoleAsync(id);
                 var role = roles.FirstOrDefault();

@@ -83,12 +83,7 @@
                             </nav>
                         </div>
 
-                        <!-- Home -->
-                        <div class="sb-sidenav-menu-heading">Core</div>
-                        <a class="nav-link" href="@Url.Action("Index", "Home")">
-                            <div class="sb-nav-link-icon"><i class="fas fa-home"></i></div>
-                            Home
-                        </a>
+                        
 
                         <!-- Config Section -->
                         @if (CheckConfigAccess())
@@ -156,15 +151,15 @@
                             <div class="sb-sidenav-menu-heading">Transactions</div>
                             <a class="nav-link" href="@Url.Action("Index", "Invoice")">
                                 <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>
-                                Invoice
+                                Bookings
                             </a>
                             <a class="nav-link" href="@Url.Action("Index", "Payment")">
                                 <div class="sb-nav-link-icon"><i class="fas fa-credit-card"></i></div>
-                                Payment
+                                Bank Payment
                             </a>
                             <a class="nav-link" href="@Url.Action("Index", "AdditionalEntity")">
                                 <div class="sb-nav-link-icon"><i class="fas fa-layer-group"></i></div>
-                                Additional Entity
+                                Trolly
                             </a>
                         }
 

@@ -164,6 +164,7 @@
                 $("#userForm input, #userForm select").prop("readonly", false).prop("disabled", false);
                 $("#PasswordField").show(); // show password
                 $("#saveButton").show();
+                resetForm('#userForm');
             }
         }
 
@@ -260,13 +261,13 @@
                 },
                 messages: {
                     RoleMasterId: {
-                        required: "*Required"
+                        required: "*Required Role"
                     },
                     Username: {
-                        required: "*Required"
+                        required: "*Required Username"
                     },
                     Email: {
-                        required: "*Required",
+                        required: "*Required Email",
                         email: "Enter a valid email"
                     }
                 },

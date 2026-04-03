@@ -134,9 +134,21 @@
                     '.fa-trash': function (id) { showDeleteModal(id, '@Url.Action("Delete", "SubContractor")'); }
                 }
             });
+
+            $("#subcontractorForm").validate({
+                rules: {
+                    Name: { required: true },
+                },
+                messages: {
+                    Name: { required: "*Required Subcontractor Name" },
+                },
+                errorClass: "text-danger",
+                errorElement: "span"
+            });
         });
 
         function setModalMode(mode) {
+            resetForm('#subcontractorForm');
             const modalLabel = document.getElementById("subcontractorModalLabel");
             modalLabel.innerText = mode === 'add' ? 'Add Subcontractor' : (mode === 'edit' ? 'Edit Subcontractor' : 'View Subcontractor');
 

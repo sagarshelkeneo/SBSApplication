@@ -162,6 +162,7 @@
         });
 
         function setModalMode(mode) {
+            resetForm('#roleForm');
             const modalLabel = document.getElementById("roleModalLabel");
             modalLabel.innerText = mode === 'add' ? 'Add Role' : (mode === 'edit' ? 'Edit Role' : 'View Role');
 

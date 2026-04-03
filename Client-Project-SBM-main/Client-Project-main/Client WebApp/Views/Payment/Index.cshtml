@@ -292,6 +292,8 @@
         });
 
         paymentModal.addEventListener("hidden.bs.modal", function () {
+            resetForm('#paymentForm');
+
             $('#modalDayRadio').prop('checked', true);
             toggleModalPaymentDuration('day');
 
@@ -306,7 +308,6 @@
             const modalLabel = document.getElementById("paymentModalLabel");
 
             if (mode === 'add') {
-                resetForm('#paymentForm');
                 modalLabel.innerText = 'Add Payment';
                 $('#paymentForm input, #paymentForm select').prop('disabled', false);
                 $('#modalSaveButton').show();

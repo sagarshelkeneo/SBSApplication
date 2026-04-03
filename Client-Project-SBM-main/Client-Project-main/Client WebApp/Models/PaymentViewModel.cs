@@ -6,7 +6,7 @@ namespace Client_WebApp.Models
     public class PaymentDetails
     {
         public int Id { get; set; }
-        public string InvoiceNo { get; set; }
+        public string? InvoiceNo { get; set; } = null;
         public DateTime? PaymentDate { get; set; }
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
@@ -21,8 +21,7 @@ namespace Client_WebApp.Models
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Invoice No is required")]
-        public string InvoiceNo { get; set; }
+        public string? InvoiceNo { get; set; } = null;
 
         [Display(Name = "Payment Date")]
         public DateTime? PaymentDate { get; set; } = DateTime.Today;
@@ -63,8 +62,7 @@ namespace Client_WebApp.Models
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Invoice No is required")]
-        public string InvoiceNo { get; set; }
+        public string? InvoiceNo { get; set; } = null;
 
         [Display(Name = "Payment Date")]
         public DateTime? PaymentDate { get; set; }

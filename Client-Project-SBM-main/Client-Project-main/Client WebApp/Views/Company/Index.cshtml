@@ -206,6 +206,7 @@
 
 
         function setModalMode(mode) {
+            resetForm('#companyForm');
             const modalLabel = document.getElementById("companyModalLabel");
             modalLabel.innerText = mode === 'add' ? 'Add Company' : (mode === 'edit' ? 'Edit Company' : 'View Company');
 

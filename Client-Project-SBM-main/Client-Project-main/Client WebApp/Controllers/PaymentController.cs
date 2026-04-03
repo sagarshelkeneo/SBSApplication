@@ -68,7 +68,7 @@ namespace Client_WebApp.MVC.Controllers
                 AddPaymentViewModel = new AddPaymentViewModel
                 {
                     Bankes = banks.Select(b => new SelectListItem { Value = b.R_id.ToString(), Text = $"{b.R_bankName} ({b.R_branch})" }).ToList(),
-                    Invoices = invoices.Select(i => new SelectListItem { Value = i.R_invoiceNo?.Trim(), Text = i.R_invoiceNo?.Trim() }).ToList()
+                    Invoices = invoices.Where(i => !string.IsNullOrWhiteSpace(i.R_invoiceNo)).Select(i => new SelectListItem { Value = i.R_invoiceNo?.Trim(), Text = i.R_invoiceNo?.Trim() }).ToList()
                 }
             };
 

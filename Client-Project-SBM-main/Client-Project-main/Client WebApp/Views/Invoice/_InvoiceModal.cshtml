@@ -61,12 +61,12 @@
                             <input asp-for="TotalAmount" class="form-control" id="TotalAmount" readonly />
                             <span asp-validation-for="TotalAmount" class="text-danger"></span>
                         </div>
-                        <div class="col-md-6">
+                        @* <div class="col-md-6">
                             <label asp-for="CommissionPercentage" class="form-label"></label>
                             <input asp-for="CommissionPercentage" class="form-control" id="CommissionPercentage" />
-                        </div>
+                        </div> *@
                         <div class="col-md-6">
-                            <label asp-for="CommissionAmount" class="form-label"></label>
+                            <label asp-for="CommissionAmount" class="form-label">Labour Charge</label>
                             <input asp-for="CommissionAmount" class="form-control" id="CommissionAmount" readonly />
                         </div>
 

@@ -22,7 +22,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>@ViewData["Title"] - SB Admin Layout</title>
+    <title>@ViewData["Title"] - SBS</title>
 
     <!-- Bootstrap & Custom Styles -->
     <link href="~/css/styles.css" rel="stylesheet" />
@@ -38,10 +38,10 @@
             <i class="fas fa-bars"></i>
         </button>
 
-        <!-- Center Page Title -->
+       @*  <!-- Center Page Title -->
         <h4 class="m-4 blockquote d-none d-md-block text-white fw-semibold">
             @ViewData["Title"]
-        </h4>
+        </h4> *@
 
 
         <ul class="navbar-nav ms-auto me-3 me-lg-4">
@@ -68,27 +68,32 @@
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Home
                         </a>
-
-                        <div class="sb-sidenav-menu-heading">Manage Data</div>
-                        <a class="nav-link collapsed" href="#super" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
-                           aria-expanded="false" aria-controls="collapseLayouts">
-                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                            SuperAdmin
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseProfile" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="javascript:void(0)" onclick="openChangePasswordModal()">Change Password</a>
-                                <a class="nav-link" href="javascript:void(0)" onclick="openSendEmailModal()">Send Email</a>
-                            </nav>
-                        </div>
-
-                        
+                        @if (CheckMasterAccess() || CheckConfigAccess() || CheckReportAccess())
+                        {
+                            <div class="sb-sidenav-menu-heading">Manage Data</div>
+                        }
+                        <!-- Master Section -->
+                        @if (CheckMasterAccess())
+                        {
+                            @* <div class="sb-sidenav-menu-heading">Manage Data</div> *@
+                            <a class="nav-link collapsed" href="#super" data-bs-toggle="collapse" data-bs-target="#collapseProfile"
+                            aria-expanded="false" aria-controls="collapseProfile">
+                                <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                                SuperAdmin
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseProfile" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" href="javascript:void(0)" onclick="openChangePasswordModal()">Change Password</a>
+                                    <a class="nav-link" href="javascript:void(0)" onclick="openSendEmailModal()">Send Email</a>
+                                </nav>
+                            </div>
+                        }
 
                         <!-- Config Section -->
                         @if (CheckConfigAccess())
                         {
-                            <div class="sb-sidenav-menu-heading">Configuration</div>
+                            @* <div class="sb-sidenav-menu-heading">Configuration</div> *@
                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseConfig"
                                aria-expanded="false" aria-controls="collapseConfig">
                                 <div class="sb-nav-link-icon"><i class="fas fa-cogs"></i></div>
@@ -107,7 +112,7 @@
                         <!-- Master Section -->
                         @if (CheckMasterAccess())
                         {
-                            <div class="sb-sidenav-menu-heading">Master</div>
+                            @* <div class="sb-sidenav-menu-heading">Master</div> *@
                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseMaster"
                                aria-expanded="false" aria-controls="collapseMaster">
                                 <div class="sb-nav-link-icon"><i class="fas fa-database"></i></div>
@@ -127,7 +132,7 @@
                         <!-- Reports Section -->
                         @if (CheckReportAccess())
                         {
-                            <div class="sb-sidenav-menu-heading">Reports</div>
+                            @* <div class="sb-sidenav-menu-heading">Reports</div> *@
                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseReports"
                                aria-expanded="false" aria-controls="collapseReports">
                                 <div class="sb-nav-link-icon"><i class="fas fa-file-alt"></i></div>

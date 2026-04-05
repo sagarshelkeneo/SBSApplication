@@ -98,6 +98,7 @@ namespace Client.Persistence.Repositories
         {
             var parameters = new DynamicParameters();
             parameters.Add("@P_id", dto.Id);
+            parameters.Add("@P_invoiceNo", dto.InvoiceNo);
             parameters.Add("@P_paymentDate", dto.PaymentDate);
             parameters.Add("@P_fromDate", dto.FromDate);
             parameters.Add("@P_toDate", dto.ToDate);

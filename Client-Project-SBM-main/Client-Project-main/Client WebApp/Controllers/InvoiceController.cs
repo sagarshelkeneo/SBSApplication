@@ -160,7 +160,7 @@ namespace Client.MVC.Controllers
                 };
 
                 await _service.UpdateInvoiceAsync(updateDto);
-                TempData["SuccessMessage"] = "Invoice updated successfully!";
+                TempData["SuccessMessage"] = "Booking updated successfully!";
             }
             else
             {
@@ -180,7 +180,7 @@ namespace Client.MVC.Controllers
                     PaymentMode = model.PaymentMode,
                     CreatedBy = CurrentUserId
                 });
-                TempData["SuccessMessage"] = "Invoice added successfully!";
+                TempData["SuccessMessage"] = "Booking added successfully!";
             }
             return RedirectToAction("Index");
         }
@@ -219,7 +219,7 @@ namespace Client.MVC.Controllers
                 TotalAmount = invoice.R_totalAmount,
                 CommissionPercentage = invoice.R_commissionPercentage,
                 CommissionAmount = invoice.R_commissionAmount,
-                InvoiceType = invoice.R_invoiceType,
+                InvoiceType = invoice.R_invoiceType
             };
 
             return Json(model);
@@ -235,11 +235,11 @@ namespace Client.MVC.Controllers
                     return Forbid();
 
                 await _service.DeleteInvoiceAsync(id, CurrentUserId, CurrentCompanyId);
-                TempData["SuccessMessage"] = "Invoice deleted successfully!";
+                TempData["SuccessMessage"] = "Booking deleted successfully!";
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Failed to delete invoice. " + ex.Message;
+                TempData["ErrorMessage"] = "Failed to delete booking. " + ex.Message;
             }
 
             return RedirectToAction(nameof(Index), new { companyId });

@@ -92,7 +92,7 @@ namespace Client_WebApp.Controllers
                         UpdatedBy = CurrentUserId
                     };
                     await _service.UpdateAsync(updateDto);
-                    TempData["SuccessMessage"] = "Additional Entity updated successfully!";
+                    TempData["SuccessMessage"] = "Trolly updated successfully!";
                 }
                 else
                 {
@@ -107,7 +107,7 @@ namespace Client_WebApp.Controllers
                         CreatedBy = CurrentUserId
                     };
                     await _service.InsertAsync(createDto);
-                    TempData["SuccessMessage"] = "Additional Entity added successfully!";
+                    TempData["SuccessMessage"] = "Trolly added successfully!";
                 }
             }
             catch (Exception ex)
@@ -131,11 +131,11 @@ namespace Client_WebApp.Controllers
 
 
                 await _service.DeleteAsync(id, CurrentUserId, CurrentCompanyId);
-                TempData["SuccessMessage"] = "Additional Entity deleted successfully!";
+                TempData["SuccessMessage"] = "Trolly deleted successfully!";
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Failed to delete Additional Entity: " + ex.Message;
+                TempData["ErrorMessage"] = "Failed to delete Trolly: " + ex.Message;
             }
             return RedirectToAction("Index");
         }
@@ -151,7 +151,7 @@ namespace Client_WebApp.Controllers
 
                 var entities = await _service.GetAllAsync(CurrentCompanyId, id);
                 var entity = entities.FirstOrDefault();
-                if (entity == null) return NotFound(new { message = "Additional Entity not found." });
+                if (entity == null) return NotFound(new { message = "Trolly not found." });
 
                 return Json(new
                 {
@@ -166,7 +166,7 @@ namespace Client_WebApp.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Failed to fetch Additional Entity data: " + ex.Message });
+                return StatusCode(500, new { message = "Failed to fetch Trolly data: " + ex.Message });
             }
         }
     }

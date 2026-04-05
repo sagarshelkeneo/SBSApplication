@@ -1,6 +1,6 @@
 ﻿@model Client_WebApp.Models.PaymentIndexViewModel
 @{
-    ViewData["Title"] = "Payments";
+    ViewData["Title"] = "Bank Payments";
 }
 
 @* <h2 class="pt-4 fs-1">Payments</h2> *@
@@ -67,7 +67,7 @@
     <div class="card mb-4">
         <div class="card-header">
             <i class="fas fa-table me-1"></i>
-            Payment Table
+            Bank Payments Table
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -75,8 +75,8 @@
                     <thead class="thead-dark">
                         <tr>
                             <th>Sr. No.</th>
-                            <th>Invoice No.</th>
                             <th>Payment Date</th>
+                            <th>Invoice No.</th>                            
                             <th>Amount Paid</th>
                             <th>Bank Name</th>
                             <th class="text-center">Actions</th>
@@ -87,13 +87,13 @@
                         {
                             <tr data-payment-id="@payment.Id">
                                 <td>@payment.Id</td>
-                                <td>@payment.InvoiceNo</td>
                                 <td class="text-end">
                                     @(payment.DurationType == "day"
                                         ? payment.PaymentDate?.ToString("dd-MMM-yy")
                                         : $"{payment.FromDate?.ToString("dd-MMM-yy")} - {payment.ToDate?.ToString("dd-MMM-yy")}")
                                 </td>
-                                <td>@payment.AmountPaid.ToString("N2")</td>
+                                <td>@payment.InvoiceNo</td>
+                                 <td>@payment.AmountPaid.ToString("N2")</td>
                                 <td>@(string.IsNullOrEmpty(payment.BankName) ? "-" : payment.BankName)</td>
                                 <td>
                                     <div class="action-icons">
@@ -149,10 +149,11 @@
                 customInfoId: 'paymentTable_info_custom',
                 columnDefs: [
                     { orderable: false, targets: 0 },
-                    { orderable: false, targets: -1 }
+                    { orderable: false, targets: -1 },
+                    { type: 'date', targets: 1 }
                 ],
                 columnsSearchable: [false, true, true, true, true, false],
-                order: [[1, 'asc']],
+                order: [[1, 'desc']],
                 actionCallbacks: {
                     '.fa-eye': viewPayment,
                     '.fa-pen-to-square': editPayment,
@@ -191,79 +192,6 @@
                 toDiv.classList.remove("d-none");
             }
         }
-
-
-        // $(document).ready(function () {
-        //     $('#invoiceSelect').select2({
-        //         theme: 'bootstrap-5',
-        //         width: '100%',
-        //         placeholder: '--Select Invoice--',
-        //         allowClear: true,
-        //         dropdownParent: $('#payment-modal')
-        //     });
-
-        //     $('#invoiceSelect').on('select2:open', function () {
-        //         $('.select2-search__field').css('border-radius', '0.375rem');
-        //     });
-
-        //     $('#paymentTable').DataTable({
-        //         pageLength: 5,
-        //         lengthMenu: [5, 10, 25, 50],
-        //         columnDefs: [
-        //             { orderable: false, targets: 0 },  // Sr. No.
-        //             { orderable: false, targets: -1 } // Actions
-        //         ],
-        //         order: [[1, 'asc']],
-        //         pagingType: 'full',
-        //         info: false,
-        //         searching: true,
-        //         search: {
-        //             smart: true,        // default, allows substring matching
-        //             regex: false,       // disable regex matching
-        //             caseInsensitive: true
-        //         },
-        //         // prevent searching in hidden columns if you have any
-        //         columns: [
-        //             { searchable: false }, // Sr. No.
-        //             { searchable: true },  // Invoice No.
-        //             { searchable: true },  // Payment Date
-        //             { searchable: true },  // Amount Paid
-        //             { searchable: true },  // Bank Name
-        //             { searchable: false }  // Actions
-        //         ],
-        //         language: {
-        //             paginate: {
-        //                 first: '<i class="fa-solid fa-angle-left"></i><i class="fa-solid fa-angle-left"></i>',
-        //                 previous: '<i class="fa-solid fa-chevron-left"></i>',
-        //                 next: '<i class="fa-solid fa-chevron-right"></i>',
-        //                 last: '<i class="fa-solid fa-angle-right"></i><i class="fa-solid fa-angle-right"></i>'
-        //             }
-        //         },
-        //         drawCallback: function () {
-        //             var api = this.api();
-        //             var pageInfo = api.page.info();
-
-        //             // Update Sr. No.
-        //             api.rows({ page: 'current' }).nodes().each(function (row, i) {
-        //                 $('td:eq(0)', row).html(pageInfo.start + i + 1);
-        //             });
-
-        //             // Remove previous custom info
-        //             $('#paymentTable_info_custom').remove();
-
-        //             // Calculate start and end correctly
-        //             var start = pageInfo.recordsTotal === 0 ? 0 : pageInfo.start + 1;
-        //             var end = pageInfo.end;
-
-        //             // Insert custom info above pagination
-        //             $('#paymentTable_paginate').before(
-        //                 `<div id="paymentTable_info_custom" class="dataTables_info mb-2">
-        //             ${start}-${end} of ${pageInfo.recordsTotal}
-        //          </div>`
-        //             );
-        //         }
-        //     });
-        // });
 
 
         function toggleModalPaymentDuration(type) {
@@ -308,17 +236,17 @@
             const modalLabel = document.getElementById("paymentModalLabel");
 
             if (mode === 'add') {
-                modalLabel.innerText = 'Add Payment';
+                modalLabel.innerText = 'Add Bank Payments';
                 $('#paymentForm input, #paymentForm select').prop('disabled', false);
                 $('#modalSaveButton').show();
             }
             else if (mode === 'edit') {
-                modalLabel.innerText = 'Edit Payment';
+                modalLabel.innerText = 'Edit Bank Payments';
                 $('#paymentForm input, #paymentForm select').prop('disabled', false);
                 $('#modalSaveButton').show();
             }
             else if (mode === 'view') {
-                modalLabel.innerText = 'View Payment';
+                modalLabel.innerText = 'View Bank Payments';
                 $('#paymentForm input, #paymentForm select').prop('disabled', true);
                 $('#modalSaveButton').hide();
             }

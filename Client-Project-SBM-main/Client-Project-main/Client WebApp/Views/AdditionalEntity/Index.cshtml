@@ -1,10 +1,10 @@
 ﻿@model Client_WebApp.Models.AdditionalEntityViewModel
 
 @{
-    ViewData["Title"] = "Additional Entity";
+    ViewData["Title"] = "Trolly";
 }
 
-@* <h2 class="pt-4 fs-1">Additional Entity</h2> *@
+@* <h2 class="pt-4 fs-1">Trolly</h2> *@
 
 <div class="">
 
@@ -42,7 +42,7 @@
 
     <!-- Table -->
     <div class="card mb-4">
-        <div class="card-header"><i class="fas fa-table me-1"></i> Additional Entity Table</div>
+        <div class="card-header"><i class="fas fa-table me-1"></i> Trolly Table</div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-striped table-hover dataTable" id="additionalEntityTable">
@@ -111,7 +111,7 @@
         function setModalMode(mode) {
             resetForm('#additionalEntityForm');
             const modalLabel = document.getElementById("additionalEntityModalLabel");
-            modalLabel.innerText = mode === 'add' ? 'Add Additional Entity' : (mode === 'edit' ? 'Edit Additional Entity' : 'View Additional Entity');
+            modalLabel.innerText = mode === 'add' ? 'Add Trolly' : (mode === 'edit' ? 'Edit Trolly' : 'View Trolly');
 
             if (mode === 'view') {
                 $("#additionalEntityForm input, #additionalEntityForm select").prop("readonly", true).prop("disabled", true);

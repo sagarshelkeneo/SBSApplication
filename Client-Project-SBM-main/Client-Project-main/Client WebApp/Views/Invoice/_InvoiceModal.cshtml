@@ -17,20 +17,20 @@
 
                     <div class="row g-3">
                         <div class="col-md-6">
+                            <label asp-for="InvoiceDate" class="form-label"></label>
+                            <input asp-for="InvoiceDate" class="form-control" type="date" id="InvoiceDate" />
+                            <span asp-validation-for="InvoiceDate" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
                            @*  <label asp-for="InvoiceNo" class="form-label"></label>
                             <input asp-for="InvoiceNo" class="form-control" id="InvoiceNo" />
                             <span asp-validation-for="InvoiceNo" class="text-danger"></span> *@
 
                             <label asp-for="InvoiceNo" class="form-label">Receipt Number</label>
-                            <input asp-for="InvoiceNo" class="form-control" id="InvoiceNo" />
-                            <span asp-validation-for="InvoiceNo" class="text-danger">Please enter a valid Receipt Number.</span>
+                            <input asp-for="InvoiceNo" class="form-control" id="InvoiceNo" data-val="false" />
+                            @* <span asp-validation-for="InvoiceNo" class="text-danger">Please enter a valid Receipt Number.</span> *@
 
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="InvoiceDate" class="form-label"></label>
-                            <input asp-for="InvoiceDate" class="form-control" type="date" id="InvoiceDate" />
-                            <span asp-validation-for="InvoiceDate" class="text-danger"></span>
-                        </div>
+                        </div>                        
                         <div class="col-md-6">
                             <label asp-for="SubcontractorId" class="form-label"></label>
                             <select asp-for="SubcontractorId" class="form-select" asp-items="Model.SubContractorList">
@@ -67,7 +67,7 @@
                         </div> *@
                         <div class="col-md-6">
                             <label asp-for="CommissionAmount" class="form-label">Labour Charge</label>
-                            <input asp-for="CommissionAmount" class="form-control" id="CommissionAmount" readonly />
+                            <input asp-for="CommissionAmount" class="form-control" id="CommissionAmount" />
                         </div>
 
                         <div class="col-md-6">

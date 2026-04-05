@@ -127,7 +127,7 @@ namespace Client_WebApp.MVC.Controllers
                 };
 
                 await _service.CreatePaymentAsync(dto);
-                TempData["SuccessMessage"] = "Payment added successfully!";
+                TempData["SuccessMessage"] = "Bank Payment added successfully!";
             }
             else
             {
@@ -145,7 +145,7 @@ namespace Client_WebApp.MVC.Controllers
                 };
 
                 await _service.UpdatePaymentAsync(dto);
-                TempData["SuccessMessage"] = "Payment updated successfully!";
+                TempData["SuccessMessage"] = "Bank Payment updated successfully!";
             }
 
             return RedirectToAction("Index");
@@ -199,11 +199,11 @@ namespace Client_WebApp.MVC.Controllers
                     return Forbid();
 
                 await _service.DeletePaymentAsync(id, CurrentUserId, CurrentCompanyId);
-                TempData["SuccessMessage"] = "Payment deleted successfully!";
+                TempData["SuccessMessage"] = "Bank Payment deleted successfully!";
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Failed to delete payment. " + ex.Message;
+                TempData["ErrorMessage"] = "Failed to delete Bank Payment. " + ex.Message;
             }
             return RedirectToAction(nameof(Index), new { companyId });
         }

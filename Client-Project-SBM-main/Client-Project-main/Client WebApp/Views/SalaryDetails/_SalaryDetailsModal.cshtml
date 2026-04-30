@@ -1,0 +1,75 @@
+﻿@model Client_WebApp.Models.SalaryDetailsViewModel
+
+<!-- Modal -->
+<div class="modal fade" id="SalaryDetails-modal" tabindex="-1" aria-labelledby="SalaryDetailsModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-3 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="SalaryDetailsModalLabel">Add Additional Entity</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form asp-action="CreateOrEdit" method="post" id="SalaryDetailsForm">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" asp-for="SalaryDetails.Id" id="Id" />
+                    <input type="hidden" asp-for="SalaryDetails.CompanyId" id="CompanyId" value="@Model.CompanyId" />
+
+                    <div class="row g-3">
+
+                        <!-- Date -->
+                        <div class="col-md-6">
+                            <label asp-for="SalaryDetails.Date" class="form-label">Date</label>
+                            <input asp-for="SalaryDetails.Date" type="date" class="form-control" id="Date" />
+                            <span asp-validation-for="SalaryDetails.Date" class="text-danger"></span>
+                        </div>
+
+                        <!-- Bank -->
+                        <div class="col-md-6">
+                            <label asp-for="SalaryDetails.BankId" class="form-label">Bank</label>
+                            <select asp-for="SalaryDetails.BankId" class="form-select" id="BankId">
+                                <option value="">-- Select Bank --</option>
+                                @foreach (var sc in Model.Banks)
+                                {
+                                    <option value="@sc.Id">@sc.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="SalaryDetails.BankId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Type -->
+                        <div class="col-md-6">
+                            <label asp-for="SalaryDetails.ToliNo" class="form-label">Toli No</label>
+                            <input asp-for="SalaryDetails.ToliNo" class="form-control" id="ToliNo" placeholder="Enter Toli No" />
+                            <span asp-validation-for="SalaryDetails.ToliNo" class="text-danger"></span>
+                        </div>
+
+                       @*  <!-- Quantity -->
+                        <div class="col-md-6">
+                            <label asp-for="SalaryDetails.Quantity" class="form-label">Quantity</label>
+                            <input asp-for="SalaryDetails.Quantity" type="number" min="0" class="form-control" id="Quantity" placeholder="Enter Quantity" />
+                            <span asp-validation-for="SalaryDetails.Quantity" class="text-danger"></span>
+                        </div> *@
+
+                        <!-- Amount -->
+                        <div class="col-md-6">
+                            <label asp-for="SalaryDetails.Amount" class="form-label">Amount</label>
+                            <input asp-for="SalaryDetails.Amount" type="number" step="0.01" min="0" class="form-control" id="Amount" placeholder="Enter Amount" />
+                            <span asp-validation-for="SalaryDetails.Amount" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <button type="submit" class="btn btn-success px-4" id="saveButton">Save</button>
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

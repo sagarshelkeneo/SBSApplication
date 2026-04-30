@@ -1,0 +1,164 @@
+﻿@model Client_WebApp.Models.SalaryDetailsViewModel
+
+@{
+    ViewData["Title"] = "Salary Details";
+}
+
+@* <h2 class="pt-4 fs-1">Salary Details</h2> *@
+
+<div class="">
+
+    <!-- Add / Export Buttons -->
+    <div class="my-3">
+        <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#SalaryDetails-modal" onclick="setModalMode('add')">
+            <i class="fa-solid fa-plus"></i> Add
+        </button>
+        <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
+            <i class="fa-solid fa-file-pdf"></i> Export PDF
+        </button>
+        <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
+            <i class="fa-solid fa-file-excel"></i> Export Excel
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-2">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label>Search</label>
+                    <input type="text" name="searchText" class="form-control" placeholder="Search by toli no or bank..." value="@ViewData["searchText"]" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <partial name="_SalaryDetailsModal" model="Model" />
+
+    <!-- Table -->
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-table me-1"></i> Salary Details Table</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover dataTable" id="SalaryDetailsTable">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Sr. No.</th>
+                            <th>Date</th>
+                            <th>Bank</th>
+                            <th>ToliNo</th>
+                            <th>Amount</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.SalaryDetails != null && Model.SalaryDetailList.Any())
+                        {
+                            int srNo = 1;
+                            foreach (var item in Model.SalaryDetailList)
+                            {
+                                <tr>
+                                    <td>@srNo</td>
+                                    <td>@item.R_date.ToString("dd-MMM-yyyy")</td>
+                                    <td>@item.R_bankName</td>
+                                    <td>@item.R_toliNo</td>
+                                    <td>@item.R_amount</td>
+                                    <td class="text-center">
+                                        <div class="action-icons">
+                                            <i class="fa-regular fa-eye cursor-pointer text-success" onclick="viewSalaryDetails(@item.R_id)"></i>
+                                            <i class="fa-regular fa-pen-to-square cursor-pointer" onclick="editSalaryDetails(@item.R_id)"></i>
+                                            <i class="fa-solid fa-trash cursor-pointer text-danger" onclick="showDeleteModal(@item.R_id, '@Url.Action("Delete", "SalaryDetails")')"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                                srNo++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center fs-5">No Records</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            initializeGenericDataTable({
+                tableSelector: '#SalaryDetailsTable',
+                customInfoId: 'SalaryDetailsTable_info_custom',
+                columnDefs: [
+                    { orderable: false, targets: 0 },
+                    { orderable: false, targets: -1 }
+                ],
+                columnsSearchable: [false, true, true, true, true, false]
+            });
+        });
+
+        function setModalMode(mode) {
+            resetForm('#SalaryDetailsForm');
+            const modalLabel = document.getElementById("SalaryDetailsModalLabel");
+            modalLabel.innerText = mode === 'add' ? 'Add Salary Details' : (mode === 'edit' ? 'Edit Salary Details' : 'View Salary Details');
+
+            if (mode === 'view') {
+                $("#SalaryDetailsForm input, #SalaryDetailsForm select").prop("readonly", true).prop("disabled", true);
+                $("#saveButton").hide();
+            } else {
+                $("#SalaryDetailsForm input, #SalaryDetailsForm select").prop("readonly", false).prop("disabled", false);
+                $("#saveButton").show();
+            }
+        }
+
+        function getSalaryDetails(id) {
+            $.ajax({
+                url: '/SalaryDetails/GetSalaryDetails',
+                type: 'GET',
+                data: { id: id },
+                success: function (data) {
+                    $('#Id').val(data.id);
+
+                    if (data.date) {
+                        const date = new Date(data.date);
+                        const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+                            .toISOString()
+                            .split('T')[0];
+                        $('#Date').val(localDate);
+                    } else {
+                        $('#Date').val('');
+                    }
+
+                    $('#BankId').val(data.bankId);
+                    $('#ToliNo').val(data.toliNo);
+                    //$('#Quantity').val(data.quantity);
+                    $('#Amount').val(data.amount);
+
+                    $('#SalaryDetails-modal').modal('show');
+                },
+                error: function () {
+                    alert("Failed to load data.");
+                }
+            });
+        }
+
+        function editSalaryDetails(id) {
+            setModalMode('edit');
+            getSalaryDetails(id);
+        }
+
+        function viewSalaryDetails(id) {
+            setModalMode('view');
+            getSalaryDetails(id);
+        }
+    </script>
+}

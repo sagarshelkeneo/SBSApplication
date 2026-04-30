@@ -27,6 +27,9 @@ namespace Client_WebApp.Models
         public decimal CommissionPercentage { get; set; }
         public decimal CommissionAmount { get; set; }
         public string InvoiceType { get; set; }
+        public string GroupNumber { get; set; }
+        public string LRNumber { get; set; }
+        public string VehicleNumber { get; set; }
     }
 
     public class InvoiceViewModel
@@ -63,7 +66,10 @@ namespace Client_WebApp.Models
         public decimal CommissionAmount { get; set; }
 
         public string? PaymentMode { get; set; }
-
+        public string? GroupNumber { get; set; }
+        public string? LRNumber { get; set; }
+        public string? VehicleNumber { get; set; }
+        
         public string RecaptchaToken { get; set; }
         
         // Dropdown lists
@@ -100,6 +106,12 @@ namespace Client_WebApp.Models
         public string PaymentMode { get; set; } = "CASH";
         public int CreatedBy { get; set; }
         public int UpdatedBy { get; set; }
+        public string? GroupNumber { get; set; }
+        [Display(Name = "Toli No")]
+        public string? LRNumber { get; set; }
+        [Display(Name = "LR Number")]
+        public string? VehicleNumber { get; set; }
+        [Display(Name = "Vehicle Number")]
         public IEnumerable<SelectListItem>? SubContractorList { get; set; }
         public IEnumerable<SelectListItem>? ProductList { get; set; }
     }

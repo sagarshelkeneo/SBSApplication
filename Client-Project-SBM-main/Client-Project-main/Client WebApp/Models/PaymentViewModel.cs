@@ -45,6 +45,8 @@ namespace Client_WebApp.Models
 
         [Display(Name = "Bank Name")]
         public string? BankName { get; set; }
+        public string? SubContractorName { get; set; } = null;
+        public int? SubContractorId { get; set; } = null;
 
         //[Display(Name = "Status")]
         //public string PaymentStatus { get; set; } // Paid / Pending
@@ -53,7 +55,10 @@ namespace Client_WebApp.Models
         public int UpdatedBy { get; set; }
         [Display(Name = "Payment Duration")]
         public string ModalDurationType { get; set; } = "day"; // default
+
+        public string ModalInvoiceType { get; set; } = "invoice"; // default
         public IEnumerable<SelectListItem>? Invoices { get; set; }
+        public IEnumerable<SelectListItem>? SubContractors { get; set; }
         public IEnumerable<SelectListItem>? Bankes { get; set; }
     }
 
@@ -62,6 +67,7 @@ namespace Client_WebApp.Models
     {
         public int Id { get; set; }
 
+        public int? InvoiceId { get; set; } = null;
         public string? InvoiceNo { get; set; } = null;
 
         [Display(Name = "Payment Date")]
@@ -72,6 +78,11 @@ namespace Client_WebApp.Models
 
         [Display(Name = "To Date")]
         public DateTime? ToDate { get; set; }
+
+        public int? SubContractorId { get; set; }
+
+        public string SubContractorName { get; set; }
+
 
         [Required(ErrorMessage = "Amount Paid is required")]
         [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0")]
@@ -89,6 +100,7 @@ namespace Client_WebApp.Models
         [Display(Name = "Status")]
         public string PaymentStatus { get; set; } // Paid / Pending
         public string DurationType { get; set; } = "day";
+        public string InvoiceType { get; set; } = "invoice";
         // Audit fields
         public int CompanyId { get; set; }
         public int CreatedBy { get; set; }

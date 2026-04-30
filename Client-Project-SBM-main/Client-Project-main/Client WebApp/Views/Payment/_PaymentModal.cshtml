@@ -17,13 +17,36 @@
                 <div class="modal-body">
                     <div class="row g-3">
 
+                        <!-- Payment Inoivce/SubContractor Type Radio -->
+                        <div class="col-md-6">
+                            <label class="form-label d-block">Type</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="ModalInvoiceType" id="modalInvoiceRadio" value="invoice">
+                                <label class="form-check-label" for="modalInvoiceRadio">Invoice</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="ModalInvoiceType" id="modalSubContractorRadio" value="subcontractor">
+                                <label class="form-check-label" for="modalSubContractorRadio">Sub Contractor</label>
+                            </div>
+                        </div>
+
+                       
                         <!-- Invoice -->
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-3" id="modalInvoiceDiv">
                             <label asp-for="InvoiceNo" class="form-label">Invoice No</label>
                             <select asp-for="InvoiceNo" class="form-select" id="invoiceSelect" asp-items="Model.Invoices">
                                 <option value="">--Select Invoice--</option>
                             </select>
                         </div>
+
+                        <!-- SubContractor-->
+                        <div class="col-md-6" id="modalSubContractorDiv">
+                            <label asp-for="SubContractorId" class="form-label">Sub Contractor</label>
+                            <select asp-for="SubContractorId" class="form-select" id="subContractorSelect" asp-items="Model.SubContractors">
+                                <option value="">--Select Sub Contractor--</option>
+                            </select>
+                        </div>
+
 
                         <!-- Payment Type Radio -->
                         <div class="col-md-6">
@@ -36,6 +59,15 @@
                                 <input class="form-check-input" type="radio" name="ModalDurationType" id="modalDurationRadio" value="duration">
                                 <label class="form-check-label" for="modalDurationRadio">Duration</label>
                             </div>
+                        </div>
+
+                        <!-- Bank -->
+                        <div class="col-md-6" id="modalBankDiv">
+                            <label asp-for="BankId" class="form-label">Bank Name</label>
+                            <select asp-for="BankId" class="form-select" asp-items="Model.Bankes">
+                                <option value="">--Select Bank--</option>
+                            </select>
+                            <span asp-validation-for="BankId" class="text-danger"></span>
                         </div>
 
                         <!-- Payment Date -->
@@ -64,14 +96,7 @@
                             <span asp-validation-for="AmountPaid" class="text-danger"></span>
                         </div>
 
-                        <!-- Bank -->
-                        <div class="col-md-6" id="modalBankDiv">
-                            <label asp-for="BankId" class="form-label">Bank Name</label>
-                            <select asp-for="BankId" class="form-select" asp-items="Model.Bankes">
-                                <option value="">--Select Bank--</option>
-                            </select>
-                            <span asp-validation-for="BankId" class="text-danger"></span>
-                        </div>
+                       
 
                     </div>
                 </div>

@@ -77,7 +77,11 @@ namespace Client.MVC.Controllers
                 TotalAmount = i.R_totalAmount,
                 CommissionPercentage = i.R_commissionPercentage,
                 CommissionAmount = i.R_commissionAmount,
-                InvoiceType = i.R_invoiceType
+                InvoiceType = i.R_invoiceType,
+                GroupNumber  = i.R_GroupNumber,
+                LRNumber = i.R_LRNumber,
+                VehicleNumber = i.R_VehicleNumber
+
             }).ToList();
 
             // Pass filter values to ViewData to preserve in form
@@ -156,7 +160,10 @@ namespace Client.MVC.Controllers
                     CommissionPercentage = model.CommissionPercentage,
                     CommissionAmount = model.CommissionAmount,
                     PaymentMode = model.PaymentMode,
-                    UpdatedBy = CurrentUserId
+                    UpdatedBy = CurrentUserId,
+                    GroupNumber = model.GroupNumber,
+                    LRNumber = model.LRNumber,
+                    VehicleNumber = model.VehicleNumber,
                 };
 
                 await _service.UpdateInvoiceAsync(updateDto);
@@ -178,7 +185,10 @@ namespace Client.MVC.Controllers
                     CommissionPercentage = model.CommissionPercentage,
                     CommissionAmount = model.CommissionAmount,
                     PaymentMode = model.PaymentMode,
-                    CreatedBy = CurrentUserId
+                    CreatedBy = CurrentUserId,
+                    GroupNumber = model.GroupNumber,
+                    LRNumber = model.LRNumber,
+                    VehicleNumber = model.VehicleNumber
                 });
                 TempData["SuccessMessage"] = "Booking added successfully!";
             }
@@ -219,7 +229,10 @@ namespace Client.MVC.Controllers
                 TotalAmount = invoice.R_totalAmount,
                 CommissionPercentage = invoice.R_commissionPercentage,
                 CommissionAmount = invoice.R_commissionAmount,
-                InvoiceType = invoice.R_invoiceType
+                InvoiceType = invoice.R_invoiceType,
+                GroupNumber = invoice.R_GroupNumber,
+                LRNumber = invoice.R_LRNumber,
+                VehicleNumber = invoice.R_VehicleNumber
             };
 
             return Json(model);

@@ -76,7 +76,8 @@
                         <tr>
                             <th>Sr. No.</th>
                             <th>Payment Date</th>
-                            <th>Invoice No.</th>                            
+                            <th>Invoice No.</th>
+                            <th>Sub Contractor</th>
                             <th>Amount Paid</th>
                             <th>Bank Name</th>
                             <th class="text-center">Actions</th>
@@ -93,6 +94,7 @@
                                         : $"{payment.FromDate?.ToString("dd-MMM-yy")} - {payment.ToDate?.ToString("dd-MMM-yy")}")
                                 </td>
                                 <td>@payment.InvoiceNo</td>
+                                <td>@payment.SubContractorName</td>
                                  <td>@payment.AmountPaid.ToString("N2")</td>
                                 <td>@(string.IsNullOrEmpty(payment.BankName) ? "-" : payment.BankName)</td>
                                 <td>
@@ -152,7 +154,7 @@
                     { orderable: false, targets: -1 },
                     { type: 'date', targets: 1 }
                 ],
-                columnsSearchable: [false, true, true, true, true, false],
+                columnsSearchable: [false, true, true,true, true, true, false],
                 order: [[1, 'desc']],
                 actionCallbacks: {
                     '.fa-eye': viewPayment,
@@ -204,11 +206,30 @@
             }
         }
 
+         function toggleModalInvoiceType(type) {
+            if (type === "invoice") {
+                $("#modalSubContractorDiv").addClass("d-none");
+                $("#modalInvoiceDiv").removeClass("d-none");
+            } else {
+                $("#modalSubContractorDiv").removeClass("d-none");
+                $("#modalInvoiceDiv").addClass("d-none");
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
             const radios = document.querySelectorAll('input[name="ModalDurationType"]');
             radios.forEach(radio => {
                 radio.addEventListener('change', function () {
                     toggleModalPaymentDuration(this.value);
+                });
+            });
+        });
+
+         document.addEventListener("DOMContentLoaded", function () {
+            const radios = document.querySelectorAll('input[name="ModalInvoiceType"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', function () {
+                    toggleModalInvoiceType(this.value);
                 });
             });
         });
@@ -219,11 +240,19 @@
             toggleModalPaymentDuration(checkedRadio ? checkedRadio.value : 'day');
         });
 
+        // When modal opens, ensure correct view
+        paymentModal.addEventListener("shown.bs.modal", function () {
+            const checkedRadio = paymentModal.querySelector('input[name="ModalInvoiceType"]:checked');
+            toggleModalInvoiceType(checkedRadio ? checkedRadio.value : 'invoice');
+        });
+
         paymentModal.addEventListener("hidden.bs.modal", function () {
             resetForm('#paymentForm');
 
+            $('#modalInvoiceRadio').prop('checked', true);
             $('#modalDayRadio').prop('checked', true);
             toggleModalPaymentDuration('day');
+            toggleModalInvoiceType('invoice');
 
             $('#PaymentDate').val(new Date().toISOString().substring(0, 10)); // default today
             $('#FromDate').val('');
@@ -263,6 +292,7 @@
 
                     // Invoice select (Select2) fix
                     $('#invoiceSelect').val(data.invoiceNo).trigger('change');
+                    $('#subContractorSelect').val(data.subContractorId).trigger('change');
 
                     $('#AmountPaid').val(data.amountPaid);
                     $('#BankId').val(data.bankId).trigger('change');
@@ -278,8 +308,20 @@
                         $('#modalDayRadio').prop('checked', false);
                         $('#modalDurationRadio').prop('checked', true);
                     }
+                    console.log(data.invoiceType);
+                    console.log(data);
+                    // Invoice type
+                    if (data.invoiceType === "invoice") {
+                        $('#modalInvoiceRadio').prop('checked', true);
+                        $('#modalSubContractorRadio').prop('checked', false);
+                    } else {
+                        $('#modalInvoiceRadio').prop('checked', false);
+                        $('#modalSubContractorRadio').prop('checked', true);
+                    }
+
 
                     toggleModalPaymentDuration(data.durationType);
+                    toggleModalInvoiceType(data.invoiceType);
 
                     // set mode
                     setModalMode(mode);

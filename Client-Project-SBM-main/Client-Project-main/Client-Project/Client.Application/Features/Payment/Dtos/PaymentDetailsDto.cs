@@ -9,6 +9,7 @@ namespace Client.Application.Features.Payment.Dtos
     public class PaymentDetailsDto
     {
         public int R_id { get; set; }
+        public int R_invoiceId { get; set; }
         public string R_invoiceNo { get; set; }
         public DateTime? R_paymentDate { get; set; }
         public DateTime? R_fromDate { get; set; }
@@ -18,6 +19,8 @@ namespace Client.Application.Features.Payment.Dtos
         public int R_bankId { get; set; }
         public string R_bankName { get; set; }
         public string R_paymentStatus { get; set; }
+        public string R_SubContractorName { get; set; }
+        public int? R_SubContractorID { get; set; }
     }
 
 }

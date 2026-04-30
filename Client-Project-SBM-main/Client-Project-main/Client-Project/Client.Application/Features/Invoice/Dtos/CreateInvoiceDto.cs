@@ -21,5 +21,8 @@ namespace Client.Application.Features.Invoice.Dtos
         public string? Status { get; set; }
         public string PaymentMode { get; set; }
         public int CreatedBy { get; set; }
+        public string? GroupNumber { get; set; }
+        public string? LRNumber { get; set; }
+        public string? VehicleNumber { get; set; }
     }
 }

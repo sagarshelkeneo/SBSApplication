@@ -51,6 +51,9 @@ namespace Client.Persistence.Repositories
             insertParams.Add("@P_paymentMode", dto.PaymentMode);
                 //insertParams.Add("@P_status", dto.Status);
             insertParams.Add("@P_createdBy", dto.CreatedBy);
+            insertParams.Add("@P_GroupNumber", dto.GroupNumber);
+            insertParams.Add("@P_LRNumber", dto.LRNumber);
+            insertParams.Add("@P_VehicleNumber", dto.VehicleNumber);
 
             var result = await _db.QueryFirstOrDefaultAsync<dynamic>(
                 "usp_sbs_invoiceDetails_insert",
@@ -86,6 +89,9 @@ namespace Client.Persistence.Repositories
             updateParams.Add("@P_paymentMode", dto.PaymentMode);
             updateParams.Add("@P_status", dto.Status);
             updateParams.Add("@P_updatedBy", dto.UpdatedBy);
+            updateParams.Add("@P_GroupNumber", dto.GroupNumber);
+            updateParams.Add("@P_LRNumber", dto.LRNumber);
+            updateParams.Add("@P_VehicleNumber", dto.VehicleNumber);
 
             var result = await _db.QueryFirstOrDefaultAsync<dynamic>(
                 "usp_sbs_invoiceDetails_update",

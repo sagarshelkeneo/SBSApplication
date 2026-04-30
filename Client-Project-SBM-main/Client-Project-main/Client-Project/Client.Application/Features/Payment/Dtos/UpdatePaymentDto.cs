@@ -10,6 +10,7 @@ namespace Client.Application.Features.Payment.Dtos
     {
         public int Id { get; set; }
         public string InvoiceNo { get; set; }
+        public int? SubContractorID { get; set; }
         public int CompanyId { get; set; }
         public DateTime? PaymentDate { get; set; }
         public DateTime? FromDate { get; set; }

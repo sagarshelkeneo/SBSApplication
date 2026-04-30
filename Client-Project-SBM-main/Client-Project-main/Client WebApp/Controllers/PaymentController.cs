@@ -15,13 +15,15 @@ namespace Client_WebApp.MVC.Controllers
     {
         private readonly PaymentService _service;
         private readonly InvoiceService _invoiceService;
+        private readonly SubContractorService _subContractorService;
         private readonly BankService _bankService; 
 
-        public PaymentController(PaymentService service, InvoiceService invoiceService, BankService bankService)
+        public PaymentController(PaymentService service, InvoiceService invoiceService, BankService bankService, SubContractorService subContractorService)
         {
             _service = service;
             _invoiceService = invoiceService;
             _bankService = bankService;
+            _subContractorService = subContractorService;
         }
 
         public async Task<IActionResult> Index(string durationType, DateTime? dayDate, DateTime? fromDate, DateTime? toDate, string bankName)
@@ -48,6 +50,7 @@ namespace Client_WebApp.MVC.Controllers
 
             // Get invoices and banks for dropdowns
             var invoices = await _invoiceService.GetInvoicesAsync(companyId, null);
+            var subContractors = await _subContractorService.GetAllSubContractorAsync(companyId, null);
             var banks = await _bankService.GetAllBanksAsync();
 
             var model = new PaymentIndexViewModel
@@ -56,19 +59,24 @@ namespace Client_WebApp.MVC.Controllers
                 Payments = payments.Select(p => new PaymentViewModel
                 {
                     Id = p.R_id,
+                    InvoiceId = p.R_invoiceId,
                     InvoiceNo = p.R_invoiceNo,
+                    SubContractorId = p.R_SubContractorID,
+                    SubContractorName = p.R_SubContractorName,
                     PaymentDate = p.R_paymentDate,
                     FromDate = p.R_fromDate,
                     ToDate = p.R_toDate,
                     AmountPaid = p.R_amountPaid,
                     BankId = p.R_bankId,
                     BankName = p.R_bankName,
-                    DurationType = (p.R_fromDate != null && p.R_toDate != null) ? "duration" : "day"
+                    DurationType = (p.R_fromDate != null && p.R_toDate != null) ? "duration" : "day",
+                    InvoiceType = (p.R_invoiceNo != null) ? "invoice" : "subcontractor"
                 }).ToList(),
                 AddPaymentViewModel = new AddPaymentViewModel
                 {
                     Bankes = banks.Select(b => new SelectListItem { Value = b.R_id.ToString(), Text = $"{b.R_bankName} ({b.R_branch})" }).ToList(),
-                    Invoices = invoices.Where(i => !string.IsNullOrWhiteSpace(i.R_invoiceNo)).Select(i => new SelectListItem { Value = i.R_invoiceNo?.Trim(), Text = i.R_invoiceNo?.Trim() }).ToList()
+                    Invoices = invoices.Where(i => !string.IsNullOrWhiteSpace(i.R_invoiceNo)).Select(i => new SelectListItem { Value = i.R_invoiceNo?.Trim(), Text = i.R_invoiceNo?.Trim() }).ToList(),
+                    SubContractors = subContractors.Select(i => new SelectListItem { Value = i.Id.ToString().Trim(), Text = i.Name?.Trim() }).ToList()
                 }
             };
 
@@ -123,7 +131,8 @@ namespace Client_WebApp.MVC.Controllers
                     ToDate = model.ToDate,
                     AmountPaid = model.AmountPaid,
                     BankId = model.BankId,
-                    CreatedBy = CurrentUserId
+                    CreatedBy = CurrentUserId,
+                    SubContractorID = model.SubContractorId
                 };
 
                 await _service.CreatePaymentAsync(dto);
@@ -141,7 +150,8 @@ namespace Client_WebApp.MVC.Controllers
                     ToDate = model.ToDate,
                     AmountPaid = model.AmountPaid,
                     BankId = model.BankId,
-                    UpdatedBy = CurrentUserId
+                    UpdatedBy = CurrentUserId,
+                    SubContractorID = model.SubContractorId
                 };
 
                 await _service.UpdatePaymentAsync(dto);
@@ -169,17 +179,23 @@ namespace Client_WebApp.MVC.Controllers
                 ? "duration"
                 : "day";
 
+            string invoiceType = (payment.R_invoiceNo != null) ? "invoice" : "subcontractor";
+
             // Prepare view/edit friendly model
             var model = new
             {
                 Id = payment.R_id,
+                InvoiceId = payment.R_invoiceId,
                 InvoiceNo = payment.R_invoiceNo,
+                SubContractorId = payment.R_SubContractorID,
+                SubContractorName = payment.R_SubContractorName,
                 CompanyId = companyId,
                 AmountPaid = payment.R_amountPaid,
                 BankId = payment.R_bankId,
                 BankName = payment.R_bankName,
                 PaymentStatus = payment.R_paymentStatus,
                 DurationType = durationType,
+                InvoiceType = invoiceType,
                 PaymentDate = payment.R_paymentDate?.ToString("yyyy-MM-dd"),
                 FromDate = payment.R_fromDate?.ToString("yyyy-MM-dd"),
                 ToDate = payment.R_toDate?.ToString("yyyy-MM-dd")

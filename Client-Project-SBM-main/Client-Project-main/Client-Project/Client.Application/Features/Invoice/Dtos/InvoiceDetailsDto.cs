@@ -24,5 +24,8 @@ namespace Client.Application.Features.Invoice.Dtos
         public decimal R_commissionPercentage { get; set; }
         public decimal R_commissionAmount { get; set; }
         public string R_invoiceType { get; set; }
+        public string R_GroupNumber { get; set; }
+        public string R_LRNumber { get; set; }
+        public string R_VehicleNumber { get; set; }
     }
 }

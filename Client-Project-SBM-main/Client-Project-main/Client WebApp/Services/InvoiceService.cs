@@ -18,9 +18,9 @@ namespace Client_WebApp.Services
             _productRepository = productRepository;
         }
 
-        public Task<List<InvoiceDetailsDto>> GetInvoicesAsync(int companyId, int? id = null)
+        public Task<List<InvoiceDetailsDto>> GetInvoicesAsync(bool IsLeviApplicable, int companyId, int? id = null)
         {
-            return _repository.GetInvoicesAsync(companyId, id);
+            return _repository.GetInvoicesAsync(IsLeviApplicable, companyId, id);
         }
 
         public Task<List<InvoiceDetailsDto>> CreateInvoiceAsync(CreateInvoiceDto dto)
@@ -33,9 +33,9 @@ namespace Client_WebApp.Services
             return _repository.UpdateInvoiceAsync(dto);
         }
 
-        public Task<List<InvoiceDetailsDto>> DeleteInvoiceAsync(int id, int updatedBy, int companyId)
+        public Task<List<InvoiceDetailsDto>> DeleteInvoiceAsync(int id, int updatedBy, int companyId, bool isLeviApplicable)
         {
-            return _repository.DeleteInvoiceAsync(id, updatedBy, companyId);
+            return _repository.DeleteInvoiceAsync(id, updatedBy, companyId, isLeviApplicable);
         }
 
         //public Task<List<ProductDto>> GetProductsAsync(int companyId, int? id = null)

@@ -30,6 +30,11 @@ namespace Client_WebApp.Models
         public string GroupNumber { get; set; }
         public string LRNumber { get; set; }
         public string VehicleNumber { get; set; }
+        public bool IsLeviApplicable { get; set; }
+        public string Levi { get; set; }
+        public string DocketNumber { get; set; }
+        public int TrollyQuantity { get; set; }
+        public decimal TrollyAmount { get; set; }
     }
 
     public class InvoiceViewModel
@@ -69,7 +74,13 @@ namespace Client_WebApp.Models
         public string? GroupNumber { get; set; }
         public string? LRNumber { get; set; }
         public string? VehicleNumber { get; set; }
-        
+
+        public bool IsLeviApplicable { get; set; }
+        public string? Levi { get; set; }
+        public string? DocketNumber { get; set; }
+        public int? TrollyQuantity { get; set; }
+        public decimal? TrollyAmount { get; set; }
+
         public string RecaptchaToken { get; set; }
         
         // Dropdown lists
@@ -112,6 +123,13 @@ namespace Client_WebApp.Models
         [Display(Name = "LR Number")]
         public string? VehicleNumber { get; set; }
         [Display(Name = "Vehicle Number")]
+
+        public bool IsLeviApplicable { get; set; }
+        public string? Levi { get; set; }
+        public string? DocketNumber { get; set; }
+        public int? TrollyQuantity { get; set; }
+        public decimal? TrollyAmount { get; set; }
+
         public IEnumerable<SelectListItem>? SubContractorList { get; set; }
         public IEnumerable<SelectListItem>? ProductList { get; set; }
     }

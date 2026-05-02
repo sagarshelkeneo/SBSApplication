@@ -11,10 +11,10 @@ namespace Client.Application.Interfaces
     {
         Task<List<InvoiceDetailsDto>> CreateInvoiceAsync(CreateInvoiceDto dto);
         Task<List<InvoiceDetailsDto>> UpdateInvoiceAsync(UpdateInvoiceDto dto);
-        Task<List<InvoiceDetailsDto>> DeleteInvoiceAsync(int id, int updatedBy,int companyId);
+        Task<List<InvoiceDetailsDto>> DeleteInvoiceAsync(int id, int updatedBy,int companyId, bool isLeviApplicable);
 
 
-        Task<List<InvoiceDetailsDto>> GetInvoicesAsync(int companyId,int? id = null);
+        Task<List<InvoiceDetailsDto>> GetInvoicesAsync(bool IsLeviApplicable, int companyId,int? id = null);
     }
 
 }

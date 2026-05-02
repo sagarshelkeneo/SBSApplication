@@ -24,6 +24,7 @@ namespace Client.MVC.Controllers
             _productService = productService;
         }
 
+        [HttpGet("invoice", Name = "Index")]
         public async Task<IActionResult> Index(string? searchText, DateTime? FromDate, DateTime? ToDate)
         {
             if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
@@ -32,7 +33,7 @@ namespace Client.MVC.Controllers
             int companyId = CurrentCompanyId;
             // Fetch application DTOs from service
             List<Client.Application.Features.Invoice.Dtos.InvoiceDetailsDto> invoicesFromService =
-                await _service.GetInvoicesAsync(companyId);
+                await _service.GetInvoicesAsync(false,companyId);
 
             // Filter based on FromDate, ToDate, and Subcontractor / Invoice No.
             if (FromDate.HasValue)
@@ -188,7 +189,8 @@ namespace Client.MVC.Controllers
                     CreatedBy = CurrentUserId,
                     GroupNumber = model.GroupNumber,
                     LRNumber = model.LRNumber,
-                    VehicleNumber = model.VehicleNumber
+                    VehicleNumber = model.VehicleNumber,
+                    IsLeviApplicable = false
                 });
                 TempData["SuccessMessage"] = "Booking added successfully!";
             }
@@ -202,7 +204,7 @@ namespace Client.MVC.Controllers
                 return Forbid();
 
             int companyId = CurrentCompanyId;
-            var invoice = (await _service.GetInvoicesAsync(companyId, id)).FirstOrDefault();
+            var invoice = (await _service.GetInvoicesAsync(true, companyId, id)).FirstOrDefault();
             if (invoice == null) return NotFound();
 
             // Get all subcontractors and products for dropdown
@@ -232,7 +234,12 @@ namespace Client.MVC.Controllers
                 InvoiceType = invoice.R_invoiceType,
                 GroupNumber = invoice.R_GroupNumber,
                 LRNumber = invoice.R_LRNumber,
-                VehicleNumber = invoice.R_VehicleNumber
+                VehicleNumber = invoice.R_VehicleNumber,
+                IsLeviApplicable = invoice.R_IsLeviApplicable,
+                Levi = invoice.R_Levi,
+                DocketNumber = invoice.R_DocketNumber,
+                TrollyQuantity = invoice.R_TrollyQuantity,
+                TrollyAmount = invoice.R_TrollyAmount
             };
 
             return Json(model);
@@ -247,7 +254,7 @@ namespace Client.MVC.Controllers
                 if (!AccessHelper.HasAccess(User, "INVOICE", "Delete"))
                     return Forbid();
 
-                await _service.DeleteInvoiceAsync(id, CurrentUserId, CurrentCompanyId);
+                await _service.DeleteInvoiceAsync(id, CurrentUserId, CurrentCompanyId, false);
                 TempData["SuccessMessage"] = "Booking deleted successfully!";
             }
             catch (Exception ex)
@@ -257,6 +264,214 @@ namespace Client.MVC.Controllers
 
             return RedirectToAction(nameof(Index), new { companyId });
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteInvoiceData(int id, int companyId, int updatedBy)
+        {
+            try
+            {
+                if (!AccessHelper.HasAccess(User, "INVOICE", "Delete"))
+                    return Forbid();
+
+                await _service.DeleteInvoiceAsync(id, CurrentUserId, CurrentCompanyId, true);
+                TempData["SuccessMessage"] = "Booking deleted successfully!";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Failed to delete booking. " + ex.Message;
+            }
+
+            return RedirectToAction(nameof(getInvoiceData), new { companyId });
+        }
+
+
+
+        [HttpGet("invoice/getInvoiceData", Name = "getInvoiceData")]
+        public async Task<IActionResult> getInvoiceData(string? searchText, DateTime? FromDate, DateTime? ToDate)
+        {
+            if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
+                return Forbid();
+
+            int companyId = CurrentCompanyId;
+            // Fetch application DTOs from service
+            List<Client.Application.Features.Invoice.Dtos.InvoiceDetailsDto> invoicesFromService =
+                await _service.GetInvoicesAsync(true, companyId);
+
+            // Filter based on FromDate, ToDate, and Subcontractor / Invoice No.
+            if (FromDate.HasValue)
+            {
+                invoicesFromService = invoicesFromService
+                    .Where(i => i.R_invoiceDate.Date >= FromDate.Value.Date)
+                    .ToList();
+            }
+
+            if (ToDate.HasValue)
+            {
+                invoicesFromService = invoicesFromService
+                    .Where(i => i.R_invoiceDate.Date <= ToDate.Value.Date)
+                    .ToList();
+            }
+
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                searchText = searchText.ToLower();
+                invoicesFromService = invoicesFromService
+                    .Where(i =>
+                        (i.R_subcontractorName != null && i.R_subcontractorName.ToLower().Contains(searchText)) ||
+                        (i.R_invoiceNo.ToString().ToLower().Contains(searchText))
+                    )
+                    .ToList();
+            }
+
+            // Map to WebApp DTO
+            var webInvoices = invoicesFromService.Select(i => new Client_WebApp.Models.InvoiceDetailsDto
+            {
+                Id = i.R_id,
+                InvoiceNo = i.R_invoiceNo,
+                CompanyId = i.R_companyId,
+                SubContractorId = i.R_subcontractorId,
+                SubContractorName = i.R_subcontractorName,
+                ProductName = i.R_productName,
+                UnitPrice = i.R_unitPrice,
+                UnitAmount = i.R_unitAmount,
+                InvoiceDate = i.R_invoiceDate,
+                Status = i.R_status,
+                Quantity = i.R_quantity,
+                TotalAmount = i.R_totalAmount,
+                CommissionPercentage = i.R_commissionPercentage,
+                CommissionAmount = i.R_commissionAmount,
+                InvoiceType = i.R_invoiceType,
+                GroupNumber = i.R_GroupNumber,
+                LRNumber = i.R_LRNumber,
+                VehicleNumber = i.R_VehicleNumber,
+                IsLeviApplicable = i.R_IsLeviApplicable,
+                Levi = i.R_Levi,
+                DocketNumber = i.R_DocketNumber,
+                TrollyQuantity = i.R_TrollyQuantity,
+                TrollyAmount = i.R_TrollyAmount,
+            }).ToList();
+
+            // Pass filter values to ViewData to preserve in form
+            ViewData["FromDate"] = FromDate?.ToString("yyyy-MM-dd");
+            ViewData["ToDate"] = ToDate?.ToString("yyyy-MM-dd");
+            ViewData["searchText"] = searchText;
+
+            var subcontractors = await _subContractorService.GetAllSubContractorAsync(companyId);
+            var products = await _productService.GetProductsAsync(companyId);
+            var subcontractorList = subcontractors.Select(s => new SelectListItem
+            {
+                Value = s.Id.ToString(),
+                Text = s.Name
+            }).ToList();
+
+            var productList = products.Select(s => new SelectListItem
+            {
+                Value = s.R_id.ToString(),
+                Text = s.R_description,
+            }).ToList();
+
+            ViewBag.ProductPrices = products.ToDictionary(p => p.R_id, p => p.R_unitPrice);
+
+            var model = new InvoiceIndexViewModel
+            {
+                NewInvoice = new InvoiceViewModel
+                {
+                    CompanyId = companyId,
+                },
+                AddInvoice = new AddInvoiceViewModel
+                {
+                    InvoiceDate = DateTime.Now,
+                    SubContractorList = subcontractorList,
+                    ProductList = productList
+                },
+                Invoices = webInvoices
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateOrEditInvoice(AddInvoiceViewModel model)
+        {
+            if (model.Id > 0)
+            {
+                if (!AccessHelper.HasAccess(User, "INVOICE", "Edit"))
+                    return Forbid();
+            }
+            else
+            {
+                if (!AccessHelper.HasAccess(User, "INVOICE", "Create"))
+                    return Forbid();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            if (model.Id > 0)
+            {
+                // Update
+                var updateDto = new UpdateInvoiceDto
+                {
+                    Id = model.Id,
+                    CompanyId = CurrentCompanyId,
+                    SubcontractorId = model.SubcontractorId,
+                    ProductId = model.ProductId,
+                    InvoiceNo = model.InvoiceNo,
+                    InvoiceDate = model.InvoiceDate,
+                    UnitAmount = model.UnitAmount,
+                    Quantity = model.Quantity,
+                    TotalAmount = model.TotalAmount,
+                    CommissionPercentage = model.CommissionPercentage,
+                    CommissionAmount = model.CommissionAmount,
+                    PaymentMode = model.PaymentMode,
+                    UpdatedBy = CurrentUserId,
+                    GroupNumber = model.GroupNumber,
+                    LRNumber = model.LRNumber,
+                    VehicleNumber = model.VehicleNumber,
+                    Levi = model.Levi,
+                    DocketNumber = model.DocketNumber,
+                    TrollyQuantity = model.TrollyQuantity,
+                    TrollyAmount = model.TrollyAmount,
+                };
+
+                await _service.UpdateInvoiceAsync(updateDto);
+                TempData["SuccessMessage"] = "Booking updated successfully!";
+            }
+            else
+            {
+                // Create new invoice (existing logic)
+                await _service.CreateInvoiceAsync(new CreateInvoiceDto
+                {
+                    CompanyId = CurrentCompanyId,
+                    SubcontractorId = model.SubcontractorId,
+                    ProductId = model.ProductId,
+                    InvoiceNo = model.InvoiceNo,
+                    InvoiceDate = model.InvoiceDate,
+                    UnitAmount = model.UnitAmount,
+                    Quantity = model.Quantity,
+                    TotalAmount = model.TotalAmount,
+                    CommissionPercentage = model.CommissionPercentage,
+                    CommissionAmount = model.CommissionAmount,
+                    PaymentMode = model.PaymentMode,
+                    CreatedBy = CurrentUserId,
+                    GroupNumber = model.GroupNumber,
+                    LRNumber = model.LRNumber,
+                    VehicleNumber = model.VehicleNumber,
+                    IsLeviApplicable = true,
+                    Levi = model.Levi,
+                    DocketNumber = model.DocketNumber,
+                    TrollyQuantity = model.TrollyQuantity,
+                    TrollyAmount = model.TrollyAmount,                    
+                });
+                TempData["SuccessMessage"] = "Booking added successfully!";
+            }
+            return RedirectToAction("getInvoiceData");
+        }
+
 
     }
 }

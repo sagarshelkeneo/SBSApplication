@@ -21,7 +21,7 @@ namespace Client.Application.Features.Invoice.Handlers
 
         public async Task<List<InvoiceDetailsDto>> Handle(GetInvoicesQuery request, CancellationToken cancellationToken)
         {
-            return await _repo.GetInvoicesAsync(request.CompanyId,request.Id);
+            return await _repo.GetInvoicesAsync(request.IsLeviApplicable, request.CompanyId,request.Id);
         }
     }
 

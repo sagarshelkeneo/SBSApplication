@@ -21,11 +21,12 @@ namespace Client.Persistence.Repositories
             _db = db;
         }
 
-        public async Task<List<InvoiceDetailsDto>> GetInvoicesAsync(int companyId, int? id = null)
+        public async Task<List<InvoiceDetailsDto>> GetInvoicesAsync(bool IsLeviApplicable, int companyId, int? id = null)
         {
             var parameters = new DynamicParameters();
             parameters.Add("@P_id", id);
             parameters.Add("@P_companyId", companyId);
+            parameters.Add("@P_IsLeviApplicable", IsLeviApplicable);
 
             var result = await _db.QueryAsync<InvoiceDetailsDto>(
                 "usp_sbs_invoiceDetails_get",
@@ -54,6 +55,11 @@ namespace Client.Persistence.Repositories
             insertParams.Add("@P_GroupNumber", dto.GroupNumber);
             insertParams.Add("@P_LRNumber", dto.LRNumber);
             insertParams.Add("@P_VehicleNumber", dto.VehicleNumber);
+            insertParams.Add("@P_IsLeviApplicable", dto.IsLeviApplicable);
+            insertParams.Add("@P_Levi", dto.Levi);
+            insertParams.Add("@P_DocketNumber", dto.DocketNumber);
+            insertParams.Add("@P_TrollyQuantity", dto.TrollyQuantity);
+            insertParams.Add("@P_TrollyAmount", dto.TrollyAmount);
 
             var result = await _db.QueryFirstOrDefaultAsync<dynamic>(
                 "usp_sbs_invoiceDetails_insert",
@@ -68,7 +74,7 @@ namespace Client.Persistence.Repositories
 
             if (result.R_Status == "SUCCESS")
             {
-                return await GetInvoicesAsync(dto.CompanyId, null);
+                return await GetInvoicesAsync(dto.IsLeviApplicable, dto.CompanyId, null);
             }
 
             throw new Exception($"Insert Failed: {result.R_ErrorMessage} (ErrorCode: {result.R_ErrorNumber})");
@@ -93,6 +99,12 @@ namespace Client.Persistence.Repositories
             updateParams.Add("@P_LRNumber", dto.LRNumber);
             updateParams.Add("@P_VehicleNumber", dto.VehicleNumber);
 
+            //updateParams.Add("@P_IsLeviApplicable", dto.IsLeviApplicable);
+            updateParams.Add("@P_Levi", dto.Levi);
+            updateParams.Add("@P_DocketNumber", dto.DocketNumber);
+            updateParams.Add("@P_TrollyQuantity", dto.TrollyQuantity);
+            updateParams.Add("@P_TrollyAmount", dto.TrollyAmount);
+
             var result = await _db.QueryFirstOrDefaultAsync<dynamic>(
                 "usp_sbs_invoiceDetails_update",
                 updateParams,
@@ -116,7 +128,7 @@ namespace Client.Persistence.Repositories
             //);
             if (result.R_Status == "SUCCESS")
             {
-                return await GetInvoicesAsync(dto.CompanyId, null);
+                return await GetInvoicesAsync(dto.IsLeviApplicable, dto.CompanyId, null);
             }
 
             throw new Exception($"Update Failed: {result.R_ErrorMessage} (ErrorCode: {result.R_ErrorNumber})");
@@ -156,7 +168,7 @@ namespace Client.Persistence.Repositories
         //           ?? throw new Exception("Invoice not found after deletion.");
         //}
 
-        public async Task<List<InvoiceDetailsDto>> DeleteInvoiceAsync(int id, int updatedBy,int companyId)
+        public async Task<List<InvoiceDetailsDto>> DeleteInvoiceAsync(int id, int updatedBy,int companyId, bool isLeviApplicable)
         {
             var deleteParams = new DynamicParameters();
             deleteParams.Add("@P_id", id);
@@ -173,12 +185,14 @@ namespace Client.Persistence.Repositories
 
             if (result.R_Status == "SUCCESS")
             {
-                return await GetInvoicesAsync(companyId, null);
+                return await GetInvoicesAsync(isLeviApplicable, companyId, null);
             }
 
             throw new Exception($"Update Failed: {result.R_ErrorMessage} (ErrorCode: {result.R_ErrorNumber})");
 
         }
+
+
 
 
     }

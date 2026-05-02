@@ -49,7 +49,7 @@ namespace Client_WebApp.MVC.Controllers
                 payments = payments.Where(p => p.R_bankName != null && p.R_bankName.Contains(bankName.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
 
             // Get invoices and banks for dropdowns
-            var invoices = await _invoiceService.GetInvoicesAsync(companyId, null);
+            var invoices = await _invoiceService.GetInvoicesAsync(false, companyId, null);
             var subContractors = await _subContractorService.GetAllSubContractorAsync(companyId, null);
             var banks = await _bankService.GetAllBanksAsync();
 

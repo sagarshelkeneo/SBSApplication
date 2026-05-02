@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,6 +26,12 @@ namespace Client.Application.Features.Invoice.Dtos
         public string? GroupNumber { get; set; }
         public string? LRNumber { get; set; }
         public string? VehicleNumber { get; set; }
+
+        public bool IsLeviApplicable { get; set; }
+        public string? Levi { get; set; }
+        public string? DocketNumber { get; set; }
+        public int? TrollyQuantity { get; set; }
+        public decimal? TrollyAmount { get; set; }
     }
 
 }

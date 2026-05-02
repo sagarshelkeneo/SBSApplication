@@ -8,7 +8,7 @@ using MediatR;
 
 namespace Client.Application.Features.Invoice.Commands
 {
-    public record DeleteInvoiceCommand(int Id, int UpdatedBy,int companyId) : IRequest<List<InvoiceDetailsDto>>;
+    public record DeleteInvoiceCommand(int Id, int UpdatedBy,int companyId, bool isLeviApplicable) : IRequest<List<InvoiceDetailsDto>>;
 
 
 }

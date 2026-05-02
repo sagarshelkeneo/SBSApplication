@@ -21,7 +21,7 @@ namespace Client.Application.Features.Invoice.Handlers
 
         public async Task<List<InvoiceDetailsDto>> Handle(DeleteInvoiceCommand request, CancellationToken cancellationToken)
         {
-            return await _repo.DeleteInvoiceAsync(request.Id, request.UpdatedBy,request.companyId);
+            return await _repo.DeleteInvoiceAsync(request.Id, request.UpdatedBy,request.companyId, request.isLeviApplicable);
         }
     }
 

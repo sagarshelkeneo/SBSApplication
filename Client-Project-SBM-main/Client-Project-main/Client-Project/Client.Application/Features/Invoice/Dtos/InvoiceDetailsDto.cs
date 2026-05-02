@@ -27,5 +27,10 @@ namespace Client.Application.Features.Invoice.Dtos
         public string R_GroupNumber { get; set; }
         public string R_LRNumber { get; set; }
         public string R_VehicleNumber { get; set; }
+        public bool R_IsLeviApplicable { get; set; }
+        public string R_Levi { get; set; }
+        public string R_DocketNumber { get; set; }
+        public int R_TrollyQuantity { get; set; }
+        public decimal R_TrollyAmount { get; set; }
     }
 }

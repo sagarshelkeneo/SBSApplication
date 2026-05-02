@@ -1,0 +1,269 @@
+﻿@model Client_WebApp.Models.InvoiceIndexViewModel
+@{
+    ViewData["Title"] = "Legrand & Indo Bookings";
+}
+
+@* <h2 class="pt-4 fs-1">Bookings</h2> *@
+
+<div class="">
+
+    <!-- Add / Export Buttons -->
+    <div class="my-3">
+        <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#invoice-modal" onclick="setModalMode('add')">
+            <i class="fa-solid fa-plus"></i> Add
+        </button>
+
+        <button class="btn btn-outline-danger mb-2" onclick="exportToPdf()">
+            <i class="fa-solid fa-file-pdf"></i> Export PDF
+        </button>
+        <button class="btn btn-outline-success mb-2" onclick="exportToExcel()">
+            <i class="fa-solid fa-file-excel"></i> Export Excel
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-2">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label>From Date</label>
+                    <input type="date" name="FromDate" class="form-control" value="@ViewData["FromDate"]" />
+                </div>
+                <div class="col-md-3">
+                    <label>To Date</label>
+                    <input type="date" name="ToDate" class="form-control" value="@ViewData["ToDate"]" />
+                </div>
+                <div class="col-md-3">
+                    <label>Subcontractor / Receipt details</label>
+                    <input type="text" name="searchText" class="form-control" placeholder="Search..." value="@ViewData["searchText"]" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+                    <a href="@Url.Action("getInvoiceData", new { companyId = Model.NewInvoice.CompanyId })" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <div>
+        @{
+            await Html.RenderPartialAsync("_saveInvoiceModal", Model.AddInvoice);
+        }
+    </div>
+
+    <!-- Invoice Table with Simple-DataTables style -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            Booking Table
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover dataTable" id="invoiceDataTable">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Sr. No.</th>
+                            <th>Date</th>
+                            <th>Receipt No.</th>
+                            <th>Sub-contractor</th>
+                            <th>Product</th>
+                            <th>Type</th>
+                            <th>Labour Charge</th>
+                            <th>Total Amount</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Invoices != null && Model.Invoices.Any())
+                        {
+                            foreach (var invoice in Model.Invoices)
+                            {
+                                <tr>
+                                    <td class="text-end"></td>
+                                    <td>@invoice.InvoiceDate.ToString("dd-MMM-yyyy")</td>
+                                    <td>@invoice.InvoiceNo</td>
+                                    <td>@invoice.SubContractorName</td>
+                                    <td>@invoice.ProductName</td>
+                                    <td>@invoice.InvoiceType</td>
+                                    <td>@invoice.CommissionAmount</td>
+                                    <td>@invoice.TotalAmount</td>
+                                    <td>
+                                        <div class="action-icons">
+                                            <i class="fa-regular fa-eye cursor-pointer text-success" data-bs-toggle="modal" data-bs-target="#invoice-modal" onclick="viewInvoice(@invoice.Id)"></i>
+                                            <i class="fa-regular fa-pen-to-square cursor-pointer" data-bs-toggle="modal" data-bs-target="#invoice-modal" onclick="editInvoice(@invoice.Id)"></i>
+                                            <i class="fa-solid fa-trash cursor-pointer text-danger"
+                                               onclick="showDeleteModal(@invoice.Id, '@Url.Action("DeleteInvoiceData", "Invoice")')"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center fs-5">No Records</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css" />
+
+    <!-- DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+
+    <script>
+        $(document).ready(function () {
+            initializeGenericDataTable({
+                tableSelector: '#invoiceDataTable',
+                customInfoId: 'invoiceDataTable_info_custom',
+                columnDefs: [
+                    { orderable: false, targets: 0 },
+                    { orderable: false, targets: -1 },
+                    { type: 'date', targets: 1 }
+                ],
+                columnsSearchable: [false, true, true, true, true, true, true, true, false],
+                order: [[1, 'desc']],
+                actionCallbacks: {
+                    '.fa-eye': viewInvoice,
+                    '.fa-pen-to-square': editInvoice,
+                    '.fa-trash': function(id) { showDeleteModal(id, '@Url.Action("DeleteInvoiceData", "Invoice")'); }
+                }
+            });
+        });
+
+
+        var productPrices = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ProductPrices));
+
+        $('#ProductId').change(function () {
+            var selectedProductId = $(this).val();
+            if (selectedProductId && productPrices[selectedProductId]) {
+                $('#UnitAmount').val(productPrices[selectedProductId]);
+                calculateTotal(); // optional: update total amount
+            } else {
+                $('#UnitAmount').val('');
+                $('#TotalAmount').val('');
+            }
+        });
+
+        // Set modal mode: add / edit / view
+        function setModalMode(mode) {
+            resetForm('#invoiceForm');
+            const modalLabel = document.getElementById("invoiceModalLabel");
+            modalLabel.innerText = mode === 'add' ? 'Add Booking' : (mode === 'edit' ? 'Edit Booking' : 'View Booking');
+
+            if (mode === 'view') {
+                $("#invoiceForm input, #invoiceForm select").prop("readonly", true).prop("disabled", true);
+                $("#saveButton").hide();
+            } else {
+                $("#invoiceForm input, #invoiceForm select").prop("readonly", false).prop("disabled", false);
+                $("#TotalAmount").prop("readonly", true);
+                $("#saveButton").show();
+            }
+        }
+
+        // Get Invoice
+        function getInvoice(id) {
+            $.ajax({
+                url: '/Invoice/GetInvoice',
+                type: 'GET',
+                data: { id: id },
+                success: function (data) {
+                    // Fill modal fields
+                    $('#Id').val(data.id);
+                    $('#InvoiceNo').val(data.invoiceNo);
+                    $('#InvoiceDate').val(data.invoiceDate?.substring(0, 10));
+                    $('#SubcontractorId').val(data.subcontractorId);
+                    $('#ProductId').val(data.productId);
+                    $('#UnitAmount').val(data.unitAmount);
+                    $('#Quantity').val(data.quantity);
+                    $('#TotalAmount').val(data.totalAmount);
+                    $('#CommissionPercentage').val(data.commissionPercentage);
+                    $('#CommissionAmount').val(data.commissionAmount);
+                    $('#SubcontractorId').val(data.subContractorId);
+                    $('#ProductId').val(data.productId);
+                    $('#GroupNumber').val(data.groupNumber);
+                    $('#LRNumber').val(data.lrNumber);
+                    $('#VehicleNumber').val(data.vehicleNumber);
+                    $('#DocketNumber').val(data.docketNumber);
+                    $('#TrollyQuantity').val(data.trollyQuantity);
+                    $('#TrollyAmount').val(data.trollyAmount);
+
+                    if (data.invoiceType === "CASH") {
+                        $("#invoiceTypeCash").prop("checked", true);
+                    } else {
+                        $("#invoiceTypeBalance").prop("checked", true);
+                    }
+
+                    // Show modal
+                    $('#invoice-modal').modal('show');
+                },
+                error: function () {
+                    alert("Failed to load Booking data.");
+                }
+            });
+        }
+
+        // Edit Invoice
+        function editInvoice(id) {
+            setModalMode('edit');
+            getInvoice(id);
+        }
+
+        // View Invoice - Readonly Mode
+        function viewInvoice(id) {
+            setModalMode('view');
+            getInvoice(id);
+        }
+
+       
+        $('#UnitAmount, #Quantity').on('input', function () {
+            let unit = parseFloat($('#UnitAmount').val()) || 0;
+            let qty = parseFloat($('#Quantity').val()) || 0;
+            $('#TotalAmount').val(unit * qty);
+            updateCommission();
+        });
+
+        // Calculate CommissionAmount dynamically
+        $('#CommissionPercentage, #TotalAmount').on('input', updateCommission);
+        function updateCommission() {
+            let total = parseFloat($('#TotalAmount').val()) || 0;
+            let percent = parseFloat($('#CommissionPercentage').val()) || 0;
+            $('#CommissionAmount').val(Math.round(total * percent / 100));
+        }
+
+        $('#Quantity, #CommissionPercentage').on('input', function () {
+            calculateTotal();
+        });
+
+        function calculateTotal() {
+            var unitAmount = parseFloat($('#UnitAmount').val()) || 0;
+            var quantity = parseFloat($('#Quantity').val()) || 0;
+            var total = unitAmount * quantity;
+            $('#TotalAmount').val(total.toFixed(2));
+
+            var commissionPercentage = parseFloat($('#CommissionPercentage').val()) || 0;
+            var commissionAmount = (total * commissionPercentage) / 100;
+            $('#CommissionAmount').val(commissionAmount.toFixed(2));
+        }
+    </script>
+}

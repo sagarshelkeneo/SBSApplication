@@ -24,5 +24,10 @@ namespace Client.Application.Features.Invoice.Dtos
         public string? GroupNumber { get; set; }
         public string? LRNumber { get; set; }
         public string? VehicleNumber { get; set; }
+        public bool IsLeviApplicable { get; set; }
+        public string? Levi { get; set; }
+        public string? DocketNumber { get; set; }
+        public int? TrollyQuantity { get; set; }
+        public decimal? TrollyAmount { get; set; }
     }
 }

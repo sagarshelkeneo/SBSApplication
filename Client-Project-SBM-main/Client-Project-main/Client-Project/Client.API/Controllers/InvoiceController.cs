@@ -45,17 +45,17 @@ namespace Client.API.Controllers
         [HttpDelete("{id}")]
         [ScreenAccess("INVOICE", "Delete")]
 
-        public async Task<IActionResult> DeleteInvoice(int id, [FromQuery] int updatedBy, [FromQuery] int companyId)
+        public async Task<IActionResult> DeleteInvoice(int id, [FromQuery] int updatedBy, [FromQuery] int companyId, bool isLeviApplicable)
         {
-            var result = await _mediator.Send(new DeleteInvoiceCommand(id, updatedBy,companyId));
+            var result = await _mediator.Send(new DeleteInvoiceCommand(id, updatedBy,companyId, isLeviApplicable));
             return Ok(result);
         }
 
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery]int companyId,[FromQuery] int? id)
+        public async Task<IActionResult> Get([FromQuery] bool isLeviApplicable, [FromQuery]int companyId,[FromQuery] int? id)
         {
-            var result = await _mediator.Send(new GetInvoicesQuery(companyId,id));
+            var result = await _mediator.Send(new GetInvoicesQuery(isLeviApplicable ,companyId,id));
             return Ok(result);
         }
     }

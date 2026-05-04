@@ -14,7 +14,8 @@ namespace Client_WebApp.Controllers.Reports
             _reportService = reportService;
         }
 
-        public async Task<IActionResult> Paid(string? fromDate, string? toDate, string? subcontractorName, string? bankName)
+        //[HttpGet("report/contractorreport", Name = "contractorreport")]
+        public async Task<IActionResult> ContractorReport(string? fromDate, string? toDate, string? subcontractorName, string? bankName)
         {
             try
             {
@@ -35,12 +36,12 @@ namespace Client_WebApp.Controllers.Reports
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"Failed to load Paid Report: {ex.Message}";
+                TempData["ErrorMessage"] = $"Failed to load Contractor Report: {ex.Message}";
                 return View(new List<PaidReportDto>());
             }
         }
 
-        public async Task<IActionResult> Unpaid(string? fromDate, string? toDate, string? subcontractorName)
+        public async Task<IActionResult> ProfitLossReport(string? fromDate, string? toDate, string? subcontractorName)
         {
             try
             {
@@ -60,7 +61,7 @@ namespace Client_WebApp.Controllers.Reports
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"Failed to load Unpaid Report: {ex.Message}";
+                TempData["ErrorMessage"] = $"Failed to load Profit & Loss Report: {ex.Message}";
                 return View(new List<UnpaidReportDto>());
             }
         }

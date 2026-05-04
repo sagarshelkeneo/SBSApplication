@@ -29,7 +29,7 @@ namespace Client.Persistence.Repositories
             param.Add("@p_fromDate", fromDate);
             param.Add("@p_toDate",toDate);
 
-            var result = await _db.QueryAsync<PaidReportDto>("sp_PaidBalancePaymentReport", param, commandType: CommandType.StoredProcedure);
+            var result = await _db.QueryAsync<PaidReportDto>("usp_PaidBalancePaymentReport", param, commandType: CommandType.StoredProcedure);
             return result.ToList();
         }
 
@@ -41,7 +41,7 @@ namespace Client.Persistence.Repositories
             param.Add("@p_fromDate", fromDate);
             param.Add("@p_toDate", toDate);
 
-            var result = await _db.QueryAsync<UnpaidReportDto>("sp_UnPaidBalancePaymentReport", param, commandType: CommandType.StoredProcedure);
+            var result = await _db.QueryAsync<UnpaidReportDto>("usp_UnPaidBalancePaymentReport", param, commandType: CommandType.StoredProcedure);
             return result.ToList();
         }
 
@@ -54,7 +54,7 @@ namespace Client.Persistence.Repositories
             param.Add("@p_fromDate", fromDate);
             param.Add("@p_toDate", toDate);
 
-            var result = await _db.QueryAsync<ProductWiseReportDto>("sp_ProductWisePayment", param, commandType: CommandType.StoredProcedure);
+            var result = await _db.QueryAsync<ProductWiseReportDto>("usp_ProductWisePayment", param, commandType: CommandType.StoredProcedure);
             return result.ToList();
         }
 
@@ -66,13 +66,13 @@ namespace Client.Persistence.Repositories
             param.Add("@p_toDate", toDate);
             //param.Add("@p_companyId", companyId);
 
-            var result = await _db.QueryAsync<SubcontractorWiseReportDto>("sp_MonthlyPaymentSubcontractorWiseTotalPayment", param, commandType: CommandType.StoredProcedure);
+            var result = await _db.QueryAsync<SubcontractorWiseReportDto>("usp_MonthlyPaymentSubcontractorWiseTotalPayment", param, commandType: CommandType.StoredProcedure);
             return result.ToList();
         }
         public async Task<List<CombinedSubcontractorReportDto>> GetCombinedSubcontractorReportAsync()
         {
             var result = await _db.QueryAsync<CombinedSubcontractorReportDto>(
-                "sp_CombinedSubcontractorEntityReport",
+                "usp_CombinedSubcontractorEntityReport",
                 commandType: CommandType.StoredProcedure
             );
 

@@ -63,15 +63,43 @@
             <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
+
                         <div class="sb-sidenav-menu-heading">Dashboard</div>
                         <a class="nav-link" href="@Url.Action("Index", "Home")">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Home
                         </a>
+                        
+                        <!-- Normal Access Section -->
+                        @if (CheckNormalAccess())
+                        {
+                            <div class="sb-sidenav-menu-heading">Transactions</div>
+                            <a class="nav-link" href="@Url.Action("Index", "Invoice")">
+                                <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>
+                                Bookings
+                            </a>
+                            <a class="nav-link" href="@Url.Action("getInvoiceData", "Invoice")">
+                                <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>
+                                Legrand & Indo List
+                            </a>
+                            <a class="nav-link" href="@Url.Action("Index", "Payment")">
+                                <div class="sb-nav-link-icon"><i class="fas fa-credit-card"></i></div>
+                                Bank Payment
+                            </a>
+                            @* <a class="nav-link" href="@Url.Action("Index", "AdditionalEntity")">
+                                <div class="sb-nav-link-icon"><i class="fas fa-layer-group"></i></div>
+                                Trolly
+                            </a> *@
+                            <a class="nav-link" href="@Url.Action("Index", "SalaryDetails")">
+                                <div class="sb-nav-link-icon"><i class="fas fa-layer-group"></i></div>
+                                Salary Details
+                            </a>
+                        }
                         @if (CheckMasterAccess() || CheckConfigAccess() || CheckReportAccess())
                         {
                             <div class="sb-sidenav-menu-heading">Manage Data</div>
                         }
+
                         <!-- Master Section -->
                         @if (CheckMasterAccess())
                         {
@@ -141,8 +169,8 @@
                             </a>
                             <div class="collapse" id="collapseReports" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="@Url.Action("Paid", "Report")">Paid</a>
-                                    <a class="nav-link" href="@Url.Action("Unpaid", "Report")">Un-Paid</a>
+                                    <a class="nav-link" href="@Url.Action("ContractorReport", "Report")">Contractor Report</a>
+                                    <a class="nav-link" href="@Url.Action("ProfitLossReport", "Report")">Profit & Loss</a>
                                     <a class="nav-link" href="@Url.Action("ProductWise", "Report")">Product Wise</a>
                                     <a class="nav-link" href="@Url.Action("SubContractorWise", "Report")">Sub-Contractor Wise</a>
                                     <a class="nav-link" href="@Url.Action("CombinedSubContractorEntity", "Report")">Combined Sub-Contractor Entity</a>
@@ -150,32 +178,7 @@
                             </div>
                         }
 
-                        <!-- Normal Access Section -->
-                        @if (CheckNormalAccess())
-                        {
-                            <div class="sb-sidenav-menu-heading">Transactions</div>
-                            <a class="nav-link" href="@Url.Action("Index", "Invoice")">
-                                <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>
-                                Bookings
-                            </a>
-                            <a class="nav-link" href="@Url.Action("getInvoiceData", "Invoice")">
-                                <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>
-                                Legrand & Indo List
-                            </a>
-                            <a class="nav-link" href="@Url.Action("Index", "Payment")">
-                                <div class="sb-nav-link-icon"><i class="fas fa-credit-card"></i></div>
-                                Bank Payment
-                            </a>
-                            <a class="nav-link" href="@Url.Action("Index", "AdditionalEntity")">
-                                <div class="sb-nav-link-icon"><i class="fas fa-layer-group"></i></div>
-                                Trolly
-                            </a>
-                            <a class="nav-link" href="@Url.Action("Index", "SalaryDetails")">
-                                <div class="sb-nav-link-icon"><i class="fa fa-money"></i></div>
-                                Salary Details
-                            </a>
-                        }
-
+                       
                     </div>
                 </div>
 
@@ -486,7 +489,8 @@
 
             // Title
             doc.setFontSize(14);
-            const dynamicTitle = `${pageTitle} Report`;
+            //const dynamicTitle = `${pageTitle} Report`;
+            const dynamicTitle = pageTitle.replace(/\s+/g, "_") + "_Report_" + formatDateForFileName(new Date());
             doc.text(dynamicTitle, 14, 15);
 
             // Open PDF in new tab
@@ -495,6 +499,71 @@
 
             // Save PDF
             // doc.save("Invoice_Report.pdf");
+        }
+
+             
+        function exportToPdfReport() {
+                 // Import jsPDF
+                 const { jsPDF } = window.jspdf;
+                 const doc = new jsPDF();
+
+                 // Get the table
+                 const table = document.querySelector(".dataTable");
+
+                 // Get only visible rows after filtering / pagination
+                 const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
+                     .filter(row => row.style.display !== "none");
+
+                 // Prepare data for autoTable
+                 const data = visibleRows.map(row => {
+                     const cells = Array.from(row.querySelectorAll("td"));
+                     return cells.map(td => td.innerText);
+                 });
+
+                 // Column headers
+                 const headerCells = Array.from(table.querySelectorAll("thead th"));
+                 const headers = [headerCells.map(th => th.innerText.trim())];
+                 // const headers = [["Sr. No.", "Invoice Date", "Invoice No.", "Sub-contractor Name", "Product Name", "Commission Amount", "Total Amount"]];
+
+                
+                // Footers with colspan preserved
+                const footerRows = Array.from(table.querySelectorAll("tfoot tr")).map(row => {
+                    const cells = Array.from(row.querySelectorAll("td"));
+                    return cells.map(td => {
+                        return {
+                            content: td.innerText.trim(),
+                            colSpan: td.colSpan > 1 ? td.colSpan : 1,
+                            styles: { halign: td.classList.contains("text-end") ? "right" : "center" }
+                        };
+                    });
+                });
+
+
+
+                 // Generate table in PDF
+                 doc.autoTable({
+                     head: headers,
+                     body: data,
+                     foot: footerRows,
+                     startY: 20,
+                     styles: { fontSize: 10 },
+                     headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+                     footStyles: { fillColor: [200, 200, 200], textColor: 0, fontStyle: 'bold' } // optional styling
+
+                 });
+
+                 // Title
+                 doc.setFontSize(14);
+                 //const dynamicTitle = `${pageTitle} Report`;
+                 const dynamicTitle = pageTitle.replace(/\s+/g, "_") + "_Report_" + formatDateForFileName(new Date());
+                 doc.text(dynamicTitle, 14, 15);
+
+                 // Open PDF in new tab
+                 const pdfUrl = doc.output('bloburl');
+                 window.open(pdfUrl, '_blank');
+
+                 // Save PDF
+                 // doc.save("Invoice_Report.pdf");
         }
 
         function exportToExcel() {
@@ -521,10 +590,65 @@
             const ws = XLSX.utils.aoa_to_sheet(data);
             XLSX.utils.book_append_sheet(wb, ws, pageTitle);
 
-            const fileName = pageTitle.replace(/\s+/g, "_") + "_Report.xlsx";
+            //const fileName = pageTitle.replace(/\s+/g, "_") + "_Report.xlsx";
+        
+
+            //const now = new Date();
+            const fileName = pageTitle.replace(/\s+/g, "_") + "_Report_" + formatDateForFileName(new Date()) + ".xlsx";
+
+
 
             // Generate Excel file and trigger download
             XLSX.writeFile(wb, fileName);
+        }
+              
+        function exportToExcelReport() {
+                 const table = document.querySelector(".dataTable");
+
+                 // Get only visible rows after filtering/pagination
+                 const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
+                     .filter(row => row.style.display !== "none");
+
+                 // Prepare data for Excel
+                 const data = [];
+                 // Headers
+                 const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.innerText);
+                 data.push(headers);
+
+                 // Rows
+                 visibleRows.forEach(row => {
+                     const cells = Array.from(row.querySelectorAll("td")).map(td => td.innerText);
+                     data.push(cells);
+                 });
+
+                 // Create workbook and worksheet
+                 const wb = XLSX.utils.book_new();
+                 const ws = XLSX.utils.aoa_to_sheet(data);
+                 XLSX.utils.book_append_sheet(wb, ws, pageTitle);
+
+                 //const fileName = pageTitle.replace(/\s+/g, "_") + "_Report.xlsx";
+
+
+                 //const now = new Date();
+                 const fileName = pageTitle.replace(/\s+/g, "_") + "_Report_" + formatDateForFileName(new Date()) + ".xlsx";
+
+
+
+                 // Generate Excel file and trigger download
+                 XLSX.writeFile(wb, fileName);
+        }
+
+        function formatDateForFileName(date) {
+                 const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+
+                 const dd = String(date.getDate()).padStart(2, '0');
+                 const mon = months[date.getMonth()];
+                 const yy = String(date.getFullYear()).slice(-2);
+                 const hh = String(date.getHours()).padStart(2, '0');
+                 const mm = String(date.getMinutes()).padStart(2, '0');
+                 const ss = String(date.getSeconds()).padStart(2, '0');
+
+                 return `${dd}${mon}${yy}_${hh}${mm}${ss}`;
         }
 
         function openChangePasswordModal() {

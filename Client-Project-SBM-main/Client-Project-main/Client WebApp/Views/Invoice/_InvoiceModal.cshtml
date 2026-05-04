@@ -22,11 +22,7 @@
                             <span asp-validation-for="InvoiceDate" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
-                           @*  <label asp-for="InvoiceNo" class="form-label"></label>
-                            <input asp-for="InvoiceNo" class="form-control" id="InvoiceNo" />
-                            <span asp-validation-for="InvoiceNo" class="text-danger"></span> *@
-
-                            <label asp-for="InvoiceNo" class="form-label">Receipt Number</label>
+                           <label asp-for="InvoiceNo" class="form-label">Receipt Number</label>
                             <input asp-for="InvoiceNo" class="form-control" id="InvoiceNo" data-val="false" />
                             @* <span asp-validation-for="InvoiceNo" class="text-danger">Please enter a valid Receipt Number.</span> *@
 
@@ -61,10 +57,10 @@
                             <input asp-for="TotalAmount" class="form-control" id="TotalAmount" readonly />
                             <span asp-validation-for="TotalAmount" class="text-danger"></span>
                         </div>
-                        @* <div class="col-md-6">
-                            <label asp-for="CommissionPercentage" class="form-label"></label>
+                        <div class="col-md-6">
+                            <label asp-for="CommissionPercentage" class="form-label">Discount</label>
                             <input asp-for="CommissionPercentage" class="form-control" id="CommissionPercentage" />
-                        </div> *@
+                        </div>
                         <div class="col-md-6">
                             <label asp-for="CommissionAmount" class="form-label">Labour Charge</label>
                             <input asp-for="CommissionAmount" class="form-control" id="CommissionAmount" />

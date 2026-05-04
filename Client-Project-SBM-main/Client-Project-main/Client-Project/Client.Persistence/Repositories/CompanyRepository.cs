@@ -123,7 +123,7 @@ namespace Client.Persistence.Repositories
             parameters.Add("@cc_email", dto.CcEmail);
 
             var result = await _db.QueryFirstOrDefaultAsync<dynamic>(
-                "sp_SendCompanyEmail",
+                "usp_SendCompanyEmail",
                 parameters,
                 commandType: CommandType.StoredProcedure
             );

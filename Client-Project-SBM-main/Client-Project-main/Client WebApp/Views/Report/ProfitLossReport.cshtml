@@ -25,7 +25,7 @@
     <!-- Filter Section -->
     <div class="card mb-3 shadow-sm">
         <div class="card-body collapse @(ViewContext.HttpContext.Request.Query.Any() ? "show" : "")" id="filter-container">
-            <form method="get" class="row g-3" asp-action="Unpaid">
+            <form method="get" class="row g-3" asp-action="ProfitLossReport">
                 <div class="col-md-3">
                     <label class="form-label">From Date</label>
                     <input type="date" name="fromDate" class="form-control" value="@(ViewContext.HttpContext.Request.Query["fromDate"])" />
@@ -116,10 +116,6 @@
                             <td class="text-end fw-bold">@totalCash.ToString("N2")</td>
                             <td class="text-end fw-bold">@totalBalance.ToString("N2")</td>
                         </tr>
-                        @* <tr>
-                            <td colspan="10" class="text-end">Total Labour Charge</td>
-                            <td class="text-end fw-bold">@totalLabour.ToString("N2")</td>
-                        </tr> *@
                         <tr>
                             <td colspan="6" class="text-end">Total Amount (Business - Labour)</td>
                             <td class="text-end fw-bold">@totalLabour.ToString("N2")</td>

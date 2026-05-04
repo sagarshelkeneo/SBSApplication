@@ -20,7 +20,7 @@ namespace Client.Persistence.Repositories
             _db = db;
         }
 
-        public async Task<List<PaidReportDto>> GetPaidReportAsync(string? subcontractorName,int? companyId, string? bankName, string fromDate,string toDate)
+        public async Task<List<PaidReportDto>> GetPaidReportAsync(string? subcontractorName,int? companyId, string? bankName, string fromDate,string toDate, bool isLevhiApplicable)
         {
             var param = new DynamicParameters();
             param.Add("@p_subcontractorName", subcontractorName);
@@ -28,18 +28,20 @@ namespace Client.Persistence.Repositories
             param.Add("@p_bankName", bankName);
             param.Add("@p_fromDate", fromDate);
             param.Add("@p_toDate",toDate);
+            param.Add("@p_isLevhiApplicable", isLevhiApplicable);
 
             var result = await _db.QueryAsync<PaidReportDto>("usp_PaidBalancePaymentReport", param, commandType: CommandType.StoredProcedure);
             return result.ToList();
         }
 
-        public async Task<List<UnpaidReportDto>> GetUnpaidReportAsync(string? subcontractorName, int? companyId, string fromDate, string toDate)
+        public async Task<List<UnpaidReportDto>> GetUnpaidReportAsync(string? subcontractorName, int? companyId, string fromDate, string toDate, bool isLevhiApplicable)
         {
             var param = new DynamicParameters();
             param.Add("@p_subcontractorName", subcontractorName);
             //param.Add("p_companyID", companyId);
             param.Add("@p_fromDate", fromDate);
             param.Add("@p_toDate", toDate);
+            param.Add("@p_isLevhiApplicable", isLevhiApplicable);
 
             var result = await _db.QueryAsync<UnpaidReportDto>("usp_UnPaidBalancePaymentReport", param, commandType: CommandType.StoredProcedure);
             return result.ToList();

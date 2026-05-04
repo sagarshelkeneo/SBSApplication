@@ -95,7 +95,7 @@
                                 Salary Details
                             </a>
                         }
-                        @if (CheckMasterAccess() || CheckConfigAccess() || CheckReportAccess())
+                        @if (CheckMasterAccess() || CheckConfigAccess() || CheckReportAccess() || CheckNormalAccess())
                         {
                             <div class="sb-sidenav-menu-heading">Manage Data</div>
                         }
@@ -158,7 +158,7 @@
                         }
 
                         <!-- Reports Section -->
-                        @if (CheckReportAccess())
+                        @if (CheckReportAccess() || CheckNormalAccess())
                         {
                             @* <div class="sb-sidenav-menu-heading">Reports</div> *@
                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseReports"
@@ -171,9 +171,22 @@
                                 <nav class="sb-sidenav-menu-nested nav">
                                     <a class="nav-link" href="@Url.Action("ContractorReport", "Report")">Contractor Report</a>
                                     <a class="nav-link" href="@Url.Action("ProfitLossReport", "Report")">Profit & Loss</a>
-                                    <a class="nav-link" href="@Url.Action("ProductWise", "Report")">Product Wise</a>
+                                    @* <a class="nav-link" href="@Url.Action("ProductWise", "Report")">Product Wise</a>
                                     <a class="nav-link" href="@Url.Action("SubContractorWise", "Report")">Sub-Contractor Wise</a>
                                     <a class="nav-link" href="@Url.Action("CombinedSubContractorEntity", "Report")">Combined Sub-Contractor Entity</a>
+                                     *@                                
+                                </nav>
+                            </div>
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseReports2"
+                               aria-expanded="false" aria-controls="collapseReports2">
+                                <div class="sb-nav-link-icon"><i class="fas fa-file-alt"></i></div>
+                                Reports-Legrand & Indo
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseReports2" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" href="@Url.Action("ContractorLegrandReport", "Report")">Contractor Report</a>
+                                    <a class="nav-link" href="@Url.Action("ProfitLossLegrandReport", "Report")">Profit & Loss</a>
                                 </nav>
                             </div>
                         }

@@ -8,6 +8,6 @@ using MediatR;
 
 namespace Client.Application.Features.PaymentReports.Queries
 {
-    public record GetUnpaidReportQuery(string? SubcontractorName, int? CompanyId, string? FromDate, string? ToDate) : IRequest<List<UnpaidReportDto>>;
+    public record GetUnpaidReportQuery(string? SubcontractorName, int? CompanyId, string? FromDate, string? ToDate, bool isLevhiApplicable) : IRequest<List<UnpaidReportDto>>;
 
 }

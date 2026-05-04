@@ -14,7 +14,7 @@ namespace Client_WebApp.Controllers.Reports
             _reportService = reportService;
         }
 
-        //[HttpGet("report/contractorreport", Name = "contractorreport")]
+        #region  isLevhiApplicable = false
         public async Task<IActionResult> ContractorReport(string? fromDate, string? toDate, string? subcontractorName, string? bankName)
         {
             try
@@ -29,7 +29,8 @@ namespace Client_WebApp.Controllers.Reports
                     companyId,
                     bankName,
                     fromDate,
-                    toDate
+                    toDate,
+                    false
                 );
 
                 return View(reports);
@@ -54,7 +55,8 @@ namespace Client_WebApp.Controllers.Reports
                     subcontractorName,
                     companyId,
                     fromDate,
-                    toDate
+                    toDate,
+                    false
                 );
 
                 return View(reports);
@@ -120,5 +122,61 @@ namespace Client_WebApp.Controllers.Reports
                 return View(new List<CombinedSubcontractorReportDto>());
             }
         }
+        #endregion
+
+        #region isLevhiApplicable = true
+        public async Task<IActionResult> ContractorLegrandReport(string? fromDate, string? toDate, string? subcontractorName, string? bankName)
+        {
+            try
+            {
+                if (!AccessHelper.HasAccess(User, "PAIDREPORT", "View"))
+                    return Forbid();
+
+                int? companyId = CurrentCompanyId;
+
+                var reports = await _reportService.GetPaidReportAsync(
+                    subcontractorName,
+                    companyId,
+                    bankName,
+                    fromDate,
+                    toDate,
+                    true
+                );
+
+                return View(reports);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Failed to load Contractor Report: {ex.Message}";
+                return View(new List<PaidReportDto>());
+            }
+        }
+
+        public async Task<IActionResult> ProfitLossLegrandReport(string? fromDate, string? toDate, string? subcontractorName)
+        {
+            try
+            {
+                if (!AccessHelper.HasAccess(User, "UNPAIDREPORT", "View"))
+                    return Forbid();
+
+                int? companyId = CurrentCompanyId;
+
+                var reports = await _reportService.GetUnpaidReportAsync(
+                    subcontractorName,
+                    companyId,
+                    fromDate,
+                    toDate,
+                    true
+                );
+
+                return View(reports);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Failed to load Profit & Loss Report: {ex.Message}";
+                return View(new List<UnpaidReportDto>());
+            }
+        }
+        #endregion
     }
 }

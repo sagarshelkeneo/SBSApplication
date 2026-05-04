@@ -14,14 +14,14 @@ namespace Client_WebApp.Services.Report
             _reportRepository = reportRepository;
         }
 
-        public async Task<List<PaidReportDto>> GetPaidReportAsync(string? subcontractorName, int? companyId, string? bankName, string fromDate, string toDate)
+        public async Task<List<PaidReportDto>> GetPaidReportAsync(string? subcontractorName, int? companyId, string? bankName, string fromDate, string toDate, bool isLevhiApplicable)
         {
-            return await _reportRepository.GetPaidReportAsync(subcontractorName, companyId, bankName, fromDate, toDate);
+            return await _reportRepository.GetPaidReportAsync(subcontractorName, companyId, bankName, fromDate, toDate, isLevhiApplicable);
         }
 
-        public async Task<List<UnpaidReportDto>> GetUnpaidReportAsync(string? subcontractorName, int? companyId, string fromDate, string toDate)
+        public async Task<List<UnpaidReportDto>> GetUnpaidReportAsync(string? subcontractorName, int? companyId, string fromDate, string toDate, bool isLevhiApplicable)
         {
-            return await _reportRepository.GetUnpaidReportAsync(subcontractorName, companyId, fromDate, toDate);
+            return await _reportRepository.GetUnpaidReportAsync(subcontractorName, companyId, fromDate, toDate, isLevhiApplicable);
         }
 
         public async Task<List<ProductWiseReportDto>> GetProductWiseReportAsync(

@@ -21,7 +21,7 @@ namespace Client.Application.Features.PaymentReports.Handlers
 
         public async Task<List<PaidReportDto>> Handle(GetPaidReportQuery request, CancellationToken cancellationToken)
         {
-            return await _repo.GetPaidReportAsync(request.SubcontractorName,request.CompanyId,request.BankName,request.FromDate,request.ToDate);
+            return await _repo.GetPaidReportAsync(request.SubcontractorName,request.CompanyId,request.BankName,request.FromDate,request.ToDate,request.isLevhiApplicable);
         }
     }
 

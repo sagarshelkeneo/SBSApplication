@@ -1,11 +1,11 @@
 ﻿@using Client.Application.Features.PaymentReports.Dtos
-@model List<PaidReportDto>
+@model List<UnpaidReportDto>
 
 @{
-    ViewData["Title"] = "Contractor Details";
+    ViewData["Title"] = "Profit & Loss Details";
 }
 
-@* <h2 class="pt-4 fs-1">Paid Reports</h2> *@
+@* <h2 class="pt-4 fs-1">Unpaid Reports</h2> *@
 
 <div class="pt-3 px-3 pb-2">
 
@@ -25,7 +25,7 @@
     <!-- Filter Section -->
     <div class="card mb-3 shadow-sm">
         <div class="card-body collapse @(ViewContext.HttpContext.Request.Query.Any() ? "show" : "")" id="filter-container">
-            <form method="get" class="row g-3" asp-action="ContractorReport">
+            <form method="get" class="row g-3" asp-action="ProfitLossLegrandReport">
                 <div class="col-md-3">
                     <label class="form-label">From Date</label>
                     <input type="date" name="fromDate" class="form-control" value="@(ViewContext.HttpContext.Request.Query["fromDate"])" />
@@ -38,13 +38,9 @@
                     <label class="form-label">Sub-Contractor Name</label>
                     <input type="text" name="subcontractorName" class="form-control" placeholder="Sub-Contractor Name" value="@(ViewContext.HttpContext.Request.Query["subcontractorName"])" />
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Bank Name</label>
-                    <input type="text" name="bankName" class="form-control" placeholder="Bank Name" value="@(ViewContext.HttpContext.Request.Query["bankName"])" />
-                </div>
-                <div class="col-md-12 mt-2">
+                <div class="col-md-3 mt-5">
                     <button type="submit" class="btn btn-outline-primary mb-2 me-2">Search</button>
-                    <a asp-action="Paid" class="btn btn-outline-secondary mb-2">Reset</a>
+                    <a asp-action="Unpaid" class="btn btn-outline-secondary mb-2">Reset</a>
                 </div>
             </form>
         </div>
@@ -53,7 +49,7 @@
     <!-- Report Table -->
     <div class="card mb-4 shadow-sm">
         <div class="card-header">
-            <i class="fas fa-table me-1"></i> Contractor Report
+            <i class="fas fa-table me-1"></i> Profit & Loss Report
         </div>
         <div class="card-body table-responsive">
             <table class="table table-bordered table-striped table-hover align-middle text-nowrap" id="reportTable">
@@ -62,43 +58,69 @@
                         <th>Sr. No.</th>
                         <th>Invoice Date</th>
                         <th>Receipt Number</th>
-                        <th>LR Number</th>
-                        <th>Sub-Contractor</th>
-                        
-                        <th>Box</th>
-                        <th>Peti</th>
-                        <th>Motor</th>
-                        <th>Total Type Rate</th>
-                        <th class="text-end">Total Amount</th>
+                        <th>Type</th>
+                        <th>Quantity</th>
+
+                        <th>Per Unit Rate</th>
+                        <th>Labour Charge</th>
+                        <th>Business</th>
+                        <th>Bank</th>
+                        <th>Cash</th>
+                        <th class="text-end">Balance</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (Model != null && Model.Any())
                     {
-                        decimal totalAmount = 0;
+                        decimal totalCash = 0;
+                        decimal totalBalance = 0;
+                        decimal totalLabour = 0;
+                        decimal totalBusiness = 0;
+                        decimal totalBank = 0;
+
                         for (int i = 0; i < Model.Count; i++)
                         {
-                           var item = Model[i];
-                            totalAmount += item.InvoiceAmount;
+                            var item = Model[i];
+                            totalCash += item.Cash;
+                            totalBalance += item.Balance;
+                            totalBusiness += item.InvoiceAmount ?? 0;
+                            totalBank += item.Bank;
+                            if (!string.IsNullOrEmpty(item.CommissionAmount))
+                            {
+                                if (decimal.TryParse(item.CommissionAmount, out decimal labourVal))
+                                {
+                                    totalLabour += labourVal;
+                                }
+                            }
+
 
                             <tr>
                                 <td class="text-center"></td>
                                 <td>@(item.InvoiceDate?.ToString("dd-MMM-yy") ?? "-")</td>
                                 <td>@item.ReceiptNumber</td>
-                                <td>@item.LRNumber</td>
-                                <td>@item.SubContractor</td>
+                                <td>@item.ProductName</td>
+                                <td>@item.Quantity</td>
 
-                                <td>@(item.Box ?? "-")</td>
-                                <td>@(item.Peti ?? "-")</td>
-                                <td>@(item.Motors ?? "-")</td>                                
-                                <td>@item.TotalTypeRate</td>
-                                <td class="text-end fw-semibold">@item.InvoiceAmount.ToString("N2")</td>
+                                <td>@(item.UnitAmount ?? "-")</td>
+                                <td>@(item.CommissionAmount ?? "-")</td>
+                                <td>@item.InvoiceAmount?.ToString("N2")</td>
+                                <td>@item.Bank</td>
+                                <td>@item.Cash</td>
+                                <td class="text-end fw-semibold">@item.Balance</td>
                             </tr>
                         }
                     <tfoot>
                         <tr>
-                            <td colspan="9" class="text-end">Total</td>
-                            <td class="text-end fw-bold">@totalAmount.ToString("N2")</td>
+                            <td colspan="8" class="text-end">Total</td>                           
+                            <td class="text-end fw-bold">@totalBank.ToString("N2")</td>
+                            <td class="text-end fw-bold">@totalCash.ToString("N2")</td>
+                            <td class="text-end fw-bold">@totalBalance.ToString("N2")</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-end">Total Amount (Business - Labour)</td>
+                            <td class="text-end fw-bold">@totalLabour.ToString("N2")</td>
+                            <td class="text-end fw-bold">@totalBusiness.ToString("N2")</td>
+                            <td colspan="3" class="text-end fw-bold">@( (totalBusiness - totalLabour).ToString("N2") )</td>
                         </tr>
                     </tfoot>
                     }
@@ -115,7 +137,7 @@
                 tableSelector: '#reportTable',
                 customInfoId: 'reportTable_info_custom',
                 columnDefs: [{ orderable: false, targets: 0 }],
-                columnsSearchable: [false, true, true, true, true, true, true, true, true, true],
+                columnsSearchable: [false, true, true, true,true, true, true,true, true, true,true],
                 order: [[1, 'asc']],
                 destroy: true,
                 language: { emptyTable: "No Records Found" }

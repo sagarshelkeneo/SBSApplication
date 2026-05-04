@@ -22,9 +22,9 @@ namespace Client.API.Controllers
         // Paid Balance Report
         [HttpGet("paid-report")]
         [ScreenAccess("PAIDREPORT", "View")]
-        public async Task<ActionResult<List<PaidReportDto>>> GetPaidReport([FromQuery]string? subcontractorName,[FromQuery] int? companyId, [FromQuery] string? bankName,[FromQuery] string? fromDate,[FromQuery] string? toDate)
+        public async Task<ActionResult<List<PaidReportDto>>> GetPaidReport([FromQuery]string? subcontractorName,[FromQuery] int? companyId, [FromQuery] string? bankName,[FromQuery] string? fromDate,[FromQuery] string? toDate, bool isLevhiApplicable)
         {
-            var result = await _mediator.Send(new GetPaidReportQuery(subcontractorName,companyId,bankName,fromDate,toDate));
+            var result = await _mediator.Send(new GetPaidReportQuery(subcontractorName,companyId,bankName,fromDate,toDate, isLevhiApplicable));
             return Ok(result);
         }
 
@@ -32,9 +32,9 @@ namespace Client.API.Controllers
         [HttpGet("unpaid-report")]
         [ScreenAccess("UNPAIDREPORT", "View")]
 
-        public async Task<ActionResult<List<UnpaidReportDto>>> GetUnpaidReport([FromQuery]string? subcontractorName,[FromQuery] int? companyId,[FromQuery] string? fromDate,[FromQuery] string? toDate)
+        public async Task<ActionResult<List<UnpaidReportDto>>> GetUnpaidReport([FromQuery]string? subcontractorName,[FromQuery] int? companyId,[FromQuery] string? fromDate,[FromQuery] string? toDate, bool isLevhiApplicable)
         {
-            var result = await _mediator.Send(new GetUnpaidReportQuery(subcontractorName,companyId, fromDate, toDate));
+            var result = await _mediator.Send(new GetUnpaidReportQuery(subcontractorName,companyId, fromDate, toDate,isLevhiApplicable));
             return Ok(result);
         }
 

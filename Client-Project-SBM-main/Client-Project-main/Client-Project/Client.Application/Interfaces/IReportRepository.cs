@@ -9,8 +9,8 @@ namespace Client.Application.Interfaces
 {
     public interface IReportRepository
     {
-        Task<List<PaidReportDto>> GetPaidReportAsync(string? subcontractorName, int? companyId, string? bankName, string fromDate, string toDate);
-        Task<List<UnpaidReportDto>> GetUnpaidReportAsync(string? subcontractorName, int? companyId, string fromDate, string toDate);
+        Task<List<PaidReportDto>> GetPaidReportAsync(string? subcontractorName, int? companyId, string? bankName, string fromDate, string toDate, bool isLevhiApplicable);
+        Task<List<UnpaidReportDto>> GetUnpaidReportAsync(string? subcontractorName, int? companyId, string fromDate, string toDate, bool isLevhiApplicable);
         Task<List<ProductWiseReportDto>> GetProductWiseReportAsync(string? productName, string? subcontractorName, int? companyId, string fromDate, string toDate);
         Task<List<SubcontractorWiseReportDto>> GetSubcontractorWiseReportAsync(string? subcontractorName, int? companyId, string fromDate, string toDate);
         Task<List<CombinedSubcontractorReportDto>> GetCombinedSubcontractorReportAsync();

@@ -1,4 +1,4 @@
-﻿@{
+@{
     // Get values set by BaseController
     var username = ViewBag.Username ?? "Guest";
     var userRole = ViewBag.UserRole ?? "Guest";
@@ -352,11 +352,17 @@
 
                 // Auto alignment based on content type
                 api.rows({ page: 'current' }).nodes().each(function (row) {
-                    $('td', row).each(function () {
+                    $('td', row).each(function (index) {
                         const text = $(this).text().trim();
 
                         // Remove any previous alignment
                         $(this).removeClass('text-start text-end text-center');
+
+                        // Keep Sr. No. (first column) centered consistently
+                        if (index === 0) {
+                            $(this).addClass('text-center');
+                            return;
+                        }
 
                         // Detect numeric (e.g., 123, 1,234.50)
                         const isNumeric = $.isNumeric(text.replace(/,/g, ''));

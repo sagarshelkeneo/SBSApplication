@@ -123,9 +123,10 @@
                 tableSelector: '#subcontractorTable',
                 customInfoId: 'subcontractorTable_info_custom',
                 columnDefs: [
-                    { orderable: false, targets: 0 },
-                    { orderable: false, targets: -1 }
+                    { orderable: false, targets: 0, width: "50px"},
+                    { orderable: false, targets: -1, width: "80px"}
                 ],
+                autoWidth: false,
                 columnsSearchable: [false, true, false],
                 order: [[1, 'asc']],
                 actionCallbacks: {

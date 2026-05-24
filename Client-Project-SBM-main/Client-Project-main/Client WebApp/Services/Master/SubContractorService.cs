@@ -1,6 +1,5 @@
-﻿using Client.Application.Features.SubContractor.Dtos;
+using Client.Application.Features.SubContractor.Dtos;
 using Client.Application.Interfaces;
-using NuGet.Protocol.Core.Types;
 
 namespace Client_WebApp.Services.Master
 {

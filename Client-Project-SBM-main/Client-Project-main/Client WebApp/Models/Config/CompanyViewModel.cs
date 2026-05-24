@@ -1,7 +1,6 @@
-﻿using Client.Application.Features.Product.Dtos;
+using Client.Application.Features.Product.Dtos;
 using Client.Application.Features.SubContractor.Dtos;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Identity.Client;
 
 namespace Client_WebApp.Models.Config
 {

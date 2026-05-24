@@ -19,7 +19,7 @@ namespace Client_WebApp.Controllers.Reports
         {
             try
             {
-                if (!AccessHelper.HasAccess(User, "PAIDREPORT", "View"))
+                if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
                     return Forbid();
 
                 int? companyId = CurrentCompanyId;
@@ -46,7 +46,7 @@ namespace Client_WebApp.Controllers.Reports
         {
             try
             {
-                if (!AccessHelper.HasAccess(User, "UNPAIDREPORT", "View"))
+                if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
                     return Forbid();
 
                 int? companyId = CurrentCompanyId;
@@ -72,7 +72,7 @@ namespace Client_WebApp.Controllers.Reports
         {
             try
             {
-                if (!AccessHelper.HasAccess(User, "PRODUCTWISEREPORT", "View"))
+                if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
                     return Forbid();
 
                 var companyId = CurrentCompanyId;
@@ -90,7 +90,7 @@ namespace Client_WebApp.Controllers.Reports
         {
             try
             {
-                if (!AccessHelper.HasAccess(User, "SUBCONTRACTORWISEREPORT", "View"))
+                if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
                     return Forbid();
 
                 var companyId = CurrentCompanyId;
@@ -108,7 +108,7 @@ namespace Client_WebApp.Controllers.Reports
         {
             try
             {
-                if (!AccessHelper.HasAccess(User, "COMBINEDREPORT", "View"))
+                if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
                     return Forbid();
 
                 var companyId = CurrentCompanyId;
@@ -129,7 +129,7 @@ namespace Client_WebApp.Controllers.Reports
         {
             try
             {
-                if (!AccessHelper.HasAccess(User, "PAIDREPORT", "View"))
+                if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
                     return Forbid();
 
                 int? companyId = CurrentCompanyId;
@@ -156,7 +156,7 @@ namespace Client_WebApp.Controllers.Reports
         {
             try
             {
-                if (!AccessHelper.HasAccess(User, "UNPAIDREPORT", "View"))
+                if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
                     return Forbid();
 
                 int? companyId = CurrentCompanyId;

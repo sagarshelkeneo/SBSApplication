@@ -1,4 +1,4 @@
-﻿namespace Client.API.Middlewares
+namespace Client.API.Middlewares
 {
     public class ExceptionHandlingMiddleware
     {
@@ -31,7 +31,8 @@
                     timestamp = DateTime.UtcNow
                 };
 
-                await context.Response.WriteAsJsonAsync(response);
+                var json = System.Text.Json.JsonSerializer.Serialize(response);
+                await Microsoft.AspNetCore.Http.HttpResponseWritingExtensions.WriteAsync(context.Response, json);
             }
         }
     }

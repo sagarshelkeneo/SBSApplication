@@ -24,7 +24,7 @@ namespace Client_WebApp.Controllers
 
             TempData.Remove("ErrorMessage");
 
-            //ViewBag.SiteKey = "6Ld9bIIrAAAAAP88S3Mdc5TVVnzqKRep7cqRIxli";
+            //ViewBag.SiteKey = "6LeCeYcrAAAAAGK8D2mFUZsOBTXe-XDgOrxtrx1K";  // ViewBag.SiteKey = "6Ld9bIIrAAAAAP88S3Mdc5TVVnzqKRep7cqRIxli";
             ViewBag.SiteKey = _captchaConfig.SiteKey;
             return View(new LoginViewModel());
         }
@@ -33,7 +33,7 @@ namespace Client_WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(LoginViewModel model)
         {
-            //ViewBag.SiteKey = "6Ld9bIIrAAAAAP88S3Mdc5TVVnzqKRep7cqRIxli";
+            //ViewBag.SiteKey = "6LeCeYcrAAAAAGK8D2mFUZsOBTXe-XDgOrxtrx1K";  // ViewBag.SiteKey = "6Ld9bIIrAAAAAP88S3Mdc5TVVnzqKRep7cqRIxli";           
             ViewBag.SiteKey = _captchaConfig.SiteKey;
 
             if (!ModelState.IsValid)

@@ -10,8 +10,8 @@ namespace Client_WebApp.Models
         [Required(ErrorMessage = "*Required")]
         public string Password { get; set; }
 
-        [Required(ErrorMessage = "Please verify you are not a robot.")]
-        public string RecaptchaToken { get; set; }
+        //[Required(ErrorMessage = "Please verify you are not a robot.")]
+        public string? RecaptchaToken { get; set; }
     }
 
     public class AuthResponse

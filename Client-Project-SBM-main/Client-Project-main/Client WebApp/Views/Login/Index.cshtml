@@ -125,11 +125,11 @@
                         </div>
 
                         <!-- reCAPTCHA -->
-                        <div class="mb-3">
+                        @* <div class="mb-3">
                             <input type="hidden" asp-for="RecaptchaToken" id="recaptchaToken" />
                             <div class="g-recaptcha" data-sitekey="@ViewBag.SiteKey" data-callback="recaptchaCallback"></div>
                             <span asp-validation-for="RecaptchaToken" class="text-danger ms-2 text-sm-start"></span>
-                        </div>
+                        </div> *@
 
                         <!-- Submit -->
                         <div class="d-grid">

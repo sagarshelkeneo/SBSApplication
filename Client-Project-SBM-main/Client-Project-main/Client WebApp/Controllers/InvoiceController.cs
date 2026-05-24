@@ -1,4 +1,4 @@
-﻿using Client.Application.Features.Invoice.Dtos;
+using Client.Application.Features.Invoice.Dtos;
 using Client_WebApp.Controllers;
 using Client_WebApp.Middleware;
 using Client_WebApp.Models;
@@ -198,13 +198,13 @@ namespace Client.MVC.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetInvoice(int id)
+        public async Task<IActionResult> GetInvoice(int id, bool isLeviApplicable)
         {
             if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
                 return Forbid();
 
             int companyId = CurrentCompanyId;
-            var invoice = (await _service.GetInvoicesAsync(true, companyId, id)).FirstOrDefault();
+            var invoice = (await _service.GetInvoicesAsync(isLeviApplicable, companyId, id)).FirstOrDefault();
             if (invoice == null) return NotFound();
 
             // Get all subcontractors and products for dropdown

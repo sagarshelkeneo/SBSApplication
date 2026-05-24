@@ -1,4 +1,4 @@
-﻿@model Client_WebApp.Models.InvoiceIndexViewModel
+@model Client_WebApp.Models.InvoiceIndexViewModel
 @{
     ViewData["Title"] = "Bookings";
 }
@@ -183,10 +183,11 @@
 
         // Get Invoice
         function getInvoice(id) {
+            alert(id);
             $.ajax({
                 url: '/Invoice/GetInvoice',
                 type: 'GET',
-                data: { id: id },
+                data: { id: id, isLeviApplicable:false },
                 success: function (data) {
                     // Fill modal fields
                     $('#Id').val(data.id);

@@ -1,4 +1,4 @@
-﻿@model Client_WebApp.Models.InvoiceIndexViewModel
+@model Client_WebApp.Models.InvoiceIndexViewModel
 @{
     ViewData["Title"] = "Legrand & Indo Bookings";
 }
@@ -186,7 +186,7 @@
             $.ajax({
                 url: '/Invoice/GetInvoice',
                 type: 'GET',
-                data: { id: id },
+                data: { id: id, isLeviApplicable:true },
                 success: function (data) {
                     // Fill modal fields
                     $('#Id').val(data.id);
@@ -217,7 +217,9 @@
                     // Show modal
                     $('#invoice-modal').modal('show');
                 },
-                error: function () {
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error:", status, error);
+                    console.error("Response Text:", xhr.responseText);
                     alert("Failed to load Booking data.");
                 }
             });

@@ -22,7 +22,7 @@ namespace Client.Application.Features.PaymentReports.Handlers
 
         public async Task<List<CombinedSubcontractorReportDto>> Handle(GetCombinedSubcontractorReportQuery request, CancellationToken cancellationToken)
         {
-            return await _repository.GetCombinedSubcontractorReportAsync();
+            return await _repository.GetCombinedSubcontractorReportAsync(request.SubcontractorName, request.CompanyId, request.FromDate, request.ToDate, request.isTrollyApplicable);
         }
     }
 

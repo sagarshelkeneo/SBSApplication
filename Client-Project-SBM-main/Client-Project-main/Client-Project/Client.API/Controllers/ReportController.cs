@@ -4,6 +4,8 @@ using Client.Application.Features.PaymentReports.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.Design;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Client.API.Controllers
 {
@@ -59,9 +61,9 @@ namespace Client.API.Controllers
         //combined subcontractor report
         [HttpGet("combined-subcontractor-entity")]
         [ScreenAccess("COMBINEDREPORT", "View")]
-        public async Task<IActionResult> GetCombinedReport()
+        public async Task<IActionResult> GetCombinedReport([FromQuery] string? subcontractorName, [FromQuery] int? companyId, [FromQuery] string? fromDate, [FromQuery] string? toDate, bool isTrollyApplicable)
         {
-            var result = await _mediator.Send(new GetCombinedSubcontractorReportQuery());
+            var result = await _mediator.Send(new GetCombinedSubcontractorReportQuery(subcontractorName, companyId, fromDate, toDate, isTrollyApplicable));
             return Ok(result);
         }
     }

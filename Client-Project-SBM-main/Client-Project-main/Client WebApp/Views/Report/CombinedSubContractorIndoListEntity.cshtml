@@ -2,7 +2,7 @@
 @model List<CombinedSubcontractorReportDto>
 
 @{
-    ViewData["Title"] = "Legrand Levhi Details";
+    ViewData["Title"] = "Indo Levhi Details";
 }
 
 @* <h2 class="pt-4 fs-1">Combined Sub-Contractor Entity Reports</h2> *@
@@ -26,7 +26,7 @@
 
     <div class="card mb-3 shadow-sm">
         <div class="card-body collapse @(ViewContext.HttpContext.Request.Query.Any() ? "show" : "")" id="filter-container">
-            <form method="get" class="row g-3" asp-action="CombinedSubContractorEntity">
+            <form method="get" class="row g-3" asp-action="CombinedSubContractorIndoListEntity">
                 <div class="col-md-3">
                     <label class="form-label">From Date</label>
                     <input type="date" name="fromDate" class="form-control" value="@(ViewContext.HttpContext.Request.Query["fromDate"])" />
@@ -50,7 +50,7 @@
     <!-- Report Table Section --> 
     <div class="card mb-4 shadow-sm">
         <div class="card-header">
-            <i class="fas fa-table me-1"></i> Legrand Levhi Details
+            <i class="fas fa-table me-1"></i> Indo Levhi Details
         </div>
         <div class="card-body">
             <div class="table-responsive">

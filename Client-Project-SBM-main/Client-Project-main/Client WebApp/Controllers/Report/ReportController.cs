@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Client_WebApp.Services.Report;
-using Client.Application.Features.PaymentReports.Dtos;
+﻿using Client.Application.Features.PaymentReports.Dtos;
 using Client_WebApp.Middleware;
+using Client_WebApp.Services.Report;
+using Microsoft.AspNetCore.Mvc;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Client_WebApp.Controllers.Reports
 {
@@ -104,7 +105,7 @@ namespace Client_WebApp.Controllers.Reports
             }
         }
 
-        public async Task<IActionResult> CombinedSubContractorEntity()
+        public async Task<IActionResult> CombinedSubContractorEntity(string? subcontractorName, string? fromDate, string? toDate, bool isTrollyApplicable)
         {
             try
             {
@@ -112,7 +113,7 @@ namespace Client_WebApp.Controllers.Reports
                     return Forbid();
 
                 var companyId = CurrentCompanyId;
-                var data = await _reportService.GetCombinedSubcontractorReportAsync();
+                var data = await _reportService.GetCombinedSubcontractorReportAsync(subcontractorName, companyId, fromDate, toDate, true);
 
                 return View(data);
             }
@@ -122,6 +123,26 @@ namespace Client_WebApp.Controllers.Reports
                 return View(new List<CombinedSubcontractorReportDto>());
             }
         }
+
+        public async Task<IActionResult> CombinedSubContractorIndoListEntity(string? subcontractorName, string? fromDate, string? toDate, bool isTrollyApplicable)
+        {
+            try
+            {
+                if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
+                    return Forbid();
+
+                var companyId = CurrentCompanyId;
+                var data = await _reportService.GetCombinedSubcontractorReportAsync(subcontractorName, companyId, fromDate, toDate, false);
+
+                return View(data);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Failed to load report. " + ex.Message;
+                return View(new List<CombinedSubcontractorReportDto>());
+            }
+        }
+
         #endregion
 
         #region isLevhiApplicable = true

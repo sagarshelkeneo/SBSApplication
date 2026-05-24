@@ -13,7 +13,8 @@ namespace Client.Application.Interfaces
         Task<List<UnpaidReportDto>> GetUnpaidReportAsync(string? subcontractorName, int? companyId, string fromDate, string toDate, bool isLevhiApplicable);
         Task<List<ProductWiseReportDto>> GetProductWiseReportAsync(string? productName, string? subcontractorName, int? companyId, string fromDate, string toDate);
         Task<List<SubcontractorWiseReportDto>> GetSubcontractorWiseReportAsync(string? subcontractorName, int? companyId, string fromDate, string toDate);
-        Task<List<CombinedSubcontractorReportDto>> GetCombinedSubcontractorReportAsync();
+        Task<List<CombinedSubcontractorReportDto>> GetCombinedSubcontractorReportAsync(string? subcontractorName, int? companyId,
+                string fromDate, string toDate, bool isTrollyApplicable);
 
     }
 

@@ -8,6 +8,6 @@ using MediatR;
 
 namespace Client.Application.Features.PaymentReports.Queries
 {
-    public class GetCombinedSubcontractorReportQuery : IRequest<List<CombinedSubcontractorReportDto>> { }
+    public record GetCombinedSubcontractorReportQuery(string? SubcontractorName, int? CompanyId, string? FromDate, string? ToDate, bool isTrollyApplicable) : IRequest<List<CombinedSubcontractorReportDto>>;
 
 }

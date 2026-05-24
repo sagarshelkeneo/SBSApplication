@@ -8,33 +8,67 @@
 <div id="home">
     @if (hasReportAccess)
     {
-        <div class="card m-3" style="width: 18rem;">
-            <div class="card-body">
-                <a asp-controller="Report" asp-action="ContractorReport">Contractor Report <i class="fa-solid fa-file-zipper icon"></i></a>
+        <div class="row">
+            <div class="col-6">
+                <div class="card m-3">
+                    <div class="card-body">
+                        <a asp-controller="Report" asp-action="ContractorReport">
+                            Contractor Report <i class="fa-solid fa-file-zipper icon"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div class="card m-3" style="width: 18rem;">
-            <div class="card-body">
-                <a asp-controller="Report" asp-action="ProfitLossReport">Profit & Loss Report <i class="fa-solid fa-file-zipper icon"></i></a>
+            <div class="col-6">
+                <div class="card m-3">
+                    <div class="card-body">
+                        <a asp-controller="Report" asp-action="ProfitLossReport">
+                            Profit & Loss Report <i class="fa-solid fa-file-zipper icon"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
-        </div>
-       
-        <div class="card m-3" style="width: 18rem;">
-        </div>
 
-        <div class="card m-3" style="width: 18rem;">
-            <div class="card-body">
-                <a asp-controller="Report" asp-action="ContractorLegrandReport">Legrand Contractor Report <i class="fa-solid fa-file-zipper icon"></i></a>
+            <div class="col-6">
+                <div class="card m-3">
+                    <div class="card-body">
+                        <a asp-controller="Report" asp-action="ContractorLegrandReport">
+                            Legrand & Indo => Contractor Report <i class="fa-solid fa-file-zipper icon"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div class="card m-3" style="width: 18rem;">
-            <div class="card-body">
-                <a asp-controller="Report" asp-action="ProfitLossLegrandReport">Legrand Profit & Loss Report <i class="fa-solid fa-file-zipper icon"></i></a>
+            <div class="col-6">
+                <div class="card m-3">
+                    <div class="card-body">
+                        <a asp-controller="Report" asp-action="ProfitLossLegrandReport">
+                            Legrand & Indo => Profit & Loss Report <i class="fa-solid fa-file-zipper icon"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6">
+                <div class="card m-3">
+                    <div class="card-body">
+                        <a asp-controller="Report" asp-action="CombinedSubContractorEntity">
+                            Legrand  => Levhi Report <i class="fa-solid fa-file-zipper icon"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6">
+                <div class="card m-3">
+                    <div class="card-body">
+                        <a asp-controller="Report" asp-action="CombinedSubContractorIndoListEntity">
+                            Indo => Levhi Report <i class="fa-solid fa-file-zipper icon"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="card m-3" style="width: 18rem;">
-        </div>
+        
     }
 </div>

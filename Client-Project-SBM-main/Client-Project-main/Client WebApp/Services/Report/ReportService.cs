@@ -36,9 +36,10 @@ namespace Client_WebApp.Services.Report
             return await _reportRepository.GetSubcontractorWiseReportAsync(subcontractorName, companyId, fromDate, toDate);
         }
 
-        public async Task<List<CombinedSubcontractorReportDto>> GetCombinedSubcontractorReportAsync()
+        public async Task<List<CombinedSubcontractorReportDto>> GetCombinedSubcontractorReportAsync(
+            string? subcontractorName, int? companyId, string? fromDate, string? toDate, bool isTrollyApplicable)
         {
-            return await _reportRepository.GetCombinedSubcontractorReportAsync();
+            return await _reportRepository.GetCombinedSubcontractorReportAsync(subcontractorName, companyId, fromDate, toDate, isTrollyApplicable);
         }
     }
 }

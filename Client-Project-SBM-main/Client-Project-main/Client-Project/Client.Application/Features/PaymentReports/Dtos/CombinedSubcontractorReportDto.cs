@@ -9,11 +9,13 @@ namespace Client.Application.Features.PaymentReports.Dtos
 
     public class CombinedSubcontractorReportDto
     {
-        public string R_Date { get; set; }
-        public string SubContractorName { get; set; }
-        public int? Quantity { get; set; }
-        public decimal? CashAmount { get; set; }
-        public decimal? BalanceAmount { get; set; }
-        public decimal? PaidAmount { get; set; }
+        public string Date { get; set; }
+        public string DocketNumber { get; set; }
+        public string InvoiceNo { get; set; }
+        public string Customer { get; set; }
+        public string? Quantity { get; set; }
+        public string? TotalAmount { get; set; }
+        public string? LevhiAmount { get; set; }
+        public string? FinalAmount { get; set; }
     }
 }

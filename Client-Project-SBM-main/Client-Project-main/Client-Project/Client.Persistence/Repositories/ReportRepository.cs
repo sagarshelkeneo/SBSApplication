@@ -71,13 +71,19 @@ namespace Client.Persistence.Repositories
             var result = await _db.QueryAsync<SubcontractorWiseReportDto>("usp_MonthlyPaymentSubcontractorWiseTotalPayment", param, commandType: CommandType.StoredProcedure);
             return result.ToList();
         }
-        public async Task<List<CombinedSubcontractorReportDto>> GetCombinedSubcontractorReportAsync()
-        {
-            var result = await _db.QueryAsync<CombinedSubcontractorReportDto>(
-                "usp_CombinedSubcontractorEntityReport",
-                commandType: CommandType.StoredProcedure
-            );
 
+        public async Task<List<CombinedSubcontractorReportDto>> GetCombinedSubcontractorReportAsync(string? subcontractorName, int? companyId, 
+                string fromDate, string toDate, bool isTrollyApplicable)
+        {
+            var param = new DynamicParameters();
+            param.Add("@p_subcontractorName", subcontractorName);
+            param.Add("@p_fromDate", fromDate);
+            param.Add("@p_toDate", toDate);
+            param.Add("@p_isTrollyApplicable", isTrollyApplicable);
+
+            var result = await _db.QueryAsync<CombinedSubcontractorReportDto>(
+                "usp_CombinedSubcontractorEntityReport", param, commandType: CommandType.StoredProcedure
+            );
             return result.ToList();
         }
     }

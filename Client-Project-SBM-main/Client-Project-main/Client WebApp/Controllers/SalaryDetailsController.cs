@@ -34,7 +34,7 @@ namespace Client_WebApp.Controllers
                 .Select(sc => new Bank
                 {
                     Id = sc.R_id,
-                    Name = sc.R_bankName
+                    Name = sc.R_bankNameSelect,
                 })
                 .ToList();
 

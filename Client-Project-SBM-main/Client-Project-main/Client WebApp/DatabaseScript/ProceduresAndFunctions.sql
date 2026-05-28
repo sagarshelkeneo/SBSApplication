@@ -535,20 +535,20 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- GET 
-
-CREATE   PROCEDURE [SBSAppDBUser].[usp_sbs_bankMaster_get]
+CREATE PROCEDURE usp_sbs_bankMaster_get
     @P_id INT = NULL
 AS
-BEGIN
-    
+BEGIN    
 
     SELECT
         id AS R_id,
         bankName AS R_bankName,
-        branch AS R_branch
+        branch AS R_branch,
+        bankName + ' (' + branch + ')' AS R_bankNameSelect
     FROM sbs_bankMaster
     WHERE isDeleted = 0
       AND (@P_id IS NULL OR id = @P_id);
+
 END;
 GO
 /****** Object:  StoredProcedure [SBSAppDBUser].[usp_sbs_bankMaster_insert]    Script Date: 2026-05-25 3:11:29 PM ******/
@@ -840,15 +840,15 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 --use SBSApplication
-
-CREATE PROCEDURE [SBSAppDBUser].[usp_sbs_invoiceDetails_get]
+-- EXEC usp_sbs_invoiceDetails_get NULL, 1, 0
+CREATE PROCEDURE usp_sbs_invoiceDetails_get
     @p_id INT = NULL,
     @P_companyID INT,
 	@P_IsLeviApplicable BIT = 0
 AS
 BEGIN
     SELECT
-		 inv.id AS R_id,
+		inv.id AS R_id,
         inv.invoiceNo AS R_invoiceNo,
         inv.companyId AS R_companyId,
         inv.subcontractorId AS R_subcontractorId,
@@ -872,12 +872,17 @@ BEGIN
 		inv.Levi AS R_Levi,
 		inv.DocketNumber AS R_DocketNumber,
 		inv.TrollyQuantity AS R_TrollyQuantity,
-		inv.TrollyAmount AS R_TrollyAmount
-
+		inv.TrollyAmount AS R_TrollyAmount,
+        inv.invoiceNo + ' (' + sc.name + ')'  AS R_invoiceNoSelect,
+        inv.invoiceNo + ' (' + sc.name + ') ' + FORMAT(inv.invoiceDate,'yyyy-MMM-dd')   AS R_invoiceNoDateSelect,
+        inv.createdBy,
+        um.username,
+        FORMAT((inv.createdAt AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time' ),'yyyy-MMM-dd hh:mm:ss tt') createdAt
 
     FROM sbs_invoiceDetails inv
-    JOIN sbs_productMaster pm ON inv.productId = pm.id
-    JOIN sbs_subContractor sc ON inv.subcontractorId = sc.id
+    INNER JOIN sbs_productMaster pm ON inv.productId = pm.id
+    INNER JOIN sbs_subContractor sc ON inv.subcontractorId = sc.id
+    INNER JOIN SBS_UserMaster um ON inv.createdBy = um.id
     WHERE inv.isDeleted = 0
       AND inv.companyID = @P_companyID
       AND (@p_id IS NULL OR inv.id = @p_id)
@@ -1073,10 +1078,8 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-
 -- DELETE
-
-CREATE   PROCEDURE [SBSAppDBUser].[usp_sbs_paymentDetails_delete]
+CREATE     PROCEDURE usp_sbs_paymentDetails_delete
     @p_id INT,
     @p_updatedBy INT
 AS
@@ -1089,6 +1092,16 @@ BEGIN
             updatedBy = @p_updatedBy,
             updatedAt = GETDATE()
         WHERE id = @p_id;
+
+        UPDATE sbs_PaymentDetailsInvoices
+        SET isDeleted = 1,
+            updatedBy = @p_updatedBy,
+            updatedAt = GETDATE()
+        WHERE PaymentID = @p_id;
+
+        UPDATE sbs_invoiceDetails
+        SET STATUS = 'Pending'
+        WHERE ID IN (SELECT InvoiceId FROM sbs_PaymentDetailsInvoices  WHERE PaymentID = @p_id)
 
         SELECT 'SUCCESS' AS R_Status, @p_id AS R_targetId, NULL AS R_ErrorNumber, NULL AS R_ErrorMessage;
     END TRY
@@ -1157,7 +1170,7 @@ GO
 -- =====================================
 -- INSERT
 
-CREATE PROCEDURE [SBSAppDBUser].[usp_sbs_paymentDetails_insert]
+CREATE   PROCEDURE usp_sbs_paymentDetails_insert
     @P_invoiceNo VARCHAR(50),
     @P_paymentDate DATETIME2,
     @P_fromDate DATETIME2 = NULL,
@@ -1179,6 +1192,8 @@ BEGIN
         FROM sbs_invoiceDetails
         WHERE invoiceNo = @P_invoiceNo AND isDeleted = 0;
  
+
+
         -- Insert payment record
         INSERT INTO sbs_paymentDetails (
             invoiceId, subcontractorId, paymentDate, fromDate, toDate, amountPaid, paymentMode,
@@ -1188,9 +1203,32 @@ BEGIN
             @V_invoiceId, @P_subcontractorId, @P_paymentDate, @P_fromDate, @P_toDate, @P_amountPaid, @P_paymentMode,
             @P_paymentStatus, @P_bankId, @P_createdBy, GETDATE(), 1, 0
         );
- 
         SET @V_InsertedID = SCOPE_IDENTITY();
  
+         IF (ISNULL(@V_invoiceId,0) = 0 AND @V_InsertedID > 0)
+         BEGIN
+                -- WITH InvoiceRunning AS (
+                    SELECT  ID, SUM(totalAmount) OVER (ORDER BY invoiceDate ASC, ID ASC) AS RunningTotal , invoiceDate, totalAmount
+                    INTO #InvoiceRunning
+                    FROM sbs_invoiceDetails
+                    WHERE 
+                    ISdeleted = 0 AND STATUS != 'Paid'
+                    AND subcontractorId = @P_subcontractorId
+                    AND (invoiceDate BETWEEN @P_fromDate AND @P_toDate
+                        OR (invoiceDate = @P_paymentDate)
+                    )
+                 
+                INSERT INTO sbs_PaymentDetailsInvoices (PaymentId,InvoiceId,AmountPaid,IsActive,IsDeleted,CreatedBy,CreatedAt,UpdatedBy,UpdatedAt)
+                SELECT  @V_InsertedID,ID,TotalAmount,1,0,@P_createdBy, GETDATE(),NULL,NULL
+                    FROM #InvoiceRunning
+                    WHERE RunningTotal <= @P_amountPaid
+                    ORDER BY invoiceDate ASC, ID ASC
+
+                UPDATE sbs_invoiceDetails
+                SET STATUS = 'Paid'
+                WHERE ID IN (SELECT ID FROM #InvoiceRunning WHERE RunningTotal <= @P_amountPaid)
+         END
+
         SELECT 
             'SUCCESS' AS R_Status, 
             @V_InsertedID AS R_InsertedID, 
@@ -1225,7 +1263,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- UPDATE
-CREATE PROCEDURE [SBSAppDBUser].[usp_sbs_paymentDetails_update]
+CREATE PROCEDURE usp_sbs_paymentDetails_update
     @p_id INT,
 	@p_invoiceNo  VARCHAR(20) = NULL,
     @P_paymentDate DATETIME2,
@@ -1260,6 +1298,35 @@ BEGIN
             updatedBy = @P_updatedBy,
             updatedAt = GETDATE()
         WHERE id = @p_id AND isDeleted = 0;
+
+        IF (ISNULL(@p_id,0) > 0)
+         BEGIN
+                UPDATE  sbs_PaymentDetailsInvoices  SET IsDeleted = 1 WHERE PaymentId = @p_id;
+                UPDATE sbs_invoiceDetails
+                SET STATUS = 'Pending'
+                WHERE ID IN (SELECT InvoiceId FROM sbs_PaymentDetailsInvoices  WHERE PaymentID = @p_id)
+
+                -- WITH InvoiceRunning AS (
+                    SELECT  ID, SUM(totalAmount) OVER (ORDER BY invoiceDate ASC, ID ASC) AS RunningTotal , invoiceDate, totalAmount
+                    INTO #InvoiceRunning
+                    FROM sbs_invoiceDetails
+                    WHERE 
+                    ISdeleted = 0 -- AND STATUS != 'Paid'
+                    AND subcontractorId = @P_subcontractorId
+                    AND (invoiceDate BETWEEN @P_fromDate AND @P_toDate
+                        OR (invoiceDate = @P_paymentDate)
+                    )
+                 
+                INSERT INTO sbs_PaymentDetailsInvoices (PaymentId,InvoiceId,AmountPaid,IsActive,IsDeleted,CreatedBy,CreatedAt,UpdatedBy,UpdatedAt)
+                SELECT  @p_id,ID,TotalAmount,1,0,@P_updatedBy, GETDATE(),NULL,NULL
+                    FROM #InvoiceRunning
+                    WHERE RunningTotal <= @P_amountPaid
+                    ORDER BY invoiceDate ASC, ID ASC;
+
+                UPDATE sbs_invoiceDetails
+                SET STATUS = 'Paid'
+                WHERE ID IN (SELECT ID FROM #InvoiceRunning WHERE RunningTotal <= @P_amountPaid)
+         END
 
         SELECT 'SUCCESS' AS R_Status, @p_id AS R_targetId, NULL AS R_ErrorNumber, NULL AS R_ErrorMessage;
     END TRY
@@ -1935,8 +2002,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- GET
-
-CREATE   PROCEDURE [SBSAppDBUser].[usp_sbs_subContractor_get]
+CREATE    PROCEDURE usp_sbs_subContractor_get
     @p_id INT = NULL,
     @p_search VARCHAR(100) = NULL,
     @p_companyID INT
@@ -1945,16 +2011,12 @@ BEGIN
     
     SELECT id, companyId, name
     FROM sbs_subContractor
-    
     WHERE isDeleted = 0
-      
-      AND companyId = @p_companyID
-      
-      AND (ISNULL(@p_id, 0)=0 OR id = @p_id)
-      
-      AND (name LIKE '%' +ISNULL(@p_search,'') + '%')
-     
-     END
+    AND companyId = @p_companyID
+    AND (ISNULL(@p_id, 0)=0 OR id = @p_id)
+    AND (name LIKE '%' +ISNULL(@p_search,'') + '%')
+    ORDER BY Name 
+END
 GO
 /****** Object:  StoredProcedure [SBSAppDBUser].[usp_sbs_subContractor_insert]    Script Date: 2026-05-25 3:11:29 PM ******/
 SET ANSI_NULLS ON
@@ -2523,7 +2585,7 @@ GO
 -- SP: UnPaidBalancePaymentReport (Updated)
 -- ======================================
 -- EXEC usp_UnPaidBalancePaymentReport NULL, NULL, NULL, 0
-CREATE PROCEDURE [SBSAppDBUser].[usp_UnPaidBalancePaymentReport]
+CREATE   PROCEDURE usp_UnPaidBalancePaymentReport
     @p_subcontractorName VARCHAR(255) = NULL,
     @p_fromDate DATE,
     @p_toDate DATE,
@@ -2551,7 +2613,14 @@ BEGIN
         FROM sbs_invoiceDetails inv
         JOIN sbs_subContractor sc ON inv.subcontractorId = sc.id
         JOIN sbs_productMaster p ON inv.productId = p.id
-        LEFT JOIN sbs_paymentDetails pd ON inv.id = pd.invoiceId
+        LEFT JOIN 
+        ( SELECT pdd.id, ISNULL(pdd.invoiceId, pdi.invoiceId) invoiceId, 
+            (CASE WHEN (ISNULL(pdd.invoiceId,0) = 0) THEN pdi.amountPaid ELSE pdi.amountPaid END) amountPaid
+        FROM sbs_paymentDetails pdd 
+        LEFT JOIN sbs_PaymentDetailsInvoices pdi ON pdd.ID = pdi.PaymentId 
+        AND pdd.IsDeleted = 0 AND pdi.IsDeleted = 0
+
+        ) pd  ON inv.id = pd.invoiceId
 
          WHERE 
             inv.IsLeviApplicable = @p_isLevhiApplicable

@@ -32,5 +32,10 @@ namespace Client.Application.Features.Invoice.Dtos
         public string R_DocketNumber { get; set; }
         public int R_TrollyQuantity { get; set; }
         public decimal R_TrollyAmount { get; set; }
+        public string R_invoiceNoSelect { get; set; }
+        public string R_invoiceNoDateSelect { get; set; }
+        public int createdBy { get; set; }
+        public string username { get; set; }
+        public string createdAt { get; set; }
     }
 }

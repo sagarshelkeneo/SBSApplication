@@ -74,8 +74,8 @@ namespace Client_WebApp.MVC.Controllers
                 }).ToList(),
                 AddPaymentViewModel = new AddPaymentViewModel
                 {
-                    Bankes = banks.Select(b => new SelectListItem { Value = b.R_id.ToString(), Text = $"{b.R_bankName} ({b.R_branch})" }).ToList(),
-                    Invoices = invoices.Where(i => !string.IsNullOrWhiteSpace(i.R_invoiceNo)).Select(i => new SelectListItem { Value = i.R_invoiceNo?.Trim(), Text = i.R_invoiceNo?.Trim() }).ToList(),
+                    Bankes = banks.Select(b => new SelectListItem { Value = b.R_id.ToString(), Text = b.R_bankNameSelect }).ToList(),
+                    Invoices = invoices.Where(i => !string.IsNullOrWhiteSpace(i.R_invoiceNo)).Select(i => new SelectListItem { Value = i.R_invoiceNo?.Trim(), Text = i.R_invoiceNoSelect?.Trim() }).ToList(),
                     SubContractors = subContractors.Select(i => new SelectListItem { Value = i.Id.ToString().Trim(), Text = i.Name?.Trim() }).ToList()
                 }
             };

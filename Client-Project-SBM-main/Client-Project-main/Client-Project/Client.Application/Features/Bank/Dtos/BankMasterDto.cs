@@ -11,5 +11,6 @@ namespace Client.Application.Features.Bank.Dtos
         public int R_id { get; set; }
         public string R_bankName { get; set; } 
         public string R_branch { get; set; }
+        public string R_bankNameSelect { get; set; }
     }
 }

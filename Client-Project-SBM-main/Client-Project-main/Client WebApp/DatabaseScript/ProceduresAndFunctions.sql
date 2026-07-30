@@ -962,6 +962,82 @@ BEGIN
     END CATCH
 END
 GO
+
+/****** Object:  StoredProcedure [SBSAppDBUser].[usp_sbs_invoiceDetails_insertBulk]    Script Date: 2026-06-12 11:15:00 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE   PROCEDURE [SBSAppDBUser].[usp_sbs_invoiceDetails_insertBulk]
+    @P_invoiceNo          VARCHAR(100),
+    @P_companyId          INT,
+    @P_subcontractorId    INT,
+    @P_productId          INT,
+    @P_invoiceDate        DATETIME2,
+    @P_commissionPercentage DECIMAL(5,2)  = NULL,
+    @P_commissionAmount   DECIMAL(18,2)  = NULL,
+    @P_paymentMode        VARCHAR(100),
+    @P_createdBy          INT,
+    @P_GroupNumber        VARCHAR(50),
+    @P_VehicleNumber      VARCHAR(50),
+    @P_IsLeviApplicable   BIT,
+    @P_Levi               VARCHAR(20),
+    @P_DocketNumber       VARCHAR(20),
+    @P_TrollyQuantity     INT,
+    @P_TrollyAmount       DECIMAL(18,2),
+    -- JSON array: [{"lrNumber":"...","unitAmount":100,"quantity":2,"totalAmount":200}, ...]
+    @P_LRItemsJson        NVARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        INSERT INTO sbs_invoiceDetails (
+            invoiceNo, companyId, subcontractorId, productId, invoiceDate,
+            quantity, unitAmount, totalAmount,
+            commissionPercentage, commissionAmount, paymentMode,
+            createdBy, createdAt, isActive, isDeleted,
+            GroupNumber, LRNumber, VehicleNumber,
+            IsLeviApplicable, Levi, DocketNumber, TrollyQuantity, TrollyAmount
+        )
+        SELECT
+            @P_invoiceNo, @P_companyId, @P_subcontractorId, @P_productId, @P_invoiceDate,
+            CAST(j.quantity   AS INT),
+            CAST(j.unitAmount AS DECIMAL(10,2)),
+            CAST(j.totalAmount AS DECIMAL(18,2)),
+            @P_commissionPercentage, @P_commissionAmount, @P_paymentMode,
+            @P_createdBy, GETDATE(), 1, 0,
+            @P_GroupNumber, j.lrNumber, @P_VehicleNumber,
+            @P_IsLeviApplicable, @P_Levi, @P_DocketNumber, @P_TrollyQuantity, @P_TrollyAmount
+        FROM OPENJSON(@P_LRItemsJson)
+        WITH (
+            lrNumber    VARCHAR(50)     '$.lrNumber',
+            unitAmount  DECIMAL(10,2)   '$.unitAmount',
+            quantity    INT             '$.quantity',
+            totalAmount DECIMAL(18,2)   '$.totalAmount'
+        ) j;
+
+        COMMIT TRANSACTION;
+        SELECT 'SUCCESS' AS R_Status, @@ROWCOUNT AS R_InsertedCount,
+               NULL AS R_ErrorNumber, NULL AS R_ErrorMessage;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        DECLARE @V_ErrorNumber  INT            = ERROR_NUMBER();
+        DECLARE @V_ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @V_ErrorLine    INT            = ERROR_LINE();
+        DECLARE @V_ProcName     SYSNAME        = OBJECT_NAME(@@PROCID);
+        SELECT 'FAIL' AS R_Status, 0 AS R_InsertedCount,
+               @V_ErrorNumber AS R_ErrorNumber, @V_ErrorMessage AS R_ErrorMessage;
+        EXEC usp_sbs_logError
+            @p_errorCode = @V_ErrorNumber, @p_errorMsg = @V_ErrorMessage,
+            @p_errorLine = @V_ErrorLine,   @p_recordId  = NULL,
+            @p_procName  = @V_ProcName;
+    END CATCH
+END;
+GO
+
 /****** Object:  StoredProcedure [SBSAppDBUser].[usp_sbs_invoiceDetails_update]    Script Date: 2026-05-25 3:11:29 PM ******/
 SET ANSI_NULLS ON
 GO

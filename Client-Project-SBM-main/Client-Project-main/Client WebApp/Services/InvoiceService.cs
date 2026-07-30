@@ -1,4 +1,4 @@
-﻿using Client.Application.Features.Invoice.Dtos;
+using Client.Application.Features.Invoice.Dtos;
 using Client.Application.Features.Product.Dtos;
 using Client.Application.Features.SubContractor.Dtos;
 using Client.Application.Interfaces;
@@ -26,6 +26,11 @@ namespace Client_WebApp.Services
         public Task<List<InvoiceDetailsDto>> CreateInvoiceAsync(CreateInvoiceDto dto)
         {
             return _repository.CreateInvoiceAsync(dto);
+        }
+
+        public Task<List<InvoiceDetailsDto>> CreateInvoiceBulkAsync(CreateInvoiceBulkDto dto)
+        {
+            return _repository.CreateInvoiceBulkAsync(dto);
         }
 
         public Task<List<InvoiceDetailsDto>> UpdateInvoiceAsync(UpdateInvoiceDto dto)

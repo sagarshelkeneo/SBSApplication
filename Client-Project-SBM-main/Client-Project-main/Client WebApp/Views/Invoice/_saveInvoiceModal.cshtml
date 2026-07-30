@@ -1,118 +1,224 @@
-﻿@model Client_WebApp.Models.AddInvoiceViewModel
+@model Client_WebApp.Models.AddInvoiceViewModel
+
+<style>
+    /* ── Amount Details table ── */
+    #amountDetailsTable thead th {
+        background: linear-gradient(90deg, #f0f4ff 0%, #e2eaff 100%);
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #343a40;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    #amountDetailsTable tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    #amountDetailsTable .form-control-sm {
+        font-size: 0.83rem;
+        min-width: 100px;
+    }
+    .row-num-cell {
+        width: 36px;
+        text-align: center;
+        font-weight: 600;
+        color: #6c757d;
+    }
+    .action-cell {
+        width: 46px;
+        text-align: center;
+    }
+    /* ── Validation ── */
+    .sav-field-error {
+        display: block;
+        color: #dc3545;
+        font-size: 0.76rem;
+        margin-top: 2px;
+    }
+    input.sav-invalid {
+        border-color: #dc3545 !important;
+    }
+    /* ── Section headings ── */
+    .section-heading {
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: #0d6efd;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 4px;
+        margin-bottom: 14px;
+    }
+    /* ── Fancy Add More button ── */
+    #sav-addMoreBtn {
+        background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 6px 18px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: .03em;
+        box-shadow: 0 4px 14px rgba(13,110,253,.35);
+        transition: transform .18s, box-shadow .18s, filter .18s;
+    }
+    #sav-addMoreBtn:hover {
+        transform: translateY(-2px) scale(1.04);
+        box-shadow: 0 7px 20px rgba(13,110,253,.5);
+        filter: brightness(1.08);
+    }
+    #sav-addMoreBtn:active {
+        transform: scale(0.97);
+        box-shadow: 0 2px 8px rgba(13,110,253,.3);
+    }
+    #sav-addMoreBtn i {
+        transition: transform .2s;
+    }
+    #sav-addMoreBtn:hover i {
+        transform: rotate(90deg);
+    }
+    /* ── Misc ── */
+    .cursor-pointer { cursor: pointer; }
+    /* Delete row button */
+    .sav-delete-btn {
+        background: none;
+        border: none;
+        padding: 2px 6px;
+        color: #dc3545;
+        font-size: 1rem;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background .15s, transform .15s;
+        line-height: 1;
+    }
+    .sav-delete-btn:hover {
+        background: rgba(220,53,69,.1);
+        transform: scale(1.2);
+        color: #a71d2a;
+    }
+    .sav-delete-btn:active {
+        transform: scale(0.9);
+    }
+</style>
 
 <div class="modal fade" id="invoice-modal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="invoiceModalLabel">Add Booking</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <form asp-action="CreateOrEditInvoice" method="post" id="invoiceForm">
                 @Html.AntiForgeryToken()
 
                 <div class="modal-body">
-                    <input asp-for="Id" type="hidden" id="Id" />
+                    <input asp-for="Id"        type="hidden" id="Id" />
                     <input asp-for="CompanyId" type="hidden" id="CompanyId" />
+                    <input type="hidden" id="accordionItemsJson" name="accordionItemsJson" />
+                    <!-- Legacy single-row binding fields -->
+                    <input type="hidden" id="UnitAmount"  name="UnitAmount" />
+                    <input type="hidden" id="Quantity"    name="Quantity" />
+                    <input type="hidden" id="TotalAmount" name="TotalAmount" />
+                    <input type="hidden" id="LRNumber"    name="LRNumber" />
 
-                    <div class="row g-3">
+                    <!-- ══════════════════════════════════════
+                         SECTION 1: BOOKING DETAILS
+                         ══════════════════════════════════════ -->
+                    <p class="section-heading mb-2">Booking Details</p>
+                    <div class="row g-3 mb-4">
+
                         <div class="col-md-6">
-                            <label asp-for="InvoiceDate" class="form-label"></label>
+                            <label asp-for="InvoiceDate" class="form-label fw-semibold"></label>
                             <input asp-for="InvoiceDate" class="form-control" type="date" id="InvoiceDate" />
-                            <span asp-validation-for="InvoiceDate" class="text-danger"></span>
+                            <span asp-validation-for="InvoiceDate" class="text-danger small"></span>
                         </div>
-                        <div class="col-md-6">
-                           @*  <label asp-for="InvoiceNo" class="form-label"></label>
-                            <input asp-for="InvoiceNo" class="form-control" id="InvoiceNo" />
-                            <span asp-validation-for="InvoiceNo" class="text-danger"></span> *@
 
-                            <label asp-for="InvoiceNo" class="form-label">Receipt Number</label>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Receipt Number</label>
                             <input asp-for="InvoiceNo" class="form-control" id="InvoiceNo" data-val="false" />
-                            @* <span asp-validation-for="InvoiceNo" class="text-danger">Please enter a valid Receipt Number.</span> *@
+                        </div>
 
-                        </div>                        
                         <div class="col-md-6">
-                            <label asp-for="SubcontractorId" class="form-label"></label>
+                            <label asp-for="SubcontractorId" class="form-label fw-semibold"></label>
                             <select asp-for="SubcontractorId" class="form-select" asp-items="Model.SubContractorList">
                                 <option value="">--Select--</option>
                             </select>
-                            <span asp-validation-for="SubcontractorId" class="text-danger"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="ProductId" class="form-label"></label>
-                            <select asp-for="ProductId" class="form-select" asp-items="Model.ProductList" id="ProductId">
-                                <option value="">--Select--</option>
-                            </select>
-                            <span asp-validation-for="ProductId" class="text-danger"></span>
+                            <span asp-validation-for="SubcontractorId" class="text-danger small"></span>
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="UnitAmount" class="form-label"></label>
-                            <input asp-for="UnitAmount" class="form-control" id="UnitAmount" />
-                            <span asp-validation-for="UnitAmount" class="text-danger"></span>
+                            <label asp-for="ProductId" class="form-label fw-semibold"></label>
+                            <select asp-for="ProductId" class="form-select" asp-items="Model.ProductList" id="ProductId">
+                                <option value="">--Select--</option>
+                            </select>
+                            <span asp-validation-for="ProductId" class="text-danger small"></span>
                         </div>
+
                         <div class="col-md-6">
-                            <label asp-for="Quantity" class="form-label"></label>
-                            <input asp-for="Quantity" class="form-control" id="Quantity" />
-                            <span asp-validation-for="Quantity" class="text-danger"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="TotalAmount" class="form-label"></label>
-                            <input asp-for="TotalAmount" class="form-control" id="TotalAmount" readonly />
-                            <span asp-validation-for="TotalAmount" class="text-danger"></span>
-                        </div>
-                        @* <div class="col-md-6">
-                            <label asp-for="CommissionPercentage" class="form-label"></label>
-                            <input asp-for="CommissionPercentage" class="form-control" id="CommissionPercentage" />
-                        </div> *@
-                        <div class="col-md-6">
-                            <label asp-for="CommissionAmount" class="form-label">Labour Charge</label>
+                            <label class="form-label fw-semibold">Labour Charge</label>
                             <input asp-for="CommissionAmount" class="form-control" id="CommissionAmount" />
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="GroupNumber" class="form-label">Toli No</label>
+                            <label class="form-label fw-semibold">Toli No</label>
                             <input asp-for="GroupNumber" class="form-control" id="GroupNumber" />
                         </div>
+
                         <div class="col-md-6">
-                            <label asp-for="LRNumber" class="form-label">Invoice Number</label>
-                            <input asp-for="LRNumber" class="form-control" id="LRNumber" />
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="VehicleNumber" class="form-label">Vehicle Number</label>
+                            <label class="form-label fw-semibold">Vehicle Number</label>
                             <input asp-for="VehicleNumber" class="form-control" id="VehicleNumber" />
                         </div>
 
-                        <div class="col-md-6">
-                            <label asp-for="DocketNumber" class="form-label">Docket Number</label>
-                            <input asp-for="DocketNumber" class="form-control" id="DocketNumber" />
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="TrollyQuantity" class="form-label">Trolly Quantity</label>
-                            <input asp-for="TrollyQuantity" class="form-control" id="TrollyQuantity" />
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="TrollyAmount" class="form-label">Trolly Amount</label>
-                            <input asp-for="TrollyAmount" class="form-control" id="TrollyAmount" />
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Invoice Type</label>
-                            <div>
-                                <div class="form-check form-check-inline">
+                        <div class="col-md-6 d-flex flex-column justify-content-center">
+                            <label class="form-label fw-semibold">Invoice Type</label>
+                            <div class="d-flex gap-3 mt-1">
+                                <div class="form-check">
                                     <input class="form-check-input" type="radio" asp-for="PaymentMode" value="CASH" id="invoiceTypeCash" />
                                     <label class="form-check-label" for="invoiceTypeCash">Cash</label>
                                 </div>
-                                <div class="form-check form-check-inline">
+                                <div class="form-check">
                                     <input class="form-check-input" type="radio" asp-for="PaymentMode" value="BALANCE" id="invoiceTypeBalance" />
                                     <label class="form-check-label" for="invoiceTypeBalance">Balance</label>
                                 </div>
                             </div>
                         </div>
+
+                    </div><!-- /booking details row -->
+
+                    <!-- ══════════════════════════════════════
+                         SECTION 2: AMOUNT DETAILS TABLE
+                         ══════════════════════════════════════ -->
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <p class="section-heading mb-0">Amount Details</p>
+                        <button type="button" id="sav-addMoreBtn">
+                            <i class="bi bi-plus-lg me-1"></i> Add More
+                        </button>
                     </div>
-                </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle mb-0" id="amountDetailsTable">
+                            <thead>
+                                <tr>
+                                    <th class="row-num-cell">#</th>
+                                    <th>LR Number</th>
+                                    <th>Unit Amount <span class="text-danger">*</span></th>
+                                    <th>Quantity <span class="text-danger">*</span></th>
+                                    <th>Total Amount <span class="text-danger">*</span></th>
+                                    <th class="action-cell"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="sav-amountBody">
+                                <!-- rows injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div><!-- /modal-body -->
+
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary" id="saveButton">Save</button>
+                    <button type="submit" class="btn btn-primary px-4" id="saveButton">
+                        <i class="bi bi-save me-1"></i> Save
+                    </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </form>
@@ -122,31 +228,212 @@
 
 @section Scripts{
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        $(function () {
-            $('#invoiceForm').submit(function (e) {
-                e.preventDefault();
-                var form = $(this);
-                $.ajax({
-                    url: form.attr('action'),
-                    type: 'POST',
-                    data: form.serialize(),
-                    success: function (result) {
-                        if (result.success) {
-                            $('#invoice-modal').modal('hide');
-                            localStorage.setItem('toastMessage', result.message);
-                            window.location.href = '/Invoice/getInvoice';
-                            location.reload(); // refresh invoice table
-                        } else {
-                            alert(result.message);
-                        }
-                    },
-                    error: function (err) {
-                        console.error(err);
-                        alert('Something went wrong');
-                    }
+}
+
+<script>
+(function () {
+    function waitForJQuery(cb) {
+        if (typeof window.jQuery !== 'undefined') { cb(window.jQuery); }
+        else { setTimeout(function () { waitForJQuery(cb); }, 30); }
+    }
+
+    waitForJQuery(function ($) {
+
+        var rowCount = 0;
+
+        /* ── Build a table row ── */
+        function buildRow(data) {
+            rowCount++;
+            var id = rowCount;
+            var lr    = (data && data.lrNumber)    ? data.lrNumber    : '';
+            var unit  = (data && data.unitAmount)  ? data.unitAmount  : '';
+            var qty   = (data && data.quantity)    ? data.quantity    : '';
+            var total = (data && data.totalAmount) ? data.totalAmount : '';
+
+            return $(
+                '<tr id="sav-row-' + id + '" data-row-id="' + id + '">' +
+                  '<td class="row-num-cell sav-row-num"></td>' +
+                  '<td>' +
+                    '<input type="text" class="form-control form-control-sm sav-lr-input" placeholder="LR Number" value="' + lr + '" />' +
+                  '</td>' +
+                  '<td>' +
+                    '<input type="number" step="0.01" min="0.01" class="form-control form-control-sm sav-unit-input" placeholder="0.00" value="' + unit + '" />' +
+                    '<span class="sav-field-error" style="display:none;"></span>' +
+                  '</td>' +
+                  '<td>' +
+                    '<input type="number" step="0.01" min="0.01" class="form-control form-control-sm sav-qty-input" placeholder="0" value="' + qty + '" />' +
+                    '<span class="sav-field-error" style="display:none;"></span>' +
+                  '</td>' +
+                  '<td>' +
+                    '<input type="number" step="0.01" class="form-control form-control-sm sav-total-input" placeholder="0.00" value="' + total + '" readonly />' +
+                    '<span class="sav-field-error" style="display:none;"></span>' +
+                  '</td>' +
+                  '<td class="action-cell" style="text-align:center;vertical-align:middle;">' +
+                    '<button type="button" class="sav-delete-btn" title="Remove this row">' +
+                      '<i class="fa fa-trash"></i>' +
+                    '</button>' +
+                  '</td>' +
+                '</tr>'
+            );
+        }
+
+        /* ── Re-number visible rows and re-index field names ── */
+        function refreshRows() {
+            $('#sav-amountBody tr').each(function (i) {
+                $(this).find('.sav-row-num').text(i + 1);
+                $(this).find('.sav-lr-input').attr('name',    'LRItems[' + i + '].LRNumber');
+                $(this).find('.sav-unit-input').attr('name',  'LRItems[' + i + '].UnitAmount');
+                $(this).find('.sav-qty-input').attr('name',   'LRItems[' + i + '].Quantity');
+                $(this).find('.sav-total-input').attr('name', 'LRItems[' + i + '].TotalAmount');
+            });
+        }
+
+        /* ── Add a row ── */
+        function addRow(data) {
+            var $row = buildRow(data);
+            $('#sav-amountBody').append($row);
+            refreshRows();
+        }
+
+        /* ── Init: first row ── */
+        addRow(null);
+
+        /* ── Add More button ── */
+        $('#sav-addMoreBtn').on('click', function () {
+            addRow(null);
+            var lastRow = $('#sav-amountBody tr').last()[0];
+            if (lastRow) lastRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+
+        /* ── Delete row ── */
+        $(document).on('click', '.sav-delete-btn', function () {
+            if ($('#sav-amountBody tr').length <= 1) {
+                alert('At least one amount detail row is required.');
+                return;
+            }
+            $(this).closest('tr').remove();
+            refreshRows();
+        });
+
+        /* ── Auto-calculate Total = Unit × Qty; clear field errors ── */
+        $(document).on('input', '.sav-unit-input, .sav-qty-input', function () {
+            var $row   = $(this).closest('tr');
+            var unit   = parseFloat($row.find('.sav-unit-input').val()) || 0;
+            var qty    = parseFloat($row.find('.sav-qty-input').val())  || 0;
+            var total  = unit * qty;
+            $row.find('.sav-total-input').val(total > 0 ? total.toFixed(2) : '');
+
+            /* Clear error on changed field */
+            $(this).removeClass('sav-invalid');
+            $(this).siblings('.sav-field-error').hide().text('');
+
+            /* Clear total error if now valid */
+            if (total > 0) {
+                $row.find('.sav-total-input').removeClass('sav-invalid');
+                $row.find('.sav-total-input').siblings('.sav-field-error').hide().text('');
+            }
+        });
+
+        /* ── Validate all rows ── */
+        function validateRows() {
+            var isValid = true;
+            /* Reset all errors */
+            $('#sav-amountBody .sav-unit-input, #sav-amountBody .sav-qty-input, #sav-amountBody .sav-total-input')
+                .removeClass('sav-invalid');
+            $('#sav-amountBody .sav-field-error').hide().text('');
+
+            $('#sav-amountBody tr').each(function () {
+                var $row  = $(this);
+                var $unit = $row.find('.sav-unit-input');
+                var $qty  = $row.find('.sav-qty-input');
+                var $tot  = $row.find('.sav-total-input');
+
+                var unitVal = parseFloat($unit.val()) || 0;
+                var qtyVal  = parseFloat($qty.val())  || 0;
+                var totVal  = parseFloat($tot.val())  || 0;
+
+                if (!$unit.val().trim() || unitVal <= 0) {
+                    $unit.addClass('sav-invalid');
+                    $unit.siblings('.sav-field-error').show().text('Required, must be > 0');
+                    isValid = false;
+                }
+                if (!$qty.val().trim() || qtyVal <= 0) {
+                    $qty.addClass('sav-invalid');
+                    $qty.siblings('.sav-field-error').show().text('Required, must be > 0');
+                    isValid = false;
+                }
+                if (totVal <= 0) {
+                    $tot.addClass('sav-invalid');
+                    $tot.siblings('.sav-field-error').show().text('Must be > 0 (enter Unit Amount & Quantity)');
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        }
+
+        /* ── Form submit ── */
+        $('#invoiceForm').off('submit').on('submit', function (e) {
+            e.preventDefault();
+
+            if (!validateRows()) {
+                var $first = $('#sav-amountBody .sav-invalid').first();
+                if ($first.length) $first[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            /* Gather rows into JSON */
+            var rows = [];
+            $('#sav-amountBody tr').each(function () {
+                rows.push({
+                    lrNumber:    $(this).find('.sav-lr-input').val(),
+                    unitAmount:  $(this).find('.sav-unit-input').val(),
+                    quantity:    $(this).find('.sav-qty-input').val(),
+                    totalAmount: $(this).find('.sav-total-input').val()
                 });
             });
+            $('#accordionItemsJson').val(JSON.stringify(rows));
+
+            /* Map first row to legacy single-model hidden fields */
+            if (rows.length > 0) {
+                $('#UnitAmount').val(rows[0].unitAmount);
+                $('#Quantity').val(rows[0].quantity);
+                $('#TotalAmount').val(rows[0].totalAmount);
+                $('#LRNumber').val(rows[0].lrNumber);
+            }
+
+            var form = $(this);
+            $.ajax({
+                url:  form.attr('action'),
+                type: 'POST',
+                data: form.serialize(),
+                success: function (result) {
+                    if (result.success) {
+                        try {
+                            if (typeof $ === 'function' && typeof $.fn.modal === 'function') {
+                                $('#invoice-modal').modal('hide');
+                            } else {
+                                var closeBtn = document.querySelector('#invoice-modal [data-bs-dismiss="modal"]');
+                                if (closeBtn) closeBtn.click();
+                            }
+                        } catch (e) {
+                            var closeBtn = document.querySelector('#invoice-modal [data-bs-dismiss="modal"]');
+                            if (closeBtn) closeBtn.click();
+                        }
+                        localStorage.setItem('toastMessage', result.message);
+                        window.location.href = '/Invoice/getInvoiceData';
+                        location.reload();
+                    } else {
+                        alert(result.message);
+                    }
+                },
+                error: function (err) {
+                    console.error(err);
+                    alert('Something went wrong');
+                }
+            });
         });
-    </script>
-}
+
+    }); /* end waitForJQuery */
+})();
+</script>

@@ -168,6 +168,36 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+/****** Object:  Table [SBSAppDBUser].[SBS_InvoiceTransactionDetails]    Script Date: 2026-05-25 3:08:16 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [SBSAppDBUser].[SBS_InvoiceTransactionDetails](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[invoiceId] [int] NOT NULL,
+	[invoiceDate] [datetime2](7) NOT NULL,
+	[LRNumber] [varchar](50) NULL,
+	[quantity] [int] NULL,
+	[unitAmount] [decimal](10, 2) NULL,
+	[totalAmount] [decimal](10, 2) NULL,
+	[commissionPercentage] [decimal](10, 2) NULL,
+	[commissionAmount] [decimal](10, 2) NULL,
+	[paymentMode] [varchar](100) NULL,
+	[status] [varchar](20) NULL,
+	[createdBy] [int] NULL,
+	[createdAt] [datetime2](7) NULL,
+	[updatedBy] [int] NULL,
+	[updatedAt] [datetime2](7) NULL,
+	[isActive] [int] NULL,
+	[isDeleted] [int] NULL,
+	PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
 /****** Object:  Table [SBSAppDBUser].[SBS_PaymentDetails]    Script Date: 2026-05-25 3:08:16 PM ******/
 SET ANSI_NULLS ON
 GO
@@ -20127,6 +20157,8 @@ GO
 ALTER TABLE [SBSAppDBUser].[SBS_InvoiceDetails] ADD  DEFAULT ((1)) FOR [isActive]
 GO
 ALTER TABLE [SBSAppDBUser].[SBS_InvoiceDetails] ADD  DEFAULT ((0)) FOR [isDeleted]
+GO
+ALTER TABLE [SBSAppDBUser].[SBS_InvoiceTransactionDetails] ADD  DEFAULT ('Pending') FOR [status]
 GO
 ALTER TABLE [SBSAppDBUser].[SBS_PaymentDetails] ADD  DEFAULT ('Pending') FOR [paymentStatus]
 GO

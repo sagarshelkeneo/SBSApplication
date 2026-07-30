@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace Client_WebApp.Models
@@ -130,8 +130,25 @@ namespace Client_WebApp.Models
         public int? TrollyQuantity { get; set; }
         public decimal? TrollyAmount { get; set; }
 
+        /// <summary>
+        /// Multiple LR / Amount Detail rows submitted from the dynamic table.
+        /// Bound from form fields: LRItems[0].LRNumber, LRItems[0].UnitAmount, etc.
+        /// </summary>
+        public List<LRItemViewModel> LRItems { get; set; } = new List<LRItemViewModel>();
+
         public IEnumerable<SelectListItem>? SubContractorList { get; set; }
         public IEnumerable<SelectListItem>? ProductList { get; set; }
+    }
+
+    /// <summary>
+    /// Represents one row in the Amount Details table.
+    /// </summary>
+    public class LRItemViewModel
+    {
+        public string? LRNumber    { get; set; }
+        public decimal UnitAmount  { get; set; }
+        public decimal Quantity    { get; set; }
+        public decimal TotalAmount { get; set; }
     }
 
 }

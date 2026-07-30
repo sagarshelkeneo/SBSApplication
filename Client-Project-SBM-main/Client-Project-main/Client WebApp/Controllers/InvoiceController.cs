@@ -139,32 +139,43 @@ namespace Client.MVC.Controllers
                     return Forbid();
             }
 
+            // Remove per-row fields — validated client-side via LRItems[n].*
+            ModelState.Remove(nameof(model.UnitAmount));
+            ModelState.Remove(nameof(model.Quantity));
+            ModelState.Remove(nameof(model.TotalAmount));
+
             if (!ModelState.IsValid)
             {
-                return View(model);
+                return Json(new { success = false, message = "Please fill all required fields." });
             }
 
             if (model.Id > 0)
             {
-                // Update
+                // ── UPDATE (single record, existing behaviour) ──────────────
+                // Use first LR row if available, else fall back to top-level fields.
+                var firstItem = model.LRItems?.FirstOrDefault();
                 var updateDto = new UpdateInvoiceDto
                 {
-                    Id = model.Id,
-                    CompanyId = CurrentCompanyId,
-                    SubcontractorId = model.SubcontractorId,
-                    ProductId = model.ProductId,
-                    InvoiceNo = model.InvoiceNo,
-                    InvoiceDate = model.InvoiceDate,
-                    UnitAmount = model.UnitAmount,
-                    Quantity = model.Quantity,
-                    TotalAmount = model.TotalAmount,
+                    Id                   = model.Id,
+                    CompanyId            = CurrentCompanyId,
+                    SubcontractorId      = model.SubcontractorId,
+                    ProductId            = model.ProductId,
+                    InvoiceNo            = model.InvoiceNo,
+                    InvoiceDate          = model.InvoiceDate,
+                    UnitAmount           = firstItem?.UnitAmount  ?? model.UnitAmount,
+                    Quantity             = firstItem?.Quantity     ?? model.Quantity,
+                    TotalAmount          = firstItem?.TotalAmount  ?? model.TotalAmount,
                     CommissionPercentage = model.CommissionPercentage,
-                    CommissionAmount = model.CommissionAmount,
-                    PaymentMode = model.PaymentMode,
-                    UpdatedBy = CurrentUserId,
-                    GroupNumber = model.GroupNumber,
-                    LRNumber = model.LRNumber,
-                    VehicleNumber = model.VehicleNumber,
+                    CommissionAmount     = model.CommissionAmount,
+                    PaymentMode          = model.PaymentMode,
+                    UpdatedBy            = CurrentUserId,
+                    GroupNumber          = model.GroupNumber,
+                    LRNumber             = firstItem?.LRNumber ?? model.LRNumber,
+                    VehicleNumber        = model.VehicleNumber,
+                    Levi                 = model.Levi,
+                    DocketNumber         = model.DocketNumber,
+                    TrollyQuantity       = model.TrollyQuantity,
+                    TrollyAmount         = model.TrollyAmount,
                 };
 
                 await _service.UpdateInvoiceAsync(updateDto);
@@ -172,29 +183,59 @@ namespace Client.MVC.Controllers
             }
             else
             {
-                // Create new invoice (existing logic)
-                await _service.CreateInvoiceAsync(new CreateInvoiceDto
+                // ── CREATE — bulk insert of all LR rows ─────────────────────
+                var lrRows = model.LRItems
+                    ?.Where(r => r.UnitAmount > 0 && r.Quantity > 0)
+                    .ToList();
+
+                if (lrRows == null || lrRows.Count == 0)
                 {
-                    CompanyId = CurrentCompanyId,
-                    SubcontractorId = model.SubcontractorId,
-                    ProductId = model.ProductId,
-                    InvoiceNo = model.InvoiceNo,
-                    InvoiceDate = model.InvoiceDate,
-                    UnitAmount = model.UnitAmount,
-                    Quantity = model.Quantity,
-                    TotalAmount = model.TotalAmount,
+                    // Fallback: single-row from legacy hidden fields
+                    lrRows = new List<LRItemViewModel>
+                    {
+                        new LRItemViewModel
+                        {
+                            LRNumber    = model.LRNumber,
+                            UnitAmount  = model.UnitAmount,
+                            Quantity    = model.Quantity,
+                            TotalAmount = model.TotalAmount
+                        }
+                    };
+                }
+
+                var bulkDto = new CreateInvoiceBulkDto
+                {
+                    CompanyId            = CurrentCompanyId,
+                    SubcontractorId      = model.SubcontractorId,
+                    ProductId            = model.ProductId,
+                    InvoiceNo            = model.InvoiceNo,
+                    InvoiceDate          = model.InvoiceDate,
                     CommissionPercentage = model.CommissionPercentage,
-                    CommissionAmount = model.CommissionAmount,
-                    PaymentMode = model.PaymentMode,
-                    CreatedBy = CurrentUserId,
-                    GroupNumber = model.GroupNumber,
-                    LRNumber = model.LRNumber,
-                    VehicleNumber = model.VehicleNumber,
-                    IsLeviApplicable = false
-                });
-                TempData["SuccessMessage"] = "Booking added successfully!";
+                    CommissionAmount     = model.CommissionAmount,
+                    PaymentMode          = model.PaymentMode,
+                    CreatedBy            = CurrentUserId,
+                    GroupNumber          = model.GroupNumber,
+                    VehicleNumber        = model.VehicleNumber,
+                    IsLeviApplicable     = false,
+                    Levi                 = model.Levi,
+                    DocketNumber         = model.DocketNumber,
+                    TrollyQuantity       = model.TrollyQuantity,
+                    TrollyAmount         = model.TrollyAmount,
+                    LRItems              = lrRows.Select(item => new LRItemDto
+                    {
+                        LRNumber    = item.LRNumber,
+                        UnitAmount  = item.UnitAmount,
+                        Quantity    = item.Quantity,
+                        TotalAmount = item.TotalAmount
+                    }).ToList()
+                };
+
+                await _service.CreateInvoiceBulkAsync(bulkDto);
+
+                TempData["SuccessMessage"] = $"Booking added successfully! ({lrRows.Count} LR record(s) saved.)";
             }
-            return RedirectToAction("Index");
+
+            return Json(new { success = true, message = TempData["SuccessMessage"]?.ToString() });
         }
 
         [HttpGet]
@@ -406,36 +447,43 @@ namespace Client.MVC.Controllers
                     return Forbid();
             }
 
+            // Remove per-row fields — validated client-side via LRItems[n].*
+            ModelState.Remove(nameof(model.UnitAmount));
+            ModelState.Remove(nameof(model.Quantity));
+            ModelState.Remove(nameof(model.TotalAmount));
+
             if (!ModelState.IsValid)
             {
-                return View(model);
+                return Json(new { success = false, message = "Please fill all required fields." });
             }
 
             if (model.Id > 0)
             {
-                // Update
+                // ── UPDATE (single record, existing behaviour) ──────────────
+                // Use first LR row if available, else fall back to top-level fields.
+                var firstItem = model.LRItems?.FirstOrDefault();
                 var updateDto = new UpdateInvoiceDto
                 {
-                    Id = model.Id,
-                    CompanyId = CurrentCompanyId,
-                    SubcontractorId = model.SubcontractorId,
-                    ProductId = model.ProductId,
-                    InvoiceNo = model.InvoiceNo,
-                    InvoiceDate = model.InvoiceDate,
-                    UnitAmount = model.UnitAmount,
-                    Quantity = model.Quantity,
-                    TotalAmount = model.TotalAmount,
+                    Id                   = model.Id,
+                    CompanyId            = CurrentCompanyId,
+                    SubcontractorId      = model.SubcontractorId,
+                    ProductId            = model.ProductId,
+                    InvoiceNo            = model.InvoiceNo,
+                    InvoiceDate          = model.InvoiceDate,
+                    UnitAmount           = firstItem?.UnitAmount  ?? model.UnitAmount,
+                    Quantity             = firstItem?.Quantity     ?? model.Quantity,
+                    TotalAmount          = firstItem?.TotalAmount  ?? model.TotalAmount,
                     CommissionPercentage = model.CommissionPercentage,
-                    CommissionAmount = model.CommissionAmount,
-                    PaymentMode = model.PaymentMode,
-                    UpdatedBy = CurrentUserId,
-                    GroupNumber = model.GroupNumber,
-                    LRNumber = model.LRNumber,
-                    VehicleNumber = model.VehicleNumber,
-                    Levi = model.Levi,
-                    DocketNumber = model.DocketNumber,
-                    TrollyQuantity = model.TrollyQuantity,
-                    TrollyAmount = model.TrollyAmount,
+                    CommissionAmount     = model.CommissionAmount,
+                    PaymentMode          = model.PaymentMode,
+                    UpdatedBy            = CurrentUserId,
+                    GroupNumber          = model.GroupNumber,
+                    LRNumber             = firstItem?.LRNumber ?? model.LRNumber,
+                    VehicleNumber        = model.VehicleNumber,
+                    Levi                 = model.Levi,
+                    DocketNumber         = model.DocketNumber,
+                    TrollyQuantity       = model.TrollyQuantity,
+                    TrollyAmount         = model.TrollyAmount,
                 };
 
                 await _service.UpdateInvoiceAsync(updateDto);
@@ -443,33 +491,59 @@ namespace Client.MVC.Controllers
             }
             else
             {
-                // Create new invoice (existing logic)
-                await _service.CreateInvoiceAsync(new CreateInvoiceDto
+                // ── CREATE — bulk insert of all LR rows ─────────────────────
+                var lrRows = model.LRItems
+                    ?.Where(r => r.UnitAmount > 0 && r.Quantity > 0)
+                    .ToList();
+
+                if (lrRows == null || lrRows.Count == 0)
                 {
-                    CompanyId = CurrentCompanyId,
-                    SubcontractorId = model.SubcontractorId,
-                    ProductId = model.ProductId,
-                    InvoiceNo = model.InvoiceNo,
-                    InvoiceDate = model.InvoiceDate,
-                    UnitAmount = model.UnitAmount,
-                    Quantity = model.Quantity,
-                    TotalAmount = model.TotalAmount,
+                    // Fallback: single-row from legacy hidden fields
+                    lrRows = new List<LRItemViewModel>
+                    {
+                        new LRItemViewModel
+                        {
+                            LRNumber    = model.LRNumber,
+                            UnitAmount  = model.UnitAmount,
+                            Quantity    = model.Quantity,
+                            TotalAmount = model.TotalAmount
+                        }
+                    };
+                }
+
+                var bulkDto = new CreateInvoiceBulkDto
+                {
+                    CompanyId            = CurrentCompanyId,
+                    SubcontractorId      = model.SubcontractorId,
+                    ProductId            = model.ProductId,
+                    InvoiceNo            = model.InvoiceNo,
+                    InvoiceDate          = model.InvoiceDate,
                     CommissionPercentage = model.CommissionPercentage,
-                    CommissionAmount = model.CommissionAmount,
-                    PaymentMode = model.PaymentMode,
-                    CreatedBy = CurrentUserId,
-                    GroupNumber = model.GroupNumber,
-                    LRNumber = model.LRNumber,
-                    VehicleNumber = model.VehicleNumber,
-                    IsLeviApplicable = true,
-                    Levi = model.Levi,
-                    DocketNumber = model.DocketNumber,
-                    TrollyQuantity = model.TrollyQuantity,
-                    TrollyAmount = model.TrollyAmount,                    
-                });
-                TempData["SuccessMessage"] = "Booking added successfully!";
+                    CommissionAmount     = model.CommissionAmount,
+                    PaymentMode          = model.PaymentMode,
+                    CreatedBy            = CurrentUserId,
+                    GroupNumber          = model.GroupNumber,
+                    VehicleNumber        = model.VehicleNumber,
+                    IsLeviApplicable     = true,
+                    Levi                 = model.Levi,
+                    DocketNumber         = model.DocketNumber,
+                    TrollyQuantity       = model.TrollyQuantity,
+                    TrollyAmount         = model.TrollyAmount,
+                    LRItems              = lrRows.Select(item => new LRItemDto
+                    {
+                        LRNumber    = item.LRNumber,
+                        UnitAmount  = item.UnitAmount,
+                        Quantity    = item.Quantity,
+                        TotalAmount = item.TotalAmount
+                    }).ToList()
+                };
+
+                await _service.CreateInvoiceBulkAsync(bulkDto);
+
+                TempData["SuccessMessage"] = $"Booking added successfully! ({lrRows.Count} LR record(s) saved.)";
             }
-            return RedirectToAction("getInvoiceData");
+
+            return Json(new { success = true, message = TempData["SuccessMessage"]?.ToString() });
         }
 
 

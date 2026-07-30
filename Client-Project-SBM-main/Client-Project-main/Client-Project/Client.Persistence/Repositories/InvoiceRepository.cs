@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Client.Application.Features.Invoice.Commands;
 using Client.Application.Features.Invoice.Dtos;
@@ -36,6 +37,53 @@ namespace Client.Persistence.Repositories
 
             return result.ToList();
         }
+        public async Task<List<InvoiceDetailsDto>> CreateInvoiceBulkAsync(CreateInvoiceBulkDto dto)
+        {
+            // Serialize the LR rows to a JSON array understood by the SP's OPENJSON clause.
+            // Format: [{"lrNumber":"...","unitAmount":100.00,"quantity":2,"totalAmount":200.00}, ...]
+            var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            var lrItemsJson = JsonSerializer.Serialize(dto.LRItems, jsonOptions);
+
+            var bulkParams = new DynamicParameters();
+            bulkParams.Add("@P_invoiceNo",            dto.InvoiceNo);
+            bulkParams.Add("@P_companyId",            dto.CompanyId);
+            bulkParams.Add("@P_subcontractorId",      dto.SubcontractorId);
+            bulkParams.Add("@P_productId",            dto.ProductId);
+            bulkParams.Add("@P_invoiceDate",          dto.InvoiceDate);
+            bulkParams.Add("@P_commissionPercentage", dto.CommissionPercentage);
+            bulkParams.Add("@P_commissionAmount",     dto.CommissionAmount);
+            bulkParams.Add("@P_paymentMode",          dto.PaymentMode);
+            bulkParams.Add("@P_createdBy",            dto.CreatedBy);
+            bulkParams.Add("@P_GroupNumber",          dto.GroupNumber);
+            bulkParams.Add("@P_VehicleNumber",        dto.VehicleNumber);
+            bulkParams.Add("@P_IsLeviApplicable",     dto.IsLeviApplicable);
+            bulkParams.Add("@P_Levi",                 dto.Levi);
+            bulkParams.Add("@P_DocketNumber",         dto.DocketNumber);
+            bulkParams.Add("@P_TrollyQuantity",       dto.TrollyQuantity);
+            bulkParams.Add("@P_TrollyAmount",         dto.TrollyAmount);
+            bulkParams.Add("@P_LRItemsJson",          lrItemsJson);
+
+            var result = await _db.QueryFirstOrDefaultAsync<dynamic>(
+                "usp_sbs_invoiceDetails_insertBulk",
+                bulkParams,
+                commandType: CommandType.StoredProcedure
+            );
+
+            if (result == null || result.R_Status != "SUCCESS")
+            {
+                throw new Exception($"Insert failed: {result?.R_ErrorMessage ?? "Unknown error"}");
+            }
+
+            if (result != null && result.R_Status == "SUCCESS")
+            {
+                return await GetInvoicesAsync(dto.IsLeviApplicable, dto.CompanyId, null);
+            }
+
+            throw new Exception($"Insert Failed: {result.R_ErrorMessage} (ErrorCode: {result.R_ErrorNumber})");
+
+            //return await GetInvoicesAsync(dto.IsLeviApplicable, dto.CompanyId, null);
+        }
+
         public async Task<List<InvoiceDetailsDto>> CreateInvoiceAsync(CreateInvoiceDto dto)
         {
             var insertParams = new DynamicParameters();

@@ -1,4 +1,4 @@
-﻿@using Client.Application.Features.PaymentReports.Dtos
+@using Client.Application.Features.PaymentReports.Dtos
 @model List<PaidReportDto>
 
 @{
@@ -39,8 +39,8 @@
                     <input type="text" name="subcontractorName" class="form-control" placeholder="Sub-Contractor Name" value="@(ViewContext.HttpContext.Request.Query["subcontractorName"])" />
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Bank Name</label>
-                    <input type="text" name="bankName" class="form-control" placeholder="Bank Name" value="@(ViewContext.HttpContext.Request.Query["bankName"])" />
+                    <label class="form-label">Search Invoice No|LR No|Vehicle No</label>
+                    <input type="text" name="bankName" class="form-control" placeholder="Search" value="@(ViewContext.HttpContext.Request.Query["bankName"])" />
                 </div>
                 <div class="col-md-12 mt-2">
                     <button type="submit" class="btn btn-outline-primary mb-2 me-2">Search</button>
@@ -63,6 +63,7 @@
                         <th>Invoice Date</th>
                         <th>Receipt Number</th>
                         <th>LR Number</th>
+                        <th>Vehicle Number</th>
                         <th>Sub-Contractor</th>
                         
                         <th>Box</th>
@@ -75,17 +76,16 @@
                 <tbody>
                     @if (Model != null && Model.Any())
                     {
-                        decimal totalAmount = 0;
                         for (int i = 0; i < Model.Count; i++)
                         {
-                           var item = Model[i];
-                            totalAmount += item.InvoiceAmount;
+                            var item = Model[i];
 
                             <tr>
                                 <td class="text-center"></td>
                                 <td>@(item.InvoiceDate?.ToString("dd-MMM-yy") ?? "-")</td>
                                 <td>@item.ReceiptNumber</td>
                                 <td>@item.LRNumber</td>
+                                <td>@(item.VehicleNumber ?? "-")</td>
                                 <td>@item.SubContractor</td>
 
                                 <td>@(item.Box ?? "-")</td>
@@ -95,14 +95,27 @@
                                 <td class="text-end fw-semibold">@item.InvoiceAmount.ToString("N2")</td>
                             </tr>
                         }
+                    }
+                </tbody>
+                @if (Model != null && Model.Any())
+                {
+                    decimal totalAmount = Model.Sum(x => x.InvoiceAmount);
+                    int totalBox = Model.Sum(x => int.TryParse(x.Box, out int b) ? b : 0);
+                    int totalPeti = Model.Sum(x => int.TryParse(x.Peti, out int p) ? p : 0);
+                    int totalMotors = Model.Sum(x => int.TryParse(x.Motors, out int m) ? m : 0);
+                    decimal totalTypeRate = Model.Sum(x => decimal.TryParse(x.TotalTypeRate, out decimal r) ? r : 0);
+
                     <tfoot>
                         <tr>
-                            <td colspan="9" class="text-end">Total</td>
+                            <td colspan="6" class="text-end fw-bold">Total</td>
+                            <td class="text-end fw-bold">@(totalBox > 0 ? totalBox.ToString() : "-")</td>
+                            <td class="text-end fw-bold">@(totalPeti > 0 ? totalPeti.ToString() : "-")</td>
+                            <td class="text-end fw-bold">@(totalMotors > 0 ? totalMotors.ToString() : "-")</td>
+                            <td class="text-end fw-bold">@(totalTypeRate > 0 ? totalTypeRate.ToString("N2") : "-")</td>
                             <td class="text-end fw-bold">@totalAmount.ToString("N2")</td>
                         </tr>
                     </tfoot>
-                    }
-                </tbody>
+                }
             </table>
         </div>
     </div>
@@ -115,7 +128,7 @@
                 tableSelector: '#reportTable',
                 customInfoId: 'reportTable_info_custom',
                 columnDefs: [{ orderable: false, targets: 0 }],
-                columnsSearchable: [false, true, true, true, true, true, true, true, true, true],
+                columnsSearchable: [false, true, true, true, true, true, true, true, true, true, true],
                 order: [[1, 'asc']],
                 destroy: true,
                 language: { emptyTable: "No Records Found" }

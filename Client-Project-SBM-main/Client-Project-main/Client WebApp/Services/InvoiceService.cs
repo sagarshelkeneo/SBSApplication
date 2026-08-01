@@ -1,4 +1,4 @@
-﻿using Client.Application.Features.Invoice.Dtos;
+using Client.Application.Features.Invoice.Dtos;
 using Client.Application.Features.Product.Dtos;
 using Client.Application.Features.SubContractor.Dtos;
 using Client.Application.Interfaces;
@@ -38,10 +38,10 @@ namespace Client_WebApp.Services
             return _repository.DeleteInvoiceAsync(id, updatedBy, companyId, isLeviApplicable);
         }
 
-        //public Task<List<ProductDto>> GetProductsAsync(int companyId, int? id = null)
-        //{
-        //    string? search = null;
-        //    return _productRepository.GetProductsAsync(companyId, id, search);
-        //}
+        public Task<List<InvoiceDetailsAsPerContractorDto>> GetInvoiceAsPerContractorAsync(
+            int? invoiceId, int? subContractorId, DateTime? paymentDate, DateTime? fromDate, DateTime? toDate, bool isLeviApplicable = false)
+        {
+            return _repository.GetInvoiceAsPerContractorAsync(invoiceId, subContractorId, paymentDate, fromDate, toDate, isLeviApplicable);
+        }
     }
 }

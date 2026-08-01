@@ -1,112 +1,158 @@
-﻿@model Client_WebApp.Models.AddPaymentViewModel
+@model Client_WebApp.Models.AddPaymentViewModel
 
 <div class="modal fade" id="payment-modal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
+        <form asp-action="CreateOrEdit" method="post" id="paymentForm" class="modal-content">
+            @Html.AntiForgeryToken()
+            <input asp-for="Id" type="hidden" />
+            <input asp-for="CompanyId" type="hidden" />
 
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="paymentModalLabel">Add Payment</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
-            <form asp-action="CreateOrEdit" method="post" id="paymentForm">
-                @Html.AntiForgeryToken()
-                <input asp-for="Id" type="hidden" />
-                <input asp-for="CompanyId" type="hidden" />
+            <div class="modal-body">
+                <div class="row g-3">
 
-                <div class="modal-body">
-                    <div class="row g-3">
-
-                        <!-- Payment Inoivce/SubContractor Type Radio -->
-                        <div class="col-md-6">
-                            <label class="form-label d-block">Type</label>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="ModalInvoiceType" id="modalInvoiceRadio" value="invoice">
-                                <label class="form-check-label" for="modalInvoiceRadio">Invoice</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="ModalInvoiceType" id="modalSubContractorRadio" value="subcontractor">
-                                <label class="form-check-label" for="modalSubContractorRadio">Sub Contractor</label>
-                            </div>
+                    <!-- Payment Inoivce/SubContractor Type Radio -->
+                    <div class="col-md-6">
+                        <label class="form-label d-block">Type</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="ModalInvoiceType" id="modalInvoiceRadio" value="invoice">
+                            <label class="form-check-label" for="modalInvoiceRadio">Invoice</label>
                         </div>
-
-                       
-                        <!-- Invoice -->
-                        <div class="col-md-6 mb-3" id="modalInvoiceDiv">
-                            <label asp-for="InvoiceNo" class="form-label">Invoice No</label>
-                            <select asp-for="InvoiceNo" class="form-select" id="invoiceSelect" asp-items="Model.Invoices">
-                                <option value="">--Select Invoice--</option>
-                            </select>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="ModalInvoiceType" id="modalSubContractorRadio" value="subcontractor">
+                            <label class="form-check-label" for="modalSubContractorRadio">Sub Contractor</label>
                         </div>
-
-                        <!-- SubContractor-->
-                        <div class="col-md-6" id="modalSubContractorDiv">
-                            <label asp-for="SubContractorId" class="form-label">Sub Contractor</label>
-                            <select asp-for="SubContractorId" class="form-select" id="subContractorSelect" asp-items="Model.SubContractors">
-                                <option value="">--Select Sub Contractor--</option>
-                            </select>
-                        </div>
-
-
-                        <!-- Payment Type Radio -->
-                        <div class="col-md-6">
-                            <label class="form-label d-block">Period</label>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="ModalDurationType" id="modalDayRadio" value="day">
-                                <label class="form-check-label" for="modalDayRadio">Day</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="ModalDurationType" id="modalDurationRadio" value="duration">
-                                <label class="form-check-label" for="modalDurationRadio">Duration</label>
-                            </div>
-                        </div>
-
-                        <!-- Bank -->
-                        <div class="col-md-6" id="modalBankDiv">
-                            <label asp-for="BankId" class="form-label">Bank Name</label>
-                            <select asp-for="BankId" class="form-select" asp-items="Model.Bankes">
-                                <option value="">--Select Bank--</option>
-                            </select>
-                            <span asp-validation-for="BankId" class="text-danger"></span>
-                        </div>
-
-                        <!-- Payment Date -->
-                        <div class="col-md-6" id="modalPaymentDateDiv">
-                            <label asp-for="PaymentDate" class="form-label">Payment Date</label>
-                            <input asp-for="PaymentDate" type="date" class="form-control" />
-                            <span asp-validation-for="PaymentDate" class="text-danger"></span>
-                        </div>
-
-                        <!-- From and To Date -->
-                        <div class="col-md-6 d-none" id="modalFromDateDiv">
-                            <label asp-for="FromDate" class="form-label">From Date</label>
-                            <input asp-for="FromDate" type="date" class="form-control" />
-                            <span asp-validation-for="FromDate" class="text-danger"></span>
-                        </div>
-                        <div class="col-md-6 d-none" id="modalToDateDiv">
-                            <label asp-for="ToDate" class="form-label">To Date</label>
-                            <input asp-for="ToDate" type="date" class="form-control" />
-                            <span asp-validation-for="ToDate" class="text-danger"></span>
-                        </div>
-
-                        <!-- Amount Paid -->
-                        <div class="col-md-6">
-                            <label asp-for="AmountPaid" class="form-label">Amount Paid</label>
-                            <input asp-for="AmountPaid" type="number" class="form-control" step="0.01" />
-                            <span asp-validation-for="AmountPaid" class="text-danger"></span>
-                        </div>
-
-                       
-
                     </div>
-                </div>
 
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary" id="modalSaveButton">Save</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                   
+                    <!-- Invoice -->
+                    <div class="col-md-6 mb-3" id="modalInvoiceDiv">
+                        <label asp-for="InvoiceNo" class="form-label">Invoice No</label>
+                        <select asp-for="InvoiceNo" class="form-select" id="invoiceSelect" asp-items="Model.Invoices">
+                            <option value="">--Select Invoice--</option>
+                        </select>
+                        <span class="text-danger small d-none" id="invoiceSelectValMsg">Please select an Invoice No.</span>
+                    </div>
+
+                    <!-- SubContractor-->
+                    <div class="col-md-6" id="modalSubContractorDiv">
+                        <label asp-for="SubContractorId" class="form-label">Sub Contractor</label>
+                        <select asp-for="SubContractorId" class="form-select" id="subContractorSelect" asp-items="Model.SubContractors">
+                            <option value="">--Select Sub Contractor--</option>
+                        </select>
+                        <span class="text-danger small d-none" id="subContractorSelectValMsg">Please select a Sub Contractor.</span>
+                    </div>
+
+
+                    <!-- Payment Type Radio -->
+                    <div class="col-md-6">
+                        <label class="form-label d-block">Period</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="ModalDurationType" id="modalDayRadio" value="day">
+                            <label class="form-check-label" for="modalDayRadio">Day</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="ModalDurationType" id="modalDurationRadio" value="duration">
+                            <label class="form-check-label" for="modalDurationRadio">Duration</label>
+                        </div>
+                    </div>
+
+                    <!-- Bank -->
+                    <div class="col-md-6" id="modalBankDiv">
+                        <label asp-for="BankId" class="form-label">Bank Name</label>
+                        <select asp-for="BankId" class="form-select" asp-items="Model.Bankes">
+                            <option value="">--Select Bank--</option>
+                        </select>
+                        <span asp-validation-for="BankId" class="text-danger"></span>
+                    </div>
+
+                    <!-- Payment Date -->
+                    <div class="col-md-6" id="modalPaymentDateDiv">
+                        <label asp-for="PaymentDate" class="form-label">Payment Date</label>
+                        <input asp-for="PaymentDate" type="date" class="form-control" />
+                        <span asp-validation-for="PaymentDate" class="text-danger"></span>
+                    </div>
+
+                    <!-- From and To Date -->
+                    <div class="col-md-6 d-none" id="modalFromDateDiv">
+                        <label asp-for="FromDate" class="form-label">From Date</label>
+                        <input asp-for="FromDate" type="date" class="form-control" />
+                        <span asp-validation-for="FromDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 d-none" id="modalToDateDiv">
+                        <label asp-for="ToDate" class="form-label">To Date</label>
+                        <input asp-for="ToDate" type="date" class="form-control" />
+                        <span asp-validation-for="ToDate" class="text-danger"></span>
+                    </div>
+
+                    <!-- Amount Paid & Get Invoices Button -->
+                    <div class="col-md-6">
+                        <label asp-for="AmountPaid" class="form-label">Amount Paid</label>
+                        <div class="input-group">
+                            <input asp-for="AmountPaid" type="number" class="form-control" step="0.01" id="AmountPaid" />
+                            <button type="button" class="btn btn-outline-primary" id="btnGetInvoices" title="Get invoices for selected parameters">
+                                <i class="fa-solid fa-file-invoice me-1"></i> Get Invoices
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="btnToggleInvoices" title="Toggle Invoice List visibility">
+                                <i class="fa-solid fa-eye" id="toggleInvoicesIcon"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="AmountPaid" class="text-danger"></span>
+                    </div>
+
+                    <!-- Invoices Table List Container -->
+                    <div class="col-12 mt-3 d-none" id="modalInvoicesContainer">
+                        <div class="card border shadow-sm">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 px-3">
+                                <div class="d-flex align-items-center gap-2 flex-nowrap me-2">
+                                    <span class="fw-bold text-dark fs-7 text-nowrap d-inline-flex align-items-center">
+                                        <i class="fa-solid fa-list-check me-1 text-primary"></i> Invoice List
+                                    </span>
+                                    <div class="input-group input-group-sm" style="width: 170px;">
+                                        <span class="input-group-text bg-white border-end-0 py-1 pe-1">
+                                            <i class="fa-solid fa-magnifying-glass text-muted" style="font-size: 0.75rem;"></i>
+                                        </span>
+                                        <input type="text" class="form-control form-control-sm border-start-0 ps-1" id="modalInvoiceSearch" placeholder="Search Invoice No..." />
+                                    </div>
+                                    <span class="badge bg-success text-white rounded-pill text-nowrap ms-1 fw-bold" id="modalInvoicesTotalSum" style="font-size: 0.8rem;">
+                                        Total: 0.00
+                                    </span>
+                                </div>
+                                <span class="badge bg-primary rounded-pill text-nowrap" id="modalInvoicesCount">0 Invoices</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive" style="max-height: 180px; overflow-y: auto; overflow-x: auto;">
+                                    <table class="table table-sm table-bordered table-striped table-hover mb-0" id="modalInvoicesTable">
+                                        <thead class="table-light sticky-top" style="position: sticky; top: 0; z-index: 2; background-color: #f8f9fa;">
+                                            <tr>
+                                                <th>Invoice No</th>
+                                                <th>Invoice Date</th>
+                                                <th class="text-end">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="modalInvoicesTbody">
+                                            <!-- Dynamic invoice rows -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                   
+
                 </div>
-            </form>
-        </div>
+            </div>
+
+            <div class="modal-footer bg-light">
+                <button type="submit" class="btn btn-primary px-4" id="modalSaveButton">Save</button>
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </form>
     </div>
 </div>
 

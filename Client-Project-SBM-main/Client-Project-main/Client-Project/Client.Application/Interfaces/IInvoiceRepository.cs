@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +15,8 @@ namespace Client.Application.Interfaces
 
 
         Task<List<InvoiceDetailsDto>> GetInvoicesAsync(bool IsLeviApplicable, int companyId,int? id = null);
+        Task<List<InvoiceDetailsAsPerContractorDto>> GetInvoiceAsPerContractorAsync(
+            int? invoiceId, int? subContractorId, DateTime? paymentDate, DateTime? fromDate, DateTime? toDate, bool isLeviApplicable = false);
     }
 
 }

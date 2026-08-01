@@ -165,6 +165,22 @@
         const paymentModal = document.getElementById("payment-modal");
 
         $(document).ready(function () {
+            if (typeof $.validator !== 'undefined') {
+                $.validator.setDefaults({
+                    ignore: ":hidden, .select2-search__field",
+                    onkeyup: false,
+                    onclick: false,
+                    onfocusout: false
+                });
+                const $form = $('#paymentForm');
+                if ($form.length && $form.data('validator')) {
+                    $form.data('validator').settings.ignore = ":hidden, .select2-search__field";
+                    $form.data('validator').settings.onkeyup = false;
+                    $form.data('validator').settings.onclick = false;
+                    $form.data('validator').settings.onfocusout = false;
+                }
+            }
+
             initializeGenericDataTable({
                 tableSelector: '#paymentTable',
                 customInfoId: 'paymentTable_info_custom',
@@ -226,6 +242,7 @@
         }
 
          function toggleModalInvoiceType(type) {
+            $('#invoiceSelectValMsg, #subContractorSelectValMsg').addClass('d-none');
             if (type === "invoice") {
                 $("#modalSubContractorDiv").addClass("d-none");
                 $("#modalInvoiceDiv").removeClass("d-none");
@@ -278,7 +295,179 @@
             $('#ToDate').val('');
             $('#AmountPaid').val('');
             $('#BankId').val('').trigger('change');
+
+            $('#modalInvoicesContainer').addClass('d-none');
+            $('#modalInvoicesTbody').empty();
+            $('#modalInvoicesCount').text('0 Invoices');
+            $('#modalInvoicesTotalSum').text('Total: 0.00');
+            $('#modalInvoiceSearch').val('');
+            $('#invoiceSelectValMsg, #subContractorSelectValMsg').addClass('d-none');
+            $('#toggleInvoicesIcon').removeClass('fa-eye-slash').addClass('fa-eye');
         });
+
+        // Hide validation messages on dropdown selection change
+        $(document).off('change', '#invoiceSelect').on('change', '#invoiceSelect', function () {
+            if ($(this).val()) $('#invoiceSelectValMsg').addClass('d-none');
+        });
+        $(document).off('change', '#subContractorSelect').on('change', '#subContractorSelect', function () {
+            if ($(this).val()) $('#subContractorSelectValMsg').addClass('d-none');
+        });
+
+        // Toggle Invoice List visibility button
+        $(document).off('click', '#btnToggleInvoices').on('click', '#btnToggleInvoices', function () {
+            const container = $('#modalInvoicesContainer');
+            const icon = $('#toggleInvoicesIcon');
+
+            if (container.hasClass('d-none')) {
+                container.removeClass('d-none');
+                icon.removeClass('fa-eye').addClass('fa-eye-slash');
+            } else {
+                container.addClass('d-none');
+                icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            }
+        });
+
+        // Live filter for modal invoice table by invoice number
+        $(document).off('keyup input', '#modalInvoiceSearch').on('keyup input', '#modalInvoiceSearch', function () {
+            const query = $(this).val().toLowerCase().trim();
+            let visibleCount = 0;
+            let visibleSum = 0;
+
+            $('#modalInvoicesTbody tr').each(function () {
+                const row = $(this);
+                const invNoTd = row.find('td:first-child').text().toLowerCase();
+                const amtTdStr = row.find('td:last-child').text().replace(/,/g, '');
+                const amtTd = parseFloat(amtTdStr) || 0;
+
+                if (!query || invNoTd.includes(query)) {
+                    row.removeClass('d-none');
+                    visibleCount++;
+                    visibleSum += amtTd;
+                } else {
+                    row.addClass('d-none');
+                }
+            });
+
+            const total = $('#modalInvoicesTbody tr').length;
+            if (query) {
+                $('#modalInvoicesCount').text(`${visibleCount} of ${total} Invoices`);
+            } else {
+                $('#modalInvoicesCount').text(`${total} Invoice${total > 1 ? 's' : ''}`);
+            }
+
+            $('#modalInvoicesTotalSum').text('Total: ' + visibleSum.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        });
+
+        // Get Invoices AJAX button handler
+        $(document).off('click', '#btnGetInvoices').on('click', '#btnGetInvoices', function () {
+            $('#invoiceSelectValMsg, #subContractorSelectValMsg').addClass('d-none');
+
+            const invoiceType = $('input[name="ModalInvoiceType"]:checked').val() || 'invoice';
+            const invoiceId = $('#invoiceSelect').val() || null;
+            const subContractorId = $('#subContractorSelect').val() || null;
+
+            if (invoiceType === 'invoice' && !invoiceId) {
+                $('#invoiceSelectValMsg').removeClass('d-none');
+                $('#invoiceSelect').focus();
+                return;
+            }
+
+            if (invoiceType === 'subcontractor' && !subContractorId) {
+                $('#subContractorSelectValMsg').removeClass('d-none');
+                $('#subContractorSelect').focus();
+                return;
+            }
+
+            if (!invoiceId && !subContractorId) {
+                if (invoiceType === 'invoice') {
+                    $('#invoiceSelectValMsg').removeClass('d-none');
+                    $('#invoiceSelect').focus();
+                } else {
+                    $('#subContractorSelectValMsg').removeClass('d-none');
+                    $('#subContractorSelect').focus();
+                }
+                return;
+            }
+
+            const paymentDate = $('#PaymentDate').val() || null;
+            const fromDate = $('#FromDate').val() || null;
+            const toDate = $('#ToDate').val() || null;
+
+            const btn = $(this);
+            const originalHtml = btn.html();
+            btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin me-1"></i> Loading...');
+
+            $.ajax({
+                url: '/Invoice/GetInvoices',
+                type: 'GET',
+                data: {
+                    invoiceId: invoiceId,
+                    subContractorId: subContractorId,
+                    paymentDate: paymentDate,
+                    fromDate: fromDate,
+                    toDate: toDate,
+                    isLeviApplicable: false
+                },
+                success: function (res) {
+                    btn.prop('disabled', false).html(originalHtml);
+                    if (res.success && res.data) {
+                        renderModalInvoices(res.data);
+                    } else {
+                        alert('No invoices found or error: ' + (res.message || 'Unknown error'));
+                    }
+                },
+                error: function () {
+                    btn.prop('disabled', false).html(originalHtml);
+                    alert('Failed to fetch invoices.');
+                }
+            });
+        });
+
+        function renderModalInvoices(invoices) {
+            const tbody = $('#modalInvoicesTbody');
+            tbody.empty();
+            $('#modalInvoiceSearch').val('');
+
+            if (!invoices || invoices.length === 0) {
+                tbody.append('<tr><td colspan="3" class="text-center text-muted py-3">No invoices found for selected parameters.</td></tr>');
+                $('#modalInvoicesCount').text('0 Invoices');
+                $('#modalInvoicesTotalSum').text('Total: 0.00');
+                $('#modalInvoicesContainer').removeClass('d-none');
+                return;
+            }
+
+            let totalSum = 0;
+            invoices.forEach(function (inv) {
+                //const invNo = inv.invoiceNo || inv.InvoiceNo || inv.invoiceId || inv.InvoiceId || inv.receiptNumber || inv.ReceiptNumber || inv.r_invoiceNo || inv.R_invoiceNo || inv.id || '-';
+                const invNo = inv.invoiceNo;
+                let invDate = '-';
+                const rawDate = inv.invoiceDate ;
+                //const rawDate = inv.invoiceDate || inv.InvoiceDate || inv.paymentDate || inv.PaymentDate || inv.fromDate || inv.FromDate;
+                if (rawDate) {
+                    const d = new Date(rawDate);
+                    if (!isNaN(d.getTime())) {
+                        invDate = d.toLocaleDateString('en-GB');
+                    }
+                }
+
+                const rawAmount = inv.totalAmount;
+                const amtVal = parseFloat(rawAmount) || 0;
+                totalSum += amtVal;
+                const amountStr = amtVal.toFixed(2);
+
+                const tr = `<tr>
+                    <td class="fw-semibold text-dark">${invNo}</td>
+                    <td>${invDate}</td>
+                    <td class="text-end fw-bold text-primary">${amountStr}</td>
+                </tr>`;
+                tbody.append(tr);
+            });
+
+            $('#modalInvoicesCount').text(invoices.length + ' Invoice' + (invoices.length > 1 ? 's' : ''));
+            $('#modalInvoicesTotalSum').text('Total: ' + totalSum.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+            $('#modalInvoicesContainer').removeClass('d-none');
+            $('#toggleInvoicesIcon').removeClass('fa-eye').addClass('fa-eye-slash');
+        }
 
         function setModalMode(mode) {
             const modalLabel = document.getElementById("paymentModalLabel");

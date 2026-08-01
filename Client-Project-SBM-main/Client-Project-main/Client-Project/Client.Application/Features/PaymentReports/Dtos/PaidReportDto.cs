@@ -21,6 +21,7 @@ namespace Client.Application.Features.PaymentReports.Dtos
         public string? Box { get; set; }
         public string? Peti { get; set; }
         public string? Motors { get; set; }
+        public string? VehicleNumber { get; set; }
     }
 
 }

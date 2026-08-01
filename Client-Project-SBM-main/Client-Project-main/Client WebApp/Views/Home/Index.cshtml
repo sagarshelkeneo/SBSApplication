@@ -1,74 +1,169 @@
-﻿@{
-    ViewData["Title"] = "Home";
+@{
+    ViewData["Title"] = "Dashboard";
     var role = ViewBag.UserRole as string;
     bool hasReportAccess = role == "Super Admin" || role == "Admin" || role == "Manager" || role == "report_user";
 }
 
 <link rel="stylesheet" href="~/css/home.css" />
-<div id="home">
-    @if (hasReportAccess)
-    {
-        <div class="row">
-            <div class="col-6">
-                <div class="card m-3">
-                    <div class="card-body">
-                        <a asp-controller="Report" asp-action="ContractorReport">
-                            Contractor Report <i class="fa-solid fa-file-zipper icon"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
 
-            <div class="col-6">
-                <div class="card m-3">
-                    <div class="card-body">
-                        <a asp-controller="Report" asp-action="ProfitLossReport">
-                            Profit & Loss Report <i class="fa-solid fa-file-zipper icon"></i>
-                        </a>
-                    </div>
+<div class="executive-dashboard py-4 px-3">
+    <div class="container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="title-area">
+                <h1>Dashboard Reports</h1>
+                <p>Access realtime analytics, operational breakdowns, and balance sheets.</p>
+            </div>
+            <div class="search-bar">
+                <div class="search-input-wrapper">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="reportSearchInput" placeholder="Search reports..." />
                 </div>
             </div>
+        </header>
 
-            <div class="col-6">
-                <div class="card m-3">
-                    <div class="card-body">
-                        <a asp-controller="Report" asp-action="ContractorLegrandReport">
-                            Legrand & Indo => Contractor Report <i class="fa-solid fa-file-zipper icon"></i>
-                        </a>
+        @if (hasReportAccess)
+        {
+            <!-- SECTION 1: Standard Group -->
+            <section class="group-section std-group">
+                <div class="group-header">
+                    <div class="group-header-left">
+                        <div class="group-title-icon">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                        <h2>Standard Reports</h2>
                     </div>
+                    <span class="badge">2 Modules</span>
                 </div>
-            </div>
 
-            <div class="col-6">
-                <div class="card m-3">
-                    <div class="card-body">
-                        <a asp-controller="Report" asp-action="ProfitLossLegrandReport">
-                            Legrand & Indo => Profit & Loss Report <i class="fa-solid fa-file-zipper icon"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
+                <div class="grid">
+                    <!-- Contractor Report -->
+                    <a asp-controller="Report" asp-action="ContractorReport" class="report-card std-card">
+                        <div class="card-top">
+                            <div class="icon-box">
+                                <i class="fa-solid fa-user-gear"></i>
+                            </div>
+                            <i class="fa-solid fa-arrow-right-long card-arrow"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Contractor Report</h3>
+                            <p>General contractor tasks, active work orders, and completion metrics.</p>
+                        </div>
+                    </a>
 
-            <div class="col-6">
-                <div class="card m-3">
-                    <div class="card-body">
-                        <a asp-controller="Report" asp-action="CombinedSubContractorEntity">
-                            Legrand  => Levhi Report <i class="fa-solid fa-file-zipper icon"></i>
-                        </a>
-                    </div>
+                    <!-- Profit & Loss Report -->
+                    <a asp-controller="Report" asp-action="ProfitLossReport" class="report-card std-card">
+                        <div class="card-top">
+                            <div class="icon-box">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                            <i class="fa-solid fa-arrow-right-long card-arrow"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Profit & Loss Report</h3>
+                            <p>Standard financial performance, revenue streams, and net profit margins.</p>
+                        </div>
+                    </a>
                 </div>
-            </div>
+            </section>
 
-            <div class="col-6">
-                <div class="card m-3">
-                    <div class="card-body">
-                        <a asp-controller="Report" asp-action="CombinedSubContractorIndoListEntity">
-                            Indo => Levhi Report <i class="fa-solid fa-file-zipper icon"></i>
-                        </a>
+            <!-- SECTION 2: Indo & Legrand Group -->
+            <section class="group-section il-group">
+                <div class="group-header">
+                    <div class="group-header-left">
+                        <div class="group-title-icon">
+                            <i class="fa-solid fa-city"></i>
+                        </div>
+                        <h2>Indo & Legrand Reports</h2>
                     </div>
+                    <span class="badge">4 Modules</span>
+                </div>
+
+                <div class="grid">
+                    <!-- Contractor Report -->
+                    <a asp-controller="Report" asp-action="ContractorLegrandReport" class="report-card il-card">
+                        <div class="card-top">
+                            <div class="icon-box">
+                                <i class="fa-solid fa-users-gear"></i>
+                            </div>
+                            <i class="fa-solid fa-arrow-right-long card-arrow"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Contractor Report</h3>
+                            <p>Contractor assignments specialized for Indo & Legrand divisions.</p>
+                        </div>
+                    </a>
+
+                    <!-- Profit & Loss Report -->
+                    <a asp-controller="Report" asp-action="ProfitLossLegrandReport" class="report-card il-card">
+                        <div class="card-top">
+                            <div class="icon-box">
+                                <i class="fa-solid fa-scale-balanced"></i>
+                            </div>
+                            <i class="fa-solid fa-arrow-right-long card-arrow"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Profit & Loss Report</h3>
+                            <p>Combined corporate income statement & dual brand financial health.</p>
+                        </div>
+                    </a>
+
+                    <!-- Indo Levhi Report -->
+                    <a asp-controller="Report" asp-action="CombinedSubContractorIndoListEntity" class="report-card il-card">
+                        <div class="card-top">
+                            <div class="icon-box">
+                                <i class="fa-solid fa-bolt-lightning"></i>
+                            </div>
+                            <i class="fa-solid fa-arrow-right-long card-arrow"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Indo Levhi Report</h3>
+                            <p>Dedicated equipment metrics, Levhi load data, and efficiency logs.</p>
+                        </div>
+                    </a>
+
+                    <!-- Legrand Levhi Report -->
+                    <a asp-controller="Report" asp-action="CombinedSubContractorEntity" class="report-card il-card">
+                        <div class="card-top">
+                            <div class="icon-box">
+                                <i class="fa-solid fa-plug-circle-bolt"></i>
+                            </div>
+                            <i class="fa-solid fa-arrow-right-long card-arrow"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Legrand Levhi Report</h3>
+                            <p>Legrand Levhi installation statuses and power diagnostics.</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+        }
+        else
+        {
+            <div class="alert alert-warning d-flex align-items-center p-4 rounded-4 shadow-sm" role="alert">
+                <i class="fa-solid fa-lock fa-2x me-3 text-warning"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">Access Restricted</h5>
+                    <p class="mb-0">You do not have permission to view dashboard reports. Please contact an administrator if you require access.</p>
                 </div>
             </div>
-        </div>
-        
-    }
+        }
+    </div>
 </div>
+
+<!-- Real-time Interactive Search Filtering -->
+<script>
+    document.getElementById('reportSearchInput')?.addEventListener('keyup', function () {
+        const query = this.value.toLowerCase().trim();
+        const tileItems = document.querySelectorAll('.report-card');
+
+        tileItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (text.includes(query)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+</script>

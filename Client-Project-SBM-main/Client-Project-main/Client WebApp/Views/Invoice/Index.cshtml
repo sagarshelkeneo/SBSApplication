@@ -174,7 +174,7 @@
             var selectedProductId = $(this).val();
             if (selectedProductId && productPrices[selectedProductId]) {
                 $('#UnitAmount').val(productPrices[selectedProductId]);
-                calculateTotal(); // optional: update total amount
+                //calculateTotal(); // optional: update total amount
             } else {
                 $('#UnitAmount').val('');
                 $('#TotalAmount').val('');
@@ -334,26 +334,26 @@
         });
 
         // Calculate CommissionAmount dynamically
-        $('#CommissionPercentage, #TotalAmount').on('input', updateCommission);
-        function updateCommission() {
-            let total = parseFloat($('#TotalAmount').val()) || 0;
-            let percent = parseFloat($('#CommissionPercentage').val()) || 0;
-            $('#CommissionAmount').val(Math.round(total * percent / 100));
-        }
+        //$('#CommissionPercentage, #TotalAmount').on('input', updateCommission);
+        // function updateCommission() {
+        //     let total = parseFloat($('#TotalAmount').val()) || 0;
+        //     let percent = parseFloat($('#CommissionPercentage').val()) || 0;
+        //     $('#CommissionAmount').val(Math.round(total * percent / 100));
+        // }
 
-        $('#Quantity, #CommissionPercentage').on('input', function () {
-            calculateTotal();
-        });
+        // $('#Quantity, #CommissionPercentage').on('input', function () {
+        //     calculateTotal();
+        // });
 
-        function calculateTotal() {
-            var unitAmount = parseFloat($('#UnitAmount').val()) || 0;
-            var quantity = parseFloat($('#Quantity').val()) || 0;
-            var total = unitAmount * quantity;
-            $('#TotalAmount').val(total.toFixed(2));
+        // function calculateTotal() {
+        //     var unitAmount = parseFloat($('#UnitAmount').val()) || 0;
+        //     var quantity = parseFloat($('#Quantity').val()) || 0;
+        //     var total = unitAmount * quantity;
+        //     $('#TotalAmount').val(total.toFixed(2));
 
-            var commissionPercentage = parseFloat($('#CommissionPercentage').val()) || 0;
-            var commissionAmount = (total * commissionPercentage) / 100;
-            $('#CommissionAmount').val(commissionAmount.toFixed(2));
-        }
+        //     var commissionPercentage = parseFloat($('#CommissionPercentage').val()) || 0;
+        //     var commissionAmount = (total * commissionPercentage) / 100;
+        //     $('#CommissionAmount').val(commissionAmount.toFixed(2));
+        // }
     </script>
 }

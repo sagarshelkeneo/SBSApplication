@@ -11286,3 +11286,62 @@ div.dataTables_paginate {
     cursor: pointer;
     font-size: 1.1rem; /* adjust icon size if needed */
 }
+
+/* ===== Navbar User Profile Card ===== */
+.user-navbar-card {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    padding: 0.35rem 0.9rem 0.35rem 0.55rem !important;
+    border-radius: 2rem !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    transition: all 0.2s ease !important;
+}
+
+.user-navbar-card:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.28) !important;
+}
+
+.user-nav-avatar {
+    position: relative !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%) !important;
+    color: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.85rem !important;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4) !important;
+    flex-shrink: 0 !important;
+}
+
+.user-status-dot {
+    position: absolute !important;
+    bottom: -1px !important;
+    right: -1px !important;
+    width: 9px !important;
+    height: 9px !important;
+    background-color: #22c55e !important;
+    border: 2px solid #212529 !important;
+    border-radius: 50% !important;
+}
+
+.user-nav-subtext {
+    font-size: 0.65rem !important;
+    color: #94a3b8 !important;
+    line-height: 1 !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.03em !important;
+    text-transform: uppercase !important;
+}
+
+.user-nav-username {
+    font-size: 0.825rem !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+    letter-spacing: 0.03em !important;
+    margin-top: 2px !important;
+}

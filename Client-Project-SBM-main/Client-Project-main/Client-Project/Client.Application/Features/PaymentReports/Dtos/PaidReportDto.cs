@@ -13,6 +13,7 @@ namespace Client.Application.Features.PaymentReports.Dtos
         public string? BankName { get; set; }
         public string? ReceiptNumber { get; set; }
         public string? LRNumber { get; set; }
+        public string? VehicleNumber { get; set; }
         public DateTime? InvoiceDate { get; set; }
         public DateTime? PaymentDate { get; set; }
         public decimal InvoiceAmount { get; set; }

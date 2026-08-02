@@ -40,16 +40,20 @@ namespace Client.Persistence.Repositories
         public async Task<List<InvoiceDetailsDto>> CreateInvoiceBulkAsync(CreateInvoiceBulkDto dto)
         {
             // Serialize the LR rows to a JSON array understood by the SP's OPENJSON clause.
-            // Format: [{"lrNumber":"...","unitAmount":100.00,"quantity":2,"totalAmount":200.00}, ...]
+            // Format: [{"productid":"1","lrNumber":"...","unitAmount":100.00,"quantity":2,"totalAmount":200.00}, ...]
             var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
             var lrItemsJson = JsonSerializer.Serialize(dto.LRItems, jsonOptions);
+            var firstItem = dto.LRItems?.FirstOrDefault();
 
             var bulkParams = new DynamicParameters();
             bulkParams.Add("@P_invoiceNo",            dto.InvoiceNo);
             bulkParams.Add("@P_companyId",            dto.CompanyId);
             bulkParams.Add("@P_subcontractorId",      dto.SubcontractorId);
-            bulkParams.Add("@P_productId",            dto.ProductId);
+            bulkParams.Add("@P_productId",            (firstItem != null && firstItem.ProductId > 0) ? firstItem.ProductId : dto.ProductId);
             bulkParams.Add("@P_invoiceDate",          dto.InvoiceDate);
+            bulkParams.Add("@P_quantity",             dto.LRItems?.Sum(lr => lr.Quantity));
+            bulkParams.Add("@P_unitAmount",           dto.LRItems?.Sum(lr => lr.UnitAmount));
+            bulkParams.Add("@P_totalAmount",          dto.LRItems?.Sum(lr => lr.TotalAmount));
             bulkParams.Add("@P_commissionPercentage", dto.CommissionPercentage);
             bulkParams.Add("@P_commissionAmount",     dto.CommissionAmount);
             bulkParams.Add("@P_paymentMode",          dto.PaymentMode);
@@ -181,6 +185,71 @@ namespace Client.Persistence.Repositories
 
             throw new Exception($"Update Failed: {result.R_ErrorMessage} (ErrorCode: {result.R_ErrorNumber})");
 
+        }
+
+        public async Task<List<InvoiceDetailsDto>> UpdateInvoiceBulkAsync(UpdateInvoiceBulkDto dto)
+        {
+            // Serialize the LR rows to a JSON array understood by the SP's OPENJSON clause.
+            var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            var lrItemsJson = JsonSerializer.Serialize(dto.LRItems, jsonOptions);
+
+            var firstItem = dto.LRItems?.FirstOrDefault();
+
+            var updateParams = new DynamicParameters();
+            updateParams.Add("@P_id",                   dto.Id);
+            updateParams.Add("@P_invoiceNo",            dto.InvoiceNo);
+            updateParams.Add("@P_companyId",            dto.CompanyId);
+            updateParams.Add("@P_subcontractorId",      dto.SubcontractorId);
+            updateParams.Add("@P_productId",            (firstItem != null && firstItem.ProductId > 0) ? firstItem.ProductId : dto.ProductId);
+            updateParams.Add("@P_invoiceDate",          dto.InvoiceDate);
+            updateParams.Add("@P_quantity",             dto.LRItems?.Sum(lr => lr.Quantity));
+            updateParams.Add("@P_unitAmount",           dto.LRItems?.Sum(lr => lr.UnitAmount));
+            updateParams.Add("@P_totalAmount",          dto.LRItems?.Sum(lr => lr.TotalAmount));
+            updateParams.Add("@P_commissionPercentage", dto.CommissionPercentage);
+            updateParams.Add("@P_commissionAmount",     dto.CommissionAmount);
+            updateParams.Add("@P_paymentMode",          dto.PaymentMode);
+            updateParams.Add("@P_status",               dto.Status);
+            updateParams.Add("@P_updatedBy",            dto.UpdatedBy);
+            updateParams.Add("@P_GroupNumber",          dto.GroupNumber);
+            updateParams.Add("@P_LRNumber",             string.Empty);
+            updateParams.Add("@P_VehicleNumber",        dto.VehicleNumber);
+            //updateParams.Add("@P_IsLeviApplicable",     dto.IsLeviApplicable);
+            updateParams.Add("@P_Levi",                 dto.Levi);
+            updateParams.Add("@P_DocketNumber",         dto.DocketNumber);
+            updateParams.Add("@P_TrollyQuantity",       dto.TrollyQuantity);
+            updateParams.Add("@P_TrollyAmount",         dto.TrollyAmount);
+            updateParams.Add("@P_LRItemsJson",          lrItemsJson);
+
+            try
+            {
+                var result = await _db.QueryFirstOrDefaultAsync<dynamic>(
+                    "usp_sbs_invoiceDetails_updateBulk",
+                    updateParams,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                if (result != null && result.R_Status == "SUCCESS")
+                {
+                    return await GetInvoicesAsync(dto.IsLeviApplicable, dto.CompanyId, null);
+                }
+            }
+            catch
+            {
+                // Fallback to standard update SP
+            }
+
+            var singleResult = await _db.QueryFirstOrDefaultAsync<dynamic>(
+                "usp_sbs_invoiceDetails_update",
+                updateParams,
+                commandType: CommandType.StoredProcedure
+            );
+
+            if (singleResult == null || singleResult.R_Status != "SUCCESS")
+            {
+                throw new Exception($"Update failed: {singleResult?.R_ErrorMessage ?? "Unknown error"}");
+            }
+
+            return await GetInvoicesAsync(dto.IsLeviApplicable, dto.CompanyId, null);
         }
 
         //public async Task<InvoiceDetailsDto> DeleteInvoiceAsync(int id, int updatedBy)

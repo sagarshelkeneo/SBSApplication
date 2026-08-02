@@ -9,7 +9,7 @@ namespace Client.Application.Features.Invoice.Dtos
     public class InvoiceDetailsDto
     {
         public int R_id { get; set; }
-        public string R_invoiceNo { get; set; }
+        public string? R_invoiceNo { get; set; }
         public int R_companyId { get; set; }
         public int R_subcontractorId { get; set; }
         public string R_subcontractorName { get; set; }

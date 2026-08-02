@@ -182,6 +182,7 @@
 
         // Set modal mode: add / edit / view
         function setModalMode(mode) {
+            window.currentModalMode = mode;
             resetForm('#invoiceForm');
             if (typeof window.populateAmountDetails === 'function') {
                 window.populateAmountDetails([]);
@@ -192,10 +193,14 @@
             if (mode === 'view') {
                 $("#invoiceForm input, #invoiceForm select").prop("readonly", true).prop("disabled", true);
                 $("#saveButton").hide();
+                $("#inv-addMoreBtn, #sav-addMoreBtn").hide();
+                $(".inv-action-cell, .action-cell").hide();
             } else {
                 $("#invoiceForm input, #invoiceForm select").prop("readonly", false).prop("disabled", false);
                 $("#TotalAmount").prop("readonly", true);
                 $("#saveButton").show();
+                $("#inv-addMoreBtn, #sav-addMoreBtn").show();
+                $(".inv-action-cell, .action-cell").show();
             }
         }
 

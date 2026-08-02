@@ -38,6 +38,11 @@ namespace Client_WebApp.Services
             return _repository.UpdateInvoiceAsync(dto);
         }
 
+        public Task<List<InvoiceDetailsDto>> UpdateInvoiceBulkAsync(UpdateInvoiceBulkDto dto)
+        {
+            return _repository.UpdateInvoiceBulkAsync(dto);
+        }
+
         public Task<List<InvoiceDetailsDto>> DeleteInvoiceAsync(int id, int updatedBy, int companyId, bool isLeviApplicable)
         {
             return _repository.DeleteInvoiceAsync(id, updatedBy, companyId, isLeviApplicable);

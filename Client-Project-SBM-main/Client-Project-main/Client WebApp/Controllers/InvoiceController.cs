@@ -56,7 +56,7 @@ namespace Client.MVC.Controllers
                 invoicesFromService = invoicesFromService
                     .Where(i =>
                         (i.R_subcontractorName != null && i.R_subcontractorName.ToLower().Contains(searchText)) ||
-                        (i.R_invoiceNo.ToString().ToLower().Contains(searchText))
+                        ((i.R_invoiceNo != null && i.R_invoiceNo.ToString().ToLower().Contains(searchText)))
                     )
                     .ToList();
             }
@@ -151,35 +151,58 @@ namespace Client.MVC.Controllers
 
             if (model.Id > 0)
             {
-                // ── UPDATE (single record, existing behaviour) ──────────────
-                // Use first LR row if available, else fall back to top-level fields.
-                var firstItem = model.LRItems?.FirstOrDefault();
-                var updateDto = new UpdateInvoiceDto
-                {
-                    Id                   = model.Id,
-                    CompanyId            = CurrentCompanyId,
-                    SubcontractorId      = model.SubcontractorId,
-                    ProductId            = model.ProductId,
-                    InvoiceNo            = model.InvoiceNo,
-                    InvoiceDate          = model.InvoiceDate,
-                    UnitAmount           = firstItem?.UnitAmount  ?? model.UnitAmount,
-                    Quantity             = firstItem?.Quantity     ?? model.Quantity,
-                    TotalAmount          = firstItem?.TotalAmount  ?? model.TotalAmount,
-                    CommissionPercentage = model.CommissionPercentage,
-                    CommissionAmount     = model.CommissionAmount,
-                    PaymentMode          = model.PaymentMode,
-                    UpdatedBy            = CurrentUserId,
-                    GroupNumber          = model.GroupNumber,
-                    LRNumber             = firstItem?.LRNumber ?? model.LRNumber,
-                    VehicleNumber        = model.VehicleNumber,
-                    Levi                 = model.Levi,
-                    DocketNumber         = model.DocketNumber,
-                    TrollyQuantity       = model.TrollyQuantity,
-                    TrollyAmount         = model.TrollyAmount,
-                };
+                // ── BULK UPDATE ─────────────────────────────────────────────
+                var lrRows = model.LRItems
+                    ?.Where(r => r.UnitAmount > 0 && r.Quantity > 0)
+                    .ToList();
 
-                await _service.UpdateInvoiceAsync(updateDto);
-                TempData["SuccessMessage"] = "Booking updated successfully!";
+                if (lrRows == null || lrRows.Count == 0)
+                {
+                    lrRows = new List<LRItemViewModel>
+                    {
+                        new LRItemViewModel
+                        {
+                            ProductId   = model.ProductId,
+                            LRNumber    = model.LRNumber,
+                            UnitAmount  = model.UnitAmount,
+                            Quantity    = model.Quantity,
+                            TotalAmount = model.TotalAmount
+                        }
+                    };
+                }
+
+                var updateBulkDto = new UpdateInvoiceBulkDto
+                {
+                    Id = model.Id,
+                    CompanyId = CurrentCompanyId,
+                    SubcontractorId = model.SubcontractorId,
+                    ProductId = lrRows.FirstOrDefault()?.ProductId ?? model.ProductId,
+                    InvoiceNo = model.InvoiceNo,
+                    InvoiceDate = model.InvoiceDate,
+                    CommissionPercentage = model.CommissionPercentage,
+                    CommissionAmount = model.CommissionAmount,
+                    PaymentMode = model.PaymentMode,
+                    UpdatedBy = CurrentUserId,
+                    GroupNumber = model.GroupNumber,
+                    VehicleNumber = model.VehicleNumber,
+                    Levi = model.Levi,
+                    DocketNumber = model.DocketNumber,
+                    TrollyQuantity = model.TrollyQuantity,
+                    TrollyAmount = model.TrollyAmount,
+                    LRItems = lrRows.Select(item => new LRItemDto
+                    {
+                        ProductId = item.ProductId,
+                        LRNumber = item.LRNumber,
+                        UnitAmount = item.UnitAmount,
+                        Quantity = item.Quantity,
+                        TotalAmount = item.TotalAmount
+                    }).ToList()
+                };
+                
+                
+                await _service.UpdateInvoiceBulkAsync(updateBulkDto);
+                //TempData["SuccessMessage"] = "Booking updated successfully!";
+                TempData["SuccessMessage"] = $"Booking updated successfully! with ({lrRows.Count} product record(s) saved.)";
             }
             else
             {
@@ -195,6 +218,7 @@ namespace Client.MVC.Controllers
                     {
                         new LRItemViewModel
                         {
+                            ProductId =  model.ProductId,
                             LRNumber    = model.LRNumber,
                             UnitAmount  = model.UnitAmount,
                             Quantity    = model.Quantity,
@@ -223,6 +247,7 @@ namespace Client.MVC.Controllers
                     TrollyAmount         = model.TrollyAmount,
                     LRItems              = lrRows.Select(item => new LRItemDto
                     {
+                        ProductId = item.ProductId,
                         LRNumber    = item.LRNumber,
                         UnitAmount  = item.UnitAmount,
                         Quantity    = item.Quantity,
@@ -232,7 +257,7 @@ namespace Client.MVC.Controllers
 
                 await _service.CreateInvoiceBulkAsync(bulkDto);
 
-                TempData["SuccessMessage"] = $"Booking added successfully! ({lrRows.Count} LR record(s) saved.)";
+                TempData["SuccessMessage"] = $"Booking added successfully! with ({lrRows.Count} product record(s) saved.)";
             }
 
             return Json(new { success = true, message = TempData["SuccessMessage"]?.ToString() });
@@ -459,34 +484,57 @@ namespace Client.MVC.Controllers
 
             if (model.Id > 0)
             {
-                // ── UPDATE (single record, existing behaviour) ──────────────
-                var firstItem = model.LRItems?.FirstOrDefault();
-                var updateDto = new UpdateInvoiceDto
+                // ── BULK UPDATE ─────────────────────────────────────────────
+                var lrRows = model.LRItems
+                    ?.Where(r => r.UnitAmount > 0 && r.Quantity > 0)
+                    .ToList();
+
+                if (lrRows == null || lrRows.Count == 0)
+                {
+                    lrRows = new List<LRItemViewModel>
+                    {
+                        new LRItemViewModel
+                        {
+                            ProductId   = model.ProductId,
+                            LRNumber    = model.LRNumber,
+                            UnitAmount  = model.UnitAmount,
+                            Quantity    = model.Quantity,
+                            TotalAmount = model.TotalAmount
+                        }
+                    };
+                }
+
+                var updateBulkDto = new UpdateInvoiceBulkDto
                 {
                     Id                   = model.Id,
                     CompanyId            = CurrentCompanyId,
                     SubcontractorId      = model.SubcontractorId,
-                    ProductId            = (firstItem != null && firstItem.ProductId > 0) ? firstItem.ProductId : model.ProductId,
+                    ProductId            = lrRows.FirstOrDefault()?.ProductId ?? model.ProductId,
                     InvoiceNo            = model.InvoiceNo,
                     InvoiceDate          = model.InvoiceDate,
-                    UnitAmount           = firstItem?.UnitAmount  ?? model.UnitAmount,
-                    Quantity             = firstItem?.Quantity     ?? model.Quantity,
-                    TotalAmount          = firstItem?.TotalAmount  ?? model.TotalAmount,
                     CommissionPercentage = model.CommissionPercentage,
                     CommissionAmount     = model.CommissionAmount,
                     PaymentMode          = model.PaymentMode,
                     UpdatedBy            = CurrentUserId,
                     GroupNumber          = model.GroupNumber,
-                    LRNumber             = firstItem?.LRNumber ?? model.LRNumber,
                     VehicleNumber        = model.VehicleNumber,
+                    IsLeviApplicable     = true,
                     Levi                 = model.Levi,
                     DocketNumber         = model.DocketNumber,
                     TrollyQuantity       = model.TrollyQuantity,
                     TrollyAmount         = model.TrollyAmount,
+                    LRItems              = lrRows.Select(item => new LRItemDto
+                    {
+                        ProductId   = item.ProductId,
+                        LRNumber    = item.LRNumber,
+                        UnitAmount  = item.UnitAmount,
+                        Quantity    = item.Quantity,
+                        TotalAmount = item.TotalAmount
+                    }).ToList()
                 };
 
-                await _service.UpdateInvoiceAsync(updateDto);
-                TempData["SuccessMessage"] = "Booking updated successfully!";
+                await _service.UpdateInvoiceBulkAsync(updateBulkDto);
+                TempData["SuccessMessage"] = $"Booking updated successfully! with ({lrRows.Count} product record(s) saved.)";
             }
             else
             {
@@ -541,7 +589,7 @@ namespace Client.MVC.Controllers
 
                 await _service.CreateInvoiceBulkAsync(bulkDto);
 
-                TempData["SuccessMessage"] = $"Booking added successfully! ({lrRows.Count} LR record(s) saved.)";
+                TempData["SuccessMessage"] = $"Booking added successfully! with ({lrRows.Count} product record(s) saved.)";
             }
 
             return Json(new { success = true, message = TempData["SuccessMessage"]?.ToString() });

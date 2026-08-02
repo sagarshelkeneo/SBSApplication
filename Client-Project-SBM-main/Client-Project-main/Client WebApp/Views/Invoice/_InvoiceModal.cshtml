@@ -124,23 +124,23 @@
                     <!-- ══════════════════════════════════════
                          SECTION 1: BOOKING DETAILS
                          ══════════════════════════════════════ -->
-                    <p class="inv-section-heading mb-2">Booking Details</p>
-                    <div class="row g-3 mb-4">
+                    <p class="inv-section-heading mb-1">Booking Details</p>
+                    <div class="row g-2 mb-2">
 
                         <div class="col-md-6">
-                            <label asp-for="InvoiceDate" class="form-label fw-semibold"></label>
-                            <input asp-for="InvoiceDate" class="form-control" type="date" id="InvoiceDate" />
+                            <label asp-for="InvoiceDate" class="form-label fw-semibold mb-1 small"></label>
+                            <input asp-for="InvoiceDate" class="form-control form-control-sm" type="date" id="InvoiceDate" />
                             <span asp-validation-for="InvoiceDate" class="text-danger small"></span>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Receipt Number</label>
-                            <input asp-for="InvoiceNo" class="form-control" id="InvoiceNo" data-val="false" />
+                            <label class="form-label fw-semibold mb-1 small">Receipt Number</label>
+                            <input asp-for="InvoiceNo" class="form-control form-control-sm" id="InvoiceNo" data-val="false" />
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="SubcontractorId" class="form-label fw-semibold"></label>
-                            <select asp-for="SubcontractorId" class="form-select" asp-items="Model.SubContractorList">
+                            <label asp-for="SubcontractorId" class="form-label fw-semibold mb-1 small"></label>
+                            <select asp-for="SubcontractorId" class="form-select form-select-sm" asp-items="Model.SubContractorList">
                                 <option value="">--Select--</option>
                             </select>
                             <span asp-validation-for="SubcontractorId" class="text-danger small"></span>
@@ -149,35 +149,35 @@
                         <input type="hidden" asp-for="ProductId" id="ProductId" value="0" />
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Discount</label>
-                            <input asp-for="CommissionPercentage" class="form-control" id="CommissionPercentage" />
+                            <label class="form-label fw-semibold mb-1 small">Discount</label>
+                            <input asp-for="CommissionPercentage" class="form-control form-control-sm" id="CommissionPercentage" />
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Labour Charge</label>
-                            <input asp-for="CommissionAmount" class="form-control" id="CommissionAmount" />
+                            <label class="form-label fw-semibold mb-1 small">Labour Charge</label>
+                            <input asp-for="CommissionAmount" class="form-control form-control-sm" id="CommissionAmount" />
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Toli No</label>
-                            <input asp-for="GroupNumber" class="form-control" id="GroupNumber" />
+                            <label class="form-label fw-semibold mb-1 small">Toli No</label>
+                            <input asp-for="GroupNumber" class="form-control form-control-sm" id="GroupNumber" />
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Vehicle Number</label>
-                            <input asp-for="VehicleNumber" class="form-control" id="VehicleNumber" />
+                            <label class="form-label fw-semibold mb-1 small">Vehicle Number</label>
+                            <input asp-for="VehicleNumber" class="form-control form-control-sm" id="VehicleNumber" />
                         </div>
 
                         <div class="col-md-6 d-flex flex-column justify-content-center">
-                            <label class="form-label fw-semibold">Invoice Type</label>
-                            <div class="d-flex gap-3 mt-1">
-                                <div class="form-check">
+                            <label class="form-label fw-semibold mb-1 small">Invoice Type</label>
+                            <div class="d-flex gap-3 mt-0">
+                                <div class="form-check form-check-inline mb-0">
                                     <input class="form-check-input" type="radio" asp-for="PaymentMode" value="CASH" id="invoiceTypeCash" />
-                                    <label class="form-check-label" for="invoiceTypeCash">Cash</label>
+                                    <label class="form-check-label small" for="invoiceTypeCash">Cash</label>
                                 </div>
-                                <div class="form-check">
+                                <div class="form-check form-check-inline mb-0">
                                     <input class="form-check-input" type="radio" asp-for="PaymentMode" value="BALANCE" id="invoiceTypeBalance" />
-                                    <label class="form-check-label" for="invoiceTypeBalance">Balance</label>
+                                    <label class="form-check-label small" for="invoiceTypeBalance">Balance</label>
                                 </div>
                             </div>
                         </div>
@@ -187,24 +187,29 @@
                     <!-- ══════════════════════════════════════
                          SECTION 2: AMOUNT DETAILS TABLE
                          ══════════════════════════════════════ -->
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <p class="inv-section-heading mb-0">Amount Details</p>
+                    <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <p class="inv-section-heading mb-0">Amount Details</p>
+                            <span class="badge bg-light text-dark border ms-2 fw-semibold" id="invTotalUnitBadge">Unit Amt: 0.00</span>
+                            <span class="badge bg-light text-dark border fw-semibold" id="invTotalQtyBadge">Qty: 0</span>
+                            <span class="badge bg-success text-white fw-bold" id="invTotalAmountBadge">Total Amt: 0.00</span>
+                        </div>
                         <button type="button" id="inv-addMoreBtn">
                             <i class="bi bi-plus-lg me-1"></i> Add More
                         </button>
                     </div>
 
-                    <div class="table-responsive">
+                    <div class="table-responsive" style="max-height: 170px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px;">
                         <table class="table table-bordered table-sm align-middle mb-0" id="invAmountDetailsTable">
-                            <thead>
+                            <thead class="bg-light" style="position: sticky; top: 0; z-index: 2; background-color: #f8f9fa;">
                                 <tr>
-                                    <th class="inv-row-num-cell">#</th>
-                                    <th>Product <span class="text-danger">*</span></th>
-                                    <th>LR Number</th>
-                                    <th>Unit Amount <span class="text-danger">*</span></th>
-                                    <th>Quantity <span class="text-danger">*</span></th>
-                                    <th>Total Amount <span class="text-danger">*</span></th>
-                                    <th class="inv-action-cell"></th>
+                                    <th class="inv-row-num-cell bg-light">#</th>
+                                    <th class="bg-light">Product <span class="text-danger">*</span></th>
+                                    <th class="bg-light">LR Number</th>
+                                    <th class="bg-light">Unit Amount <span class="text-danger">*</span></th>
+                                    <th class="bg-light">Quantity <span class="text-danger">*</span></th>
+                                    <th class="bg-light">Total Amount <span class="text-danger">*</span></th>
+                                    <th class="inv-action-cell bg-light"></th>
                                 </tr>
                             </thead>
                             <tbody id="inv-amountBody">
@@ -295,8 +300,31 @@
             );
         }
 
+        /* ── Calculate Summary Totals ── */
+        function updateSummaryTotals() {
+            var totalUnit = 0;
+            var totalQty  = 0;
+            var totalAmt  = 0;
+
+            $('#inv-amountBody tr').each(function () {
+                var unit = parseFloat($(this).find('.inv-unit-input').val()) || 0;
+                var qty  = parseFloat($(this).find('.inv-qty-input').val())  || 0;
+                var tot  = parseFloat($(this).find('.inv-total-input').val()) || (unit * qty);
+
+                totalUnit += unit;
+                totalQty  += qty;
+                totalAmt  += tot;
+            });
+
+            $('#invTotalUnitBadge').text('Unit Amt: ' + totalUnit.toFixed(2));
+            $('#invTotalQtyBadge').text('Qty: ' + (Number.isInteger(totalQty) ? totalQty : totalQty.toFixed(2)));
+            $('#invTotalAmountBadge').text('Total Amt: ' + totalAmt.toFixed(2));
+        }
+
         /* ── Re-number rows and re-index field names ── */
         function refreshRows() {
+            var isViewMode = (typeof window.currentModalMode !== 'undefined' && window.currentModalMode === 'view');
+
             $('#inv-amountBody tr').each(function (i) {
                 $(this).find('.inv-row-num').text(i + 1);
                 $(this).find('.inv-product-input').attr('name', 'LRItems[' + i + '].ProductId');
@@ -304,7 +332,21 @@
                 $(this).find('.inv-unit-input').attr('name',    'LRItems[' + i + '].UnitAmount');
                 $(this).find('.inv-qty-input').attr('name',     'LRItems[' + i + '].Quantity');
                 $(this).find('.inv-total-input').attr('name',   'LRItems[' + i + '].TotalAmount');
+
+                if (isViewMode) {
+                    $(this).find('input, select').prop('readonly', true).prop('disabled', true);
+                }
             });
+
+            if (isViewMode) {
+                $('#inv-addMoreBtn, #sav-addMoreBtn').hide();
+                $('.inv-action-cell, .action-cell').hide();
+            } else {
+                $('#inv-addMoreBtn, #sav-addMoreBtn').show();
+                $('.inv-action-cell, .action-cell').show();
+            }
+
+            updateSummaryTotals();
         }
 
         /* ── Add a row ── */
@@ -334,6 +376,7 @@
             } else {
                 addRow(null);
             }
+            updateSummaryTotals();
         };
 
         /* ── Add More button ── */
@@ -369,6 +412,7 @@
 
             $(this).removeClass('inv-invalid');
             $(this).siblings('.inv-field-error').hide().text('');
+            updateSummaryTotals();
         });
 
         /* ── Auto-calculate Total = Unit × Qty; clear field errors ── */
@@ -388,6 +432,7 @@
                 $row.find('.inv-total-input').removeClass('inv-invalid');
                 $row.find('.inv-total-input').siblings('.inv-field-error').hide().text('');
             }
+            updateSummaryTotals();
         });
 
         /* ── Validate all rows ── */

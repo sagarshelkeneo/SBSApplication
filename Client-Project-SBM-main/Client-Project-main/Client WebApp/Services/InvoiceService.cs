@@ -53,5 +53,10 @@ namespace Client_WebApp.Services
             return _repository.GetInvoicesTransactionDetailsAsync(invoiceID, id);
         }
 
+        public Task<List<InvoiceDetailsAsPerContractorDto>> GetInvoiceAsPerContractorAsync(
+            int? invoiceId, int? subContractorId, DateTime? paymentDate, DateTime? fromDate, DateTime? toDate, bool isLeviApplicable = false)
+        {
+            return _repository.GetInvoiceAsPerContractorAsync(invoiceId, subContractorId, paymentDate, fromDate, toDate, isLeviApplicable);
+        }
     }
 }

@@ -335,9 +335,23 @@ namespace Client.Persistence.Repositories
             return new List<InvoiceTransactionDetailsDto>();
         }
 
+        public async Task<List<InvoiceDetailsAsPerContractorDto>> GetInvoiceAsPerContractorAsync(
+            int? invoiceId, int? subContractorId, DateTime? paymentDate, DateTime? fromDate, DateTime? toDate, bool isLeviApplicable = false)
+        {
+            var param = new DynamicParameters();
+            param.Add("@P_InvoiceId", invoiceId);
+            param.Add("@P_SubContractorId", subContractorId);
+            param.Add("@P_PaymentDate", paymentDate);
+            param.Add("@P_FromDate", fromDate);
+            param.Add("@P_ToDate", toDate);
+            param.Add("@P_IsLeviApplicable", isLeviApplicable);
 
-
-
+            var result = await _db.QueryAsync<InvoiceDetailsAsPerContractorDto>(
+                "usp_sbs_invoiceDetails_get_InvoiceAsPerContrator",
+                param,
+                commandType: CommandType.StoredProcedure
+            );
+            return result.ToList();
+        }
     }
-
 }

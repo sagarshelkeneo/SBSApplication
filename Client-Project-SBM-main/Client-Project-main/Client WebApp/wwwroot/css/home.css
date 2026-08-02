@@ -259,9 +259,11 @@
     color: #e11d48 !important;
 }
 
-.card-desc {
+.card-desc,
+.card-info p,
+.report-card p {
     font-size: 0.85rem !important;
-    color: #64748b !important;
+    color: #7191c0 !important;
     line-height: 1.45;
     margin-bottom: 0;
 }

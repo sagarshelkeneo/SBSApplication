@@ -633,6 +633,60 @@ namespace Client.MVC.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetInvoices(
+            int? invoiceId,
+            int? subContractorId,
+            DateTime? paymentDate,
+            DateTime? fromDate,
+            DateTime? toDate,
+            bool isLeviApplicable = false)
+        {
+            try
+            {
+                var invoices = await _service.GetInvoiceAsPerContractorAsync(
+                    invoiceId,
+                    subContractorId,
+                    paymentDate,
+                    fromDate,
+                    toDate,
+                    isLeviApplicable
+                );
 
+                var webInvoices = invoices.Select(i => new Client_WebApp.Models.InvoiceDetailsDto
+                {
+                    Id = i.R_id,
+                    InvoiceNo = i.R_invoiceNo,
+                    CompanyId = i.R_companyId,
+                    SubContractorId = i.R_subcontractorId,
+                    SubContractorName = i.R_subcontractorName,
+                    ProductName = i.R_productName,
+                    UnitPrice = i.R_unitPrice,
+                    UnitAmount = i.R_unitAmount,
+                    InvoiceDate = i.R_invoiceDate,
+                    Status = i.R_status,
+                    Quantity = i.R_quantity,
+                    TotalAmount = i.R_totalAmount,
+                    CommissionPercentage = i.R_commissionPercentage,
+                    CommissionAmount = i.R_commissionAmount,
+                    InvoiceType = i.R_invoiceType,
+                    GroupNumber = i.R_GroupNumber,
+                    LRNumber = i.R_LRNumber,
+                    VehicleNumber = i.R_VehicleNumber,
+                    IsLeviApplicable = i.R_IsLeviApplicable,
+                    Levi = i.R_Levi,
+                    DocketNumber = i.R_DocketNumber,
+                    TrollyQuantity = i.R_TrollyQuantity,
+                    TrollyAmount = i.R_TrollyAmount,
+                }).ToList();
+
+
+                return Json(new { success = true, data = webInvoices });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
     }
 }

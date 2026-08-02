@@ -339,6 +339,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        if (typeof $.validator !== 'undefined') {
+            $.validator.setDefaults({
+                ignore: ":hidden, .select2-search__field",
+                onkeyup: false,
+                onclick: false,
+                onfocusout: false
+            });
+        }
+    </script>
 
     <!-- Load Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>

@@ -16,10 +16,6 @@ namespace Client.Application.Interfaces
         Task<List<InvoiceDetailsDto>> DeleteInvoiceAsync(int id, int updatedBy, int companyId, bool isLeviApplicable);
         Task<List<InvoiceDetailsDto>> GetInvoicesAsync(bool IsLeviApplicable, int companyId, int? id = null);
         Task<List<InvoiceTransactionDetailsDto>> GetInvoicesTransactionDetailsAsync(int invoiceID, int? id = null);
-        Task<List<InvoiceDetailsDto>> DeleteInvoiceAsync(int id, int updatedBy,int companyId, bool isLeviApplicable);
-
-
-        Task<List<InvoiceDetailsDto>> GetInvoicesAsync(bool IsLeviApplicable, int companyId,int? id = null);
         Task<List<InvoiceDetailsAsPerContractorDto>> GetInvoiceAsPerContractorAsync(
             int? invoiceId, int? subContractorId, DateTime? paymentDate, DateTime? fromDate, DateTime? toDate, bool isLeviApplicable = false);
     }

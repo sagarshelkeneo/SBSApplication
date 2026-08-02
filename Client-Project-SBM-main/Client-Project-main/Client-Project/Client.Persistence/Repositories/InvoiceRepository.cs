@@ -240,6 +240,32 @@ namespace Client.Persistence.Repositories
 
         }
 
+        public async Task<List<InvoiceTransactionDetailsDto>> GetInvoicesTransactionDetailsAsync(int invoiceID, int? id = null)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@P_id", id);
+                parameters.Add("@P_invoiceID", invoiceID);
+
+                var result = await _db.QueryAsync<InvoiceTransactionDetailsDto>(
+                    "usp_sbs_InvoiceTransactionDetails_get",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                if (result != null && result.Any())
+                {
+                    return result.ToList();
+                }
+            }
+            catch
+            {
+                // SP missing or execution error fallback
+            }
+            return new List<InvoiceTransactionDetailsDto>();
+        }
+
 
 
 

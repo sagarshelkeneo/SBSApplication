@@ -167,6 +167,9 @@
         // Set modal mode: add / edit / view
         function setModalMode(mode) {
             resetForm('#invoiceForm');
+            if (typeof window.populateAmountDetails === 'function') {
+                window.populateAmountDetails([]);
+            }
             const modalLabel = document.getElementById("invoiceModalLabel");
             modalLabel.innerText = mode === 'add' ? 'Add Booking' : (mode === 'edit' ? 'Edit Booking' : 'View Booking');
 
@@ -178,6 +181,23 @@
                 $("#TotalAmount").prop("readonly", true);
                 $("#saveButton").show();
             }
+        }
+
+        function loadInvoiceTransactionDetails(invoiceId) {
+            $.ajax({
+                url: '/invoice/getInvoiceTransactionDetailsData',
+                type: 'GET',
+                data: { InvoiceId: invoiceId, id: 0 },
+                success: function (res) {
+                    var items = (res && res.success && res.data) ? res.data : (Array.isArray(res) ? res : []);
+                    if (typeof window.populateAmountDetails === 'function') {
+                        window.populateAmountDetails(items);
+                    }
+                },
+                error: function () {
+                    console.error("Failed to load invoice transaction details.");
+                }
+            });
         }
 
         // Get Invoice
@@ -209,6 +229,9 @@
                     } else {
                         $("#invoiceTypeBalance").prop("checked", true);
                     }
+
+                    // Fetch and populate transaction details in Amount Details table
+                    loadInvoiceTransactionDetails(data.id);
 
                     // Show modal
                     $('#invoice-modal').modal('show');

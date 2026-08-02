@@ -43,10 +43,10 @@ namespace Client_WebApp.Services
             return _repository.DeleteInvoiceAsync(id, updatedBy, companyId, isLeviApplicable);
         }
 
-        //public Task<List<ProductDto>> GetProductsAsync(int companyId, int? id = null)
-        //{
-        //    string? search = null;
-        //    return _productRepository.GetProductsAsync(companyId, id, search);
-        //}
+        public Task<List<InvoiceTransactionDetailsDto>> GetInvoicesTransactionDetailsAsync(int invoiceID, int? id = null)
+        {
+            return _repository.GetInvoicesTransactionDetailsAsync(invoiceID, id);
+        }
+
     }
 }

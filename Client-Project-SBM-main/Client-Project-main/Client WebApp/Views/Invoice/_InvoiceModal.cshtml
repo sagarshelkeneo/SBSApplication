@@ -146,13 +146,7 @@
                             <span asp-validation-for="SubcontractorId" class="text-danger small"></span>
                         </div>
 
-                        <div class="col-md-6">
-                            <label asp-for="ProductId" class="form-label fw-semibold"></label>
-                            <select asp-for="ProductId" class="form-select" asp-items="Model.ProductList" id="ProductId">
-                                <option value="">--Select--</option>
-                            </select>
-                            <span asp-validation-for="ProductId" class="text-danger small"></span>
-                        </div>
+                        <input type="hidden" asp-for="ProductId" id="ProductId" value="0" />
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Discount</label>
@@ -205,6 +199,7 @@
                             <thead>
                                 <tr>
                                     <th class="inv-row-num-cell">#</th>
+                                    <th>Product <span class="text-danger">*</span></th>
                                     <th>LR Number</th>
                                     <th>Unit Amount <span class="text-danger">*</span></th>
                                     <th>Quantity <span class="text-danger">*</span></th>
@@ -244,20 +239,38 @@
 
     waitForJQuery(function ($) {
 
+        var productList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.ProductList ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>()));
+        var productPrices = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ProductPrices ?? new Dictionary<int, decimal>()));
+
         var rowCount = 0;
 
         /* ── Build a table row ── */
         function buildRow(data) {
             rowCount++;
-            var id    = rowCount;
-            var lr    = (data && data.lrNumber)    ? data.lrNumber    : '';
-            var unit  = (data && data.unitAmount)  ? data.unitAmount  : '';
-            var qty   = (data && data.quantity)    ? data.quantity    : '';
-            var total = (data && data.totalAmount) ? data.totalAmount : '';
+            var id        = rowCount;
+            var productId = (data && (data.productId || data.ProductId || data.productid)) ? (data.productId || data.ProductId || data.productid) : '';
+            var lr        = (data && (data.lrNumber || data.LRNumber || data.lRNumber)) ? (data.lrNumber || data.LRNumber || data.lRNumber) : '';
+            var unit      = (data && data.unitAmount)  ? data.unitAmount  : '';
+            var qty       = (data && data.quantity)    ? data.quantity    : '';
+            var total     = (data && data.totalAmount) ? data.totalAmount : '';
+
+            var optionsHtml = '<option value="">--Select--</option>';
+            if (Array.isArray(productList)) {
+                productList.forEach(function (p) {
+                    var sel = (productId && productId.toString() === p.Value.toString()) ? 'selected' : '';
+                    optionsHtml += '<option value="' + p.Value + '" ' + sel + '>' + p.Text + '</option>';
+                });
+            }
 
             return $(
                 '<tr id="inv-row-' + id + '" data-row-id="' + id + '">' +
                   '<td class="inv-row-num-cell inv-row-num"></td>' +
+                  '<td>' +
+                    '<select class="form-select form-control-sm inv-product-input">' +
+                      optionsHtml +
+                    '</select>' +
+                    '<span class="inv-field-error" style="display:none;"></span>' +
+                  '</td>' +
                   '<td>' +
                     '<input type="text" class="form-control form-control-sm inv-lr-input" placeholder="LR Number" value="' + lr + '" />' +
                   '</td>' +
@@ -275,7 +288,7 @@
                   '</td>' +
                   '<td class="inv-action-cell" style="text-align:center;vertical-align:middle;">' +
                     '<button type="button" class="inv-delete-btn" title="Remove this row">' +
-                      '<i class="fa fa-trash"></i>' +
+                      '<i class="fa fa-trash text-danger"></i>' +
                     '</button>' +
                   '</td>' +
                 '</tr>'
@@ -286,10 +299,11 @@
         function refreshRows() {
             $('#inv-amountBody tr').each(function (i) {
                 $(this).find('.inv-row-num').text(i + 1);
-                $(this).find('.inv-lr-input').attr('name',    'LRItems[' + i + '].LRNumber');
-                $(this).find('.inv-unit-input').attr('name',  'LRItems[' + i + '].UnitAmount');
-                $(this).find('.inv-qty-input').attr('name',   'LRItems[' + i + '].Quantity');
-                $(this).find('.inv-total-input').attr('name', 'LRItems[' + i + '].TotalAmount');
+                $(this).find('.inv-product-input').attr('name', 'LRItems[' + i + '].ProductId');
+                $(this).find('.inv-lr-input').attr('name',      'LRItems[' + i + '].LRNumber');
+                $(this).find('.inv-unit-input').attr('name',    'LRItems[' + i + '].UnitAmount');
+                $(this).find('.inv-qty-input').attr('name',     'LRItems[' + i + '].Quantity');
+                $(this).find('.inv-total-input').attr('name',   'LRItems[' + i + '].TotalAmount');
             });
         }
 
@@ -302,6 +316,25 @@
 
         /* ── Init: first row ── */
         addRow(null);
+
+        /* ── Populate rows dynamically ── */
+        window.populateAmountDetails = function (items) {
+            $('#inv-amountBody').empty();
+            rowCount = 0;
+            if (items && items.length > 0) {
+                items.forEach(function (item) {
+                    addRow({
+                        productId: item.productId || item.ProductId || item.productid || item.r_productId || item.R_productId || 0,
+                        lrNumber: item.lrNumber || item.LRNumber || item.r_LRNumber || item.R_LRNumber || '',
+                        unitAmount: item.unitAmount || item.R_unitAmount || '',
+                        quantity: item.quantity || item.R_quantity || '',
+                        totalAmount: item.totalAmount || item.R_totalAmount || ''
+                    });
+                });
+            } else {
+                addRow(null);
+            }
+        };
 
         /* ── Add More button ── */
         $('#inv-addMoreBtn').on('click', function () {
@@ -318,6 +351,24 @@
             }
             $(this).closest('tr').remove();
             refreshRows();
+        });
+
+        /* ── Product change handler: auto fill unit amount ── */
+        $(document).on('change', '.inv-product-input', function () {
+            var $row = $(this).closest('tr');
+            var selectedProductId = $(this).val();
+
+            if (selectedProductId && productPrices && productPrices[selectedProductId]) {
+                $row.find('.inv-unit-input').val(productPrices[selectedProductId]);
+            }
+
+            var unit = parseFloat($row.find('.inv-unit-input').val()) || 0;
+            var qty  = parseFloat($row.find('.inv-qty-input').val())  || 0;
+            var total = unit * qty;
+            $row.find('.inv-total-input').val(total > 0 ? total.toFixed(2) : '');
+
+            $(this).removeClass('inv-invalid');
+            $(this).siblings('.inv-field-error').hide().text('');
         });
 
         /* ── Auto-calculate Total = Unit × Qty; clear field errors ── */
@@ -344,20 +395,27 @@
             var isValid = true;
 
             /* Reset all row errors */
-            $('#inv-amountBody .inv-unit-input, #inv-amountBody .inv-qty-input, #inv-amountBody .inv-total-input')
+            $('#inv-amountBody .inv-product-input, #inv-amountBody .inv-unit-input, #inv-amountBody .inv-qty-input, #inv-amountBody .inv-total-input')
                 .removeClass('inv-invalid');
             $('#inv-amountBody .inv-field-error').hide().text('');
 
             $('#inv-amountBody tr').each(function () {
                 var $row  = $(this);
+                var $prod = $row.find('.inv-product-input');
                 var $unit = $row.find('.inv-unit-input');
                 var $qty  = $row.find('.inv-qty-input');
                 var $tot  = $row.find('.inv-total-input');
 
+                var prodVal = parseInt($prod.val()) || 0;
                 var unitVal = parseFloat($unit.val()) || 0;
                 var qtyVal  = parseFloat($qty.val())  || 0;
                 var totVal  = parseFloat($tot.val())  || 0;
 
+                if (!prodVal || prodVal <= 0) {
+                    $prod.addClass('inv-invalid');
+                    $prod.siblings('.inv-field-error').show().text('Required');
+                    isValid = false;
+                }
                 if (!$unit.val().trim() || unitVal <= 0) {
                     $unit.addClass('inv-invalid');
                     $unit.siblings('.inv-field-error').show().text('Required, must be > 0');
@@ -392,6 +450,7 @@
             var rows = [];
             $('#inv-amountBody tr').each(function () {
                 rows.push({
+                    productId:   $(this).find('.inv-product-input').val() || 0,
                     lrNumber:    $(this).find('.inv-lr-input').val(),
                     unitAmount:  $(this).find('.inv-unit-input').val(),
                     quantity:    $(this).find('.inv-qty-input').val(),
@@ -400,8 +459,9 @@
             });
             $('#accordionItemsJson').val(JSON.stringify(rows));
 
-            /* Map first row to legacy single-model hidden fields */
+            /* Map first row to legacy single-model fields */
             if (rows.length > 0) {
+                $('#ProductId').val(rows[0].productId);
                 $('#UnitAmount').val(rows[0].unitAmount);
                 $('#Quantity').val(rows[0].quantity);
                 $('#TotalAmount').val(rows[0].totalAmount);

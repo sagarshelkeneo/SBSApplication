@@ -36,6 +36,19 @@ namespace Client_WebApp.Models
         public int TrollyQuantity { get; set; }
         public decimal TrollyAmount { get; set; }
     }
+    public class InvoiceTransactionDetailsDto
+    {
+        public int id { get; set; }
+        public int invoiceid { get; set; }
+        public decimal unitAmount { get; set; }
+        public int quantity { get; set; }
+        public decimal totalAmount { get; set; }
+        public string LRNumber { get; set; }
+        public int productId { get; set; }
+        public string productName { get; set; }
+        public int createdBy { get; set; }
+        public string createdAt { get; set; }
+    }
 
     public class InvoiceViewModel
     {
@@ -145,6 +158,7 @@ namespace Client_WebApp.Models
     /// </summary>
     public class LRItemViewModel
     {
+        public int ProductId       { get; set; }
         public string? LRNumber    { get; set; }
         public decimal UnitAmount  { get; set; }
         public decimal Quantity    { get; set; }

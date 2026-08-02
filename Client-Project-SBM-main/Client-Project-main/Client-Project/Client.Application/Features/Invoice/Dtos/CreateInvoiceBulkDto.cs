@@ -32,6 +32,7 @@ namespace Client.Application.Features.Invoice.Dtos
     /// <summary>One row in the Amount Details table.</summary>
     public class LRItemDto
     {
+        public int      ProductId   { get; set; }
         public string?  LRNumber    { get; set; }
         public decimal  UnitAmount  { get; set; }
         public decimal  Quantity    { get; set; }

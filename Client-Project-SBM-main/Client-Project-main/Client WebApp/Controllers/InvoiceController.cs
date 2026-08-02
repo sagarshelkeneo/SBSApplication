@@ -460,14 +460,13 @@ namespace Client.MVC.Controllers
             if (model.Id > 0)
             {
                 // ── UPDATE (single record, existing behaviour) ──────────────
-                // Use first LR row if available, else fall back to top-level fields.
                 var firstItem = model.LRItems?.FirstOrDefault();
                 var updateDto = new UpdateInvoiceDto
                 {
                     Id                   = model.Id,
                     CompanyId            = CurrentCompanyId,
                     SubcontractorId      = model.SubcontractorId,
-                    ProductId            = model.ProductId,
+                    ProductId            = (firstItem != null && firstItem.ProductId > 0) ? firstItem.ProductId : model.ProductId,
                     InvoiceNo            = model.InvoiceNo,
                     InvoiceDate          = model.InvoiceDate,
                     UnitAmount           = firstItem?.UnitAmount  ?? model.UnitAmount,
@@ -503,6 +502,7 @@ namespace Client.MVC.Controllers
                     {
                         new LRItemViewModel
                         {
+                            ProductId   = model.ProductId,
                             LRNumber    = model.LRNumber,
                             UnitAmount  = model.UnitAmount,
                             Quantity    = model.Quantity,
@@ -515,7 +515,7 @@ namespace Client.MVC.Controllers
                 {
                     CompanyId            = CurrentCompanyId,
                     SubcontractorId      = model.SubcontractorId,
-                    ProductId            = model.ProductId,
+                    ProductId            = lrRows.FirstOrDefault()?.ProductId ?? model.ProductId,
                     InvoiceNo            = model.InvoiceNo,
                     InvoiceDate          = model.InvoiceDate,
                     CommissionPercentage = model.CommissionPercentage,
@@ -531,6 +531,7 @@ namespace Client.MVC.Controllers
                     TrollyAmount         = model.TrollyAmount,
                     LRItems              = lrRows.Select(item => new LRItemDto
                     {
+                        ProductId   = item.ProductId,
                         LRNumber    = item.LRNumber,
                         UnitAmount  = item.UnitAmount,
                         Quantity    = item.Quantity,
@@ -544,6 +545,44 @@ namespace Client.MVC.Controllers
             }
 
             return Json(new { success = true, message = TempData["SuccessMessage"]?.ToString() });
+        }
+
+        [HttpGet("invoice/getInvoiceTransactionDetailsData", Name = "getInvoiceTransactionDetailsData")]
+        public async Task<IActionResult> getInvoiceTransactionDetailsData(int id, int InvoiceId)
+        {
+            try
+            {
+                if (!AccessHelper.HasAccess(User, "INVOICE", "View"))
+                    return Forbid();
+
+                int companyId = CurrentCompanyId;
+                // Fetch application DTOs from service
+                List<Client.Application.Features.Invoice.Dtos.InvoiceTransactionDetailsDto> invoicesFromService =
+                    await _service.GetInvoicesTransactionDetailsAsync(InvoiceId, id > 0 ? id : null);
+
+                
+                // Map to WebApp DTO
+                var webInvoices = invoicesFromService.Select(i => new Client_WebApp.Models.InvoiceTransactionDetailsDto
+                {
+                    id = i.R_id,
+                    invoiceid = i.R_invoiceid,
+                    productId = i.R_productId,
+                    productName = i.R_productName,
+                    unitAmount = i.R_unitAmount,
+                    quantity = i.R_quantity,
+                    totalAmount = i.R_totalAmount,
+                    LRNumber = i.R_LRNumber,
+                    createdBy = i.createdBy,
+                    createdAt = i.createdAt
+                }).ToList();
+
+
+                return Json(new { success = true, data = webInvoices });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message, data = new List<Client_WebApp.Models.InvoiceTransactionDetailsDto>() });
+            }
         }
 
 

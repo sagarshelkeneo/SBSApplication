@@ -215,8 +215,9 @@ GO
 -- Contractor Report
 -- SELECT CreatedAt AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time' AS LocalTime, *  FROM SBS_InvoiceDetails
 -- ======================================
--- usp_PaidBalancePaymentReport NULL,NULL,NULL,NULL
-CREATE   PROCEDURE [SBSAppDBUser].[usp_PaidBalancePaymentReport]
+-- usp_PaidBalancePaymentReport NULL,NULL,NULL,NULL, 0
+-- usp_PaidBalancePaymentReport NULL,NULL,NULL,NULL, 1
+CREATE   PROCEDURE usp_PaidBalancePaymentReport
     @p_subcontractorName VARCHAR(255) = NULL,
     @p_bankName VARCHAR(255) = NULL,
     @p_fromDate DATE,
@@ -231,13 +232,14 @@ BEGIN
             inv.invoiceNo ReceiptNumber,
             inv.LRNumber,
             sc.name AS SubContractor,
+            inv.VehicleNumber,
             -- bm.bankName AS BankName,
             inv.unitAmount as 'TotalTypeRate',
             
             --inv.totalAmount,
             --inv.quantity
 
-            SUM(inv.totalAmount) AS InvoiceAmount,
+            SUM(inv.totalAmount - ISNULL(inv.commissionPercentage,0)) AS InvoiceAmount,
             (CASE WHEN inv.ProductId = 1 THEN CAST(inv.quantity AS VARCHAR(10)) ELSE '-' END) AS Box,
             (CASE WHEN inv.ProductId = 2 THEN CAST(inv.quantity AS VARCHAR(10)) ELSE '-' END) AS Peti,
             (CASE WHEN inv.ProductId = 3 THEN CAST(inv.quantity AS VARCHAR(10)) ELSE '-' END) AS Motors
@@ -251,13 +253,18 @@ BEGIN
             -- AND pd.isDeleted = 0 
             AND inv.invoiceDate BETWEEN ISNULL(@p_fromDate,'01-01-1900') AND ISNULL(@p_toDate,GETDATE()) 
             AND (sc.name LIKE '%' + ISNULL(@p_subcontractorName,'') + '%') 
-            -- AND (bm.bankName LIKE '%' + ISNULL(@p_bankName,'') + '%')
+            AND (
+                (inv.VehicleNumber LIKE '%' + ISNULL(@p_bankName,'') + '%')
+                OR (inv.LRNumber LIKE '%' + ISNULL(@p_bankName,'') + '%')
+                OR (inv.invoiceNo LIKE '%' + ISNULL(@p_bankName,'') + '%')
+                )
 
         GROUP BY 
         inv.invoiceDate,
             inv.invoiceNo,
             inv.LRNumber,
             sc.name,
+            inv.VehicleNumber,
             inv.unitAmount,
             inv.ProductId,
             inv.quantity
@@ -269,6 +276,9 @@ BEGIN
     END CATCH
 END
 GO
+
+
+
 /****** Object:  StoredProcedure [SBSAppDBUser].[usp_ProductWisePayment]    Script Date: 2026-05-25 3:11:29 PM ******/
 SET ANSI_NULLS ON
 GO
@@ -2661,15 +2671,22 @@ GO
 -- SP: UnPaidBalancePaymentReport (Updated)
 -- ======================================
 -- EXEC usp_UnPaidBalancePaymentReport NULL, NULL, NULL, 0
-CREATE   PROCEDURE usp_UnPaidBalancePaymentReport
-    @p_subcontractorName VARCHAR(255) = NULL,
+
+CREATE PROCEDURE usp_UnPaidBalancePaymentReport
+-- DECLARE    
+    @p_subcontractorName VARCHAR(255) = NULL, -- 'jain', --NULL,
     @p_fromDate DATE,
     @p_toDate DATE,
     @p_isLevhiApplicable BIT = 0
-AS
+ AS
 BEGIN
     BEGIN TRY
     
+    DECLARE @CashBankMasterID INT = 0
+    SET @CashBankMasterID = (SELECT TOP 1 ID 
+                            FROM SBS_BankMaster WHERE isDeleted = 0 AND TRIM(BankName) = 'CASH')
+
+
         SELECT      
             inv.invoiceDate AS InvoiceDate,
             inv.invoiceNo + ISNULL((' (' + sc.name + ')'),'') ReceiptNumber,
@@ -2678,9 +2695,15 @@ BEGIN
             AVG(inv.quantity) quantity,
             inv.unitAmount,
             FORMAT(AVG(inv.commissionAmount),'N2') commissionAmount,
-            FORMAT(AVG(inv.totalAmount),'N2') AS InvoiceAmount,
-            ISNULL((CASE WHEN pd.invoiceId IS NOT NULL THEN CAST(FORMAT(SUM(pd.amountPaid),'N2') AS VARCHAR(10)) ELSE '0' END),0) AS Bank,
-            ISNULL((CASE WHEN inv.paymentMode = 'CASH' THEN CAST(FORMAT(AVG(inv.totalAmount),'N2') AS VARCHAR(20)) ELSE '0' END),0) AS Cash,
+            FORMAT(AVG(inv.totalAmount - ISNULL(inv.commissionPercentage,0)),'N2') AS InvoiceAmount,
+            pd.invoiceId,
+            ISNULL((CASE 
+                    WHEN (pd.invoiceId IS NOT NULL AND pd.bankId != @CashBankMasterID)  THEN CAST(FORMAT(SUM(pd.amountPaid),'N2') AS VARCHAR(10)) 
+                    ELSE '0' END),0) AS Bank,
+            ISNULL((CASE WHEN inv.paymentMode = 'CASH' THEN CAST(FORMAT(AVG(inv.totalAmount),'N2') AS VARCHAR(20))
+                         WHEN inv.paymentMode = 'BALANCE' AND pd.bankId = @CashBankMasterID 
+                                THEN CAST(FORMAT(AVG(pd.amountPaid),'N2') AS VARCHAR(20))
+                         ELSE '0' END),0) AS Cash,
             
             ISNULL((CASE WHEN inv.paymentMode = 'CASH' THEN '0' 
                 WHEN inv.paymentMode = 'Balance' AND pd.invoiceId IS NOT NULL AND (CAST((AVG(inv.totalAmount) - ISNULL(SUM(pd.amountPaid),0)) AS DECIMAL(18,2)) <= 0) 
@@ -2691,10 +2714,13 @@ BEGIN
         JOIN sbs_productMaster p ON inv.productId = p.id
         LEFT JOIN 
         ( SELECT pdd.id, ISNULL(pdd.invoiceId, pdi.invoiceId) invoiceId, 
-            (CASE WHEN (ISNULL(pdd.invoiceId,0) = 0) THEN pdi.amountPaid ELSE pdi.amountPaid END) amountPaid
-        FROM sbs_paymentDetails pdd 
+            (CASE WHEN (ISNULL(pdd.invoiceId,0) = 0) THEN pdi.amountPaid 
+              --   WHEN pdd.bankId = @CashBankMasterID THEN 0 
+            ELSE pdd.amountPaid END) amountPaid, pdd.bankId
+        FROM sbs_paymentDetails pdd
         LEFT JOIN sbs_PaymentDetailsInvoices pdi ON pdd.ID = pdi.PaymentId 
-        AND pdd.IsDeleted = 0 AND pdi.IsDeleted = 0
+        WHERE pdd.IsDeleted = 0 
+        AND ISNULL(pdi.IsDeleted,0) = 0
 
         ) pd  ON inv.id = pd.invoiceId
 
@@ -2707,6 +2733,8 @@ BEGIN
         GROUP BY 
         inv.invoiceDate,
             inv.invoiceNo,
+            pd.id,
+            pd.bankId,
             p.description,
             sc.name,
             inv.unitAmount,

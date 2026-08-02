@@ -44,12 +44,24 @@
         </h4>
 
 
-        <ul class="navbar-nav ms-auto me-3 me-lg-4">
+        <ul class="navbar-nav ms-auto me-3 me-lg-4 d-flex align-items-center gap-3">
+            <li class="nav-item">
+                <div class="user-navbar-card d-flex align-items-center">
+                    <div class="user-nav-avatar me-2">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span class="user-status-dot"></span>
+                    </div>
+                    <div class="user-nav-details d-flex flex-column text-start me-1">
+                        <span class="user-nav-subtext">Logged in as</span>
+                        <span class="user-nav-username text-uppercase">@username</span>
+                    </div>
+                </div>
+            </li>
             <li class="nav-item">
                 <form asp-controller="Login" asp-action="Logout" method="post" class="d-inline">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-outline-danger btn-sm">
-                        <i class="fas fa-sign-out-alt"></i> Logout
+                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold">
+                        <i class="fas fa-sign-out-alt me-1"></i> Logout
                     </button>
                 </form>
             </li>
@@ -197,10 +209,7 @@
                     </div>
                 </div>
 
-                <div class="sb-sidenav-footer">
-                    <div class="small">Logged in as:</div>
-                    <div class="fw-bold text-light text-uppercase">@username</div>
-                </div>
+
             </nav>
         </div>
 

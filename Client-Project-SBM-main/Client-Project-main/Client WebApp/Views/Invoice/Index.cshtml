@@ -70,6 +70,7 @@
                             <th>Product</th>
                             <th>Type</th>
                             <th>Labour Charge</th>
+                            <th>Discount</th>
                             <th>Total Amount</th>
                             <th class="text-center">Actions</th>
                         </tr>
@@ -87,6 +88,7 @@
                                     <td>@invoice.ProductName</td>
                                     <td>@invoice.InvoiceType</td>
                                     <td>@invoice.CommissionAmount</td>
+                                    <td>@invoice.CommissionPercentage</td>
                                     <td>@invoice.TotalAmount</td>
                                     <td>
                                         <div class="action-icons">
@@ -99,13 +101,27 @@
                                 </tr>
                             }
                         }
-                        else
-                        {
-                            <tr>
-                                <td colspan="8" class="text-center fs-5">No Records</td>
-                            </tr>
-                        }
                     </tbody>
+                    @if (Model.Invoices != null && Model.Invoices.Any())
+                    {
+                        decimal totalLabourCharge = Model.Invoices.Sum(i => i.CommissionAmount);
+                        decimal totalCommissionPercentage = Model.Invoices.Sum(i => i.CommissionPercentage);
+                        decimal totalTotalAmount = Model.Invoices.Sum(i => i.TotalAmount);
+                        <tfoot>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td class="text-end fw-bold">Total</td>
+                                <td class="fw-bold">@totalLabourCharge.ToString("N2")</td>
+                                <td class="fw-bold">@totalCommissionPercentage.ToString("N2")</td>
+                                <td class="text-end fw-bold">@totalTotalAmount.ToString("N2")</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    }
                 </table>
             </div>
         </div>
@@ -140,7 +156,7 @@
                     { orderable: false, targets: -1 },
                     { type: 'date', targets: 1 }
                 ],
-                columnsSearchable: [false, true, true, true, true, true, true, true, false],
+                columnsSearchable: [false, true, true, true, true, true, true, true, true, false],
                 order: [[1, 'desc']],
                 actionCallbacks: {
                     '.fa-eye': viewInvoice,
@@ -157,7 +173,7 @@
             var selectedProductId = $(this).val();
             if (selectedProductId && productPrices[selectedProductId]) {
                 $('#UnitAmount').val(productPrices[selectedProductId]);
-                calculateTotal(); // optional: update total amount
+                //calculateTotal(); // optional: update total amount
             } else {
                 $('#UnitAmount').val('');
                 $('#TotalAmount').val('');
@@ -340,26 +356,26 @@
         });
 
         // Calculate CommissionAmount dynamically
-        $('#CommissionPercentage, #TotalAmount').on('input', updateCommission);
-        function updateCommission() {
-            let total = parseFloat($('#TotalAmount').val()) || 0;
-            let percent = parseFloat($('#CommissionPercentage').val()) || 0;
-            $('#CommissionAmount').val(Math.round(total * percent / 100));
-        }
+        //$('#CommissionPercentage, #TotalAmount').on('input', updateCommission);
+        // function updateCommission() {
+        //     let total = parseFloat($('#TotalAmount').val()) || 0;
+        //     let percent = parseFloat($('#CommissionPercentage').val()) || 0;
+        //     $('#CommissionAmount').val(Math.round(total * percent / 100));
+        // }
 
-        $('#Quantity, #CommissionPercentage').on('input', function () {
-            calculateTotal();
-        });
+        // $('#Quantity, #CommissionPercentage').on('input', function () {
+        //     calculateTotal();
+        // });
 
-        function calculateTotal() {
-            var unitAmount = parseFloat($('#UnitAmount').val()) || 0;
-            var quantity = parseFloat($('#Quantity').val()) || 0;
-            var total = unitAmount * quantity;
-            $('#TotalAmount').val(total.toFixed(2));
+        // function calculateTotal() {
+        //     var unitAmount = parseFloat($('#UnitAmount').val()) || 0;
+        //     var quantity = parseFloat($('#Quantity').val()) || 0;
+        //     var total = unitAmount * quantity;
+        //     $('#TotalAmount').val(total.toFixed(2));
 
-            var commissionPercentage = parseFloat($('#CommissionPercentage').val()) || 0;
-            var commissionAmount = (total * commissionPercentage) / 100;
-            $('#CommissionAmount').val(commissionAmount.toFixed(2));
-        }
+        //     var commissionPercentage = parseFloat($('#CommissionPercentage').val()) || 0;
+        //     var commissionAmount = (total * commissionPercentage) / 100;
+        //     $('#CommissionAmount').val(commissionAmount.toFixed(2));
+        // }
     </script>
 }

@@ -1,4 +1,4 @@
-﻿@model Client_WebApp.Models.PaymentIndexViewModel
+@model Client_WebApp.Models.PaymentIndexViewModel
 @{
     ViewData["Title"] = "Bank Payments";
 }
@@ -78,35 +78,54 @@
                             <th>Payment Date</th>
                             <th>Invoice No.</th>
                             <th>Sub Contractor</th>
-                            <th>Amount Paid</th>
                             <th>Bank Name</th>
+                            <th>Amount Paid</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var payment in Model.Payments)
+                        @if (Model.Payments != null && Model.Payments.Any())
                         {
-                            <tr data-payment-id="@payment.Id">
-                                <td>@payment.Id</td>
-                                <td class="text-end">
-                                    @(payment.DurationType == "day"
-                                        ? payment.PaymentDate?.ToString("dd-MMM-yy")
-                                        : $"{payment.FromDate?.ToString("dd-MMM-yy")} - {payment.ToDate?.ToString("dd-MMM-yy")}")
-                                </td>
-                                <td>@payment.InvoiceNo</td>
-                                <td>@payment.SubContractorName</td>
-                                 <td>@payment.AmountPaid.ToString("N2")</td>
-                                <td>@(string.IsNullOrEmpty(payment.BankName) ? "-" : payment.BankName)</td>
-                                <td>
-                                    <div class="action-icons">
-                                        <i class="fa-regular fa-eye cursor-pointer text-success"></i>
-                                        <i class="fa-regular fa-pen-to-square cursor-pointer"></i>
-                                        <i class="fa-solid fa-trash cursor-pointer text-danger"></i>
-                                    </div>
-                                </td>
-                            </tr>
+                            foreach (var payment in Model.Payments)
+                            {
+                                <tr data-payment-id="@payment.Id">
+                                    <td>@payment.Id</td>
+                                    <td class="text-end">
+                                        @(payment.DurationType == "day"
+                                            ? payment.PaymentDate?.ToString("dd-MMM-yy")
+                                            : $"{payment.FromDate?.ToString("dd-MMM-yy")} - {payment.ToDate?.ToString("dd-MMM-yy")}")
+                                    </td>
+                                    <td>@payment.InvoiceNo</td>
+                                    <td>@payment.SubContractorName</td>
+                                    <td>@(string.IsNullOrEmpty(payment.BankName) ? "-" : payment.BankName)</td>
+                                    <td>@payment.AmountPaid.ToString("N2")</td>
+                                    <td>
+                                        <div class="action-icons">
+                                            <i class="fa-regular fa-eye cursor-pointer text-success"></i>
+                                            <i class="fa-regular fa-pen-to-square cursor-pointer"></i>
+                                            <i class="fa-solid fa-trash cursor-pointer text-danger"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
                         }
                     </tbody>
+                    @if (Model.Payments != null && Model.Payments.Any())
+                    {
+                        decimal totalAmountPaid = Model.Payments.Sum(x => x.AmountPaid);
+
+                        <tfoot>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td class="text-end fw-bold">Total</td>
+                                <td class="text-end fw-bold">@totalAmountPaid.ToString("N2")</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    }
                 </table>
             </div>
         </div>

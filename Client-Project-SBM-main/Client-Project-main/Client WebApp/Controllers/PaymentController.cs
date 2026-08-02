@@ -34,7 +34,7 @@ namespace Client_WebApp.MVC.Controllers
             int companyId = CurrentCompanyId;
 
             // Get all payments
-            var payments = await _service.GetPaymentsAsync(companyId);
+            var payments = await _service.GetPaymentsAsync(companyId, 0, bankName);
 
             // Apply filters
             if (!string.IsNullOrEmpty(durationType))
@@ -45,8 +45,11 @@ namespace Client_WebApp.MVC.Controllers
                     payments = payments.Where(p => p.R_fromDate >= fromDate.Value.Date && p.R_toDate <= toDate.Value.Date).ToList();
             }
 
-            if (!string.IsNullOrWhiteSpace(bankName))
-                payments = payments.Where(p => p.R_bankName != null && p.R_bankName.Contains(bankName.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+            //if (!string.IsNullOrWhiteSpace(bankName))
+            //    payments = payments.Where(p => (p.R_bankName != null && p.R_bankName.Contains(bankName.Trim(), StringComparison.OrdinalIgnoreCase))
+            //                                || (p.R_SubContractorName != null && p.R_SubContractorName.Contains(bankName.Trim(), StringComparison.OrdinalIgnoreCase))
+                
+            //    ).ToList();
 
             // Get invoices and banks for dropdowns
             var invoices = await _invoiceService.GetInvoicesAsync(false, companyId, null);
@@ -170,7 +173,7 @@ namespace Client_WebApp.MVC.Controllers
 
             int companyId = CurrentCompanyId;
 
-            var payment = (await _service.GetPaymentsAsync(companyId, id)).FirstOrDefault();
+            var payment = (await _service.GetPaymentsAsync(companyId, id, string.Empty)).FirstOrDefault();
             if (payment == null)
                 return NotFound();
 

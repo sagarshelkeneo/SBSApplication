@@ -14,9 +14,9 @@ namespace Client_WebApp.Services
             _repository = repository;
         }
 
-        public Task<List<PaymentDetailsDto>> GetPaymentsAsync(int companyId, int? id = null)
+        public Task<List<PaymentDetailsDto>> GetPaymentsAsync(int companyId, int? id = null, string? search = null)
         {
-            return _repository.GetPaymentsAsync(companyId, id);
+            return _repository.GetPaymentsAsync(companyId, id, search);
         }
 
         public Task<List<PaymentDetailsDto>> CreatePaymentAsync(CreatePaymentDto dto)

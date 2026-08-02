@@ -8,6 +8,6 @@ using MediatR;
 
 namespace Client.Application.Features.Payment.Queries
 {
-    public record GetPaymentDetailsQuery(int companyId,int? Id) : IRequest<List<PaymentDetailsDto>>;
+    public record GetPaymentDetailsQuery(int companyId,int? Id, string searchText) : IRequest<List<PaymentDetailsDto>>;
 
 }

@@ -24,7 +24,7 @@ namespace Client.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPayments([FromQuery]int companyId,int? id)
         {
-            var result = await _mediator.Send(new GetPaymentDetailsQuery(companyId,id));
+            var result = await _mediator.Send(new GetPaymentDetailsQuery(companyId,id,string.Empty));
             return Ok(result);
         }
 

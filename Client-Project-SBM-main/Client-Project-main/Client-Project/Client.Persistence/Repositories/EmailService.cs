@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -22,13 +22,19 @@ namespace Client.Persistence.Repositories
 
         public async Task SendEmailAsync(string to, string subject, string body)
         {
+            await SendEmailAsync(to, subject, body, null);
+        }
+
+        public async Task SendEmailAsync(string to, string subject, string body, IEnumerable<(string fileName, byte[] content)>? attachments)
+        {
             using var client = new SmtpClient(_emailSettings.SmtpServer, _emailSettings.Port)
             {
+                UseDefaultCredentials = false,
                 Credentials = new NetworkCredential(_emailSettings.Username, _emailSettings.Password),
                 EnableSsl = _emailSettings.EnableSsl
             };
 
-            var mailMessage = new MailMessage
+            using var mailMessage = new MailMessage
             {
                 From = new MailAddress(_emailSettings.SenderEmail, _emailSettings.SenderName),
                 Subject = subject,
@@ -37,6 +43,19 @@ namespace Client.Persistence.Repositories
             };
 
             mailMessage.To.Add(to);
+
+            if (attachments != null)
+            {
+                foreach (var (fileName, content) in attachments)
+                {
+                    if (content != null && content.Length > 0)
+                    {
+                        var stream = new System.IO.MemoryStream(content);
+                        mailMessage.Attachments.Add(new Attachment(stream, fileName, "text/csv"));
+                    }
+                }
+            }
+
             await client.SendMailAsync(mailMessage);
         }
     }

@@ -7,10 +7,11 @@
     var companyId = ViewBag.CompanyId ?? 0;
 
     // Access control checks
+    bool CheckSuperAdminAccess() => userRole == "Super Admin";
     bool CheckConfigAccess() => userRole == "Super Admin" || userRole == "config_user";
     bool CheckMasterAccess() => userRole == "Super Admin" || userRole == "Admin" || userRole == "Manager";
-    bool CheckNormalAccess() => userRole == "Super Admin" || userRole == "Admin" || userRole == "Manager" || userRole == "data_user";
-    bool CheckReportAccess() => userRole == "Super Admin" || userRole == "Admin" || userRole == "Manager" || userRole == "report_user";
+    bool CheckNormalAccess() => userRole == "Super Admin" || userRole == "Admin" || userRole == "Manager" || userRole == "data_user" || userRole == "User";
+    bool CheckReportAccess() => userRole == "Super Admin" || userRole == "Admin" || userRole == "Manager" || userRole == "data_user" || userRole == "report_user";
 }
 
 
@@ -37,42 +38,74 @@
 
 <body class="sb-nav-fixed">
     <!-- Top Navbar -->
-    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-        <a class="navbar-brand ps-3 d-flex align-items-center gap-2" href="@Url.Action("Index", "Home")">
-            <img src="~/logo-icon.svg" alt="SBS Logo" style="height: 32px; width: 32px; object-fit: contain;" class="d-inline-block" />
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark px-2 px-sm-3">
+        <!-- Application Logo & Short/Full Name -->
+        <a class="navbar-brand me-1 me-sm-3 d-flex align-items-center gap-1 gap-sm-2" href="@Url.Action("Index", "Home")">
+            <img src="~/logo-icon.svg" alt="SBS Logo" style="height: 30px; width: 30px; object-fit: contain;" class="d-inline-block flex-shrink-0" />
             <span class="d-flex flex-column text-start ms-1" style="line-height: 1.15;">
-                <span class="fw-bold text-white" style="font-size: 0.95rem; letter-spacing: 0.3px;">Smart Billing System</span>
-                <span class="fw-semibold text-info" style="font-size: 0.65rem; letter-spacing: 1.8px;">SBS PORTAL</span>
+                <span class="fw-bold text-white d-none d-md-inline" style="font-size: 0.95rem; letter-spacing: 0.3px;">Smart Billing System</span>
+                <span class="fw-bold text-white d-inline d-md-none" style="font-size: 0.95rem; letter-spacing: 0.5px;">SBS</span>
+                <span class="fw-semibold text-info" style="font-size: 0.62rem; letter-spacing: 1.5px;">PORTAL</span>
             </span>
         </a>
-        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle">
-            <i class="fas fa-bars"></i>
+        
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-1 me-sm-3 text-white-50 px-2" id="sidebarToggle" title="Toggle Navigation">
+            <i class="fas fa-bars fs-6"></i>
         </button>
 
         <!-- Center Page Title -->
-        <h4 class="m-4 blockquote d-none d-md-block text-white fw-semibold">
+        <h4 class="m-4 blockquote d-none d-lg-block text-white fw-semibold">
             @ViewData["Title"]
         </h4>
 
-
-        <ul class="navbar-nav ms-auto me-3 me-lg-4 d-flex align-items-center gap-3">
-            <li class="nav-item">
-                <div class="user-navbar-card d-flex align-items-center">
-                    <div class="user-nav-avatar me-2">
+        <!-- User Info & Logout Navbar Items -->
+        <ul class="navbar-nav ms-auto me-0 me-sm-3 d-flex align-items-center flex-row gap-1 gap-sm-2 gap-md-3">
+            <!-- Login User Details (Interactive Dropdown on Click) -->
+            <li class="nav-item dropdown">
+                <a class="user-navbar-card d-flex align-items-center text-decoration-none dropdown-toggle-no-caret" 
+                   id="userNavbarDropdown" 
+                   href="javascript:void(0)" 
+                   role="button" 
+                   data-bs-toggle="dropdown" 
+                   aria-expanded="false" 
+                   title="Logged in as @username">
+                    <div class="user-nav-avatar me-0 me-sm-2">
                         <i class="fa-solid fa-user-shield"></i>
                         <span class="user-status-dot"></span>
                     </div>
-                    <div class="user-nav-details d-flex flex-column text-start me-1">
+                    <div class="user-nav-details d-none d-sm-flex flex-column text-start me-1">
                         <span class="user-nav-subtext">Logged in as</span>
                         <span class="user-nav-username text-uppercase">@username</span>
                     </div>
-                </div>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 p-3 mt-2" 
+                    aria-labelledby="userNavbarDropdown" 
+                    style="min-width: 250px; background: #1e293b; color: #ffffff;">
+                    <li class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom border-secondary border-opacity-50">
+                        <div class="user-nav-avatar" style="width:36px; height:36px; font-size:1rem;">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="text-white-50 small text-uppercase" style="font-size:0.65rem; letter-spacing: 0.5px;">Logged in User</span>
+                            <strong class="text-white text-uppercase" style="font-size:0.9rem;">@username</strong>
+                        </div>
+                    </li>
+                    <li class="mt-1">
+                        <div class="d-flex align-items-center gap-2 text-info" style="white-space: nowrap; font-size: 0.82rem;">
+                            <i class="fa-regular fa-clock text-warning flex-shrink-0"></i>
+                            <span id="navLiveClock" class="fw-bold">@DateTime.Now.ToString("dd-MMM-yyyy hh:mm tt")</span>
+                        </div>
+                    </li>
+                </ul>
             </li>
+
+            <!-- Logout Button (Icon on Mobile, Text + Icon on Desktop) -->
             <li class="nav-item">
                 <form asp-controller="Login" asp-action="Logout" method="post" class="d-inline">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold">
-                        <i class="fas fa-sign-out-alt me-1"></i> Logout
+                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-2 px-sm-3 fw-semibold d-flex align-items-center justify-content-center gap-1" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="d-none d-sm-inline">Logout</span>
                     </button>
                 </form>
             </li>
@@ -118,13 +151,13 @@
                                 Salary Details
                             </a>
                         }
-                        @if (CheckMasterAccess() || CheckConfigAccess() || CheckReportAccess() || CheckNormalAccess())
+                        @if (CheckSuperAdminAccess() || CheckMasterAccess() || CheckConfigAccess() || CheckReportAccess())
                         {
                             <div class="sb-sidenav-menu-heading">Manage Data</div>
                         }
 
                         <!-- Master Section -->
-                        @if (CheckMasterAccess())
+                        @if (CheckSuperAdminAccess())
                         {
                             @* <div class="sb-sidenav-menu-heading">Manage Data</div> *@
                             <a class="nav-link collapsed" href="#super" data-bs-toggle="collapse" data-bs-target="#collapseProfile"
@@ -181,7 +214,7 @@
                         }
 
                         <!-- Reports Section -->
-                        @if (CheckReportAccess() || CheckNormalAccess())
+                        @if (CheckReportAccess())
                         {
                             @* <div class="sb-sidenav-menu-heading">Reports</div> *@
                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseReports"
@@ -318,6 +351,27 @@
                 showAppToast(localToast, true);
                 localStorage.removeItem('toastMessage');
             }
+
+            function updateNavClock() {
+                const now = new Date();
+                const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = months[now.getMonth()];
+                const year = now.getFullYear();
+                let hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                const strHours = String(hours).padStart(2, '0');
+
+                const formatted = `${day}-${month}-${year} ${strHours}:${minutes}:${seconds} ${ampm}`;
+                const clockEl = document.getElementById('navLiveClock');
+                if (clockEl) clockEl.textContent = formatted;
+            }
+            updateNavClock();
+            setInterval(updateNavClock, 1000);
         });
     </script>
 

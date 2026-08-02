@@ -1,4 +1,6 @@
-﻿using Client.Application.Features.User.Dtos;
+using System.Data;
+using System.Text;
+using Client.Application.Features.User.Dtos;
 using Client.Application.Interfaces;
 using Client_WebApp.Middleware;
 using Client_WebApp.Models.Master;
@@ -179,6 +181,9 @@ namespace Client_WebApp.Controllers.Master
         [HttpGet]
         public IActionResult ChangeUserPassword()
         {
+            if (!AccessHelper.HasAccess(User, "ChangePassword", "View"))
+                return Forbid();
+
             // Use currently logged-in user info
             var model = new ChangePasswordViewModel
             {
@@ -193,6 +198,9 @@ namespace Client_WebApp.Controllers.Master
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeUserPassword(ChangePasswordViewModel model)
         {
+            if (!AccessHelper.HasAccess(User, "ChangePassword", "View"))
+                return Forbid();
+
             if (!ModelState.IsValid)
             {
                 TempData["ErrorMessage"] = "Please fill all required fields correctly.";
@@ -226,16 +234,50 @@ namespace Client_WebApp.Controllers.Master
         }
 
         [HttpGet]
-        public IActionResult SendEmail()
+        public async Task<IActionResult> SendEmail([FromServices] CompanyService companyService)
         {
-            var model = new SendEmailViewModel();
+            if (!AccessHelper.HasAccess(User, "SendEmail", "View"))
+                return Forbid();
+
+            int companyId = CurrentCompanyId;
+            string companyName = "N/A";
+            try
+            {
+                var companies = await companyService.GetCompanyAsync(companyId);
+                var company = companies?.FirstOrDefault(c => c.Id == companyId) ?? companies?.FirstOrDefault();
+                if (company != null && !string.IsNullOrWhiteSpace(company.Name))
+                {
+                    companyName = company.Name;
+                }
+            }
+            catch
+            {
+            }
+
+            var model = new SendEmailViewModel
+            {
+                Subject = "SBS Data Backup",
+                Body = $"Dear Team,<br><br>" +
+                       $"Please find attached the Invoice and Payment reports for:<br>" +
+                       $"<b>Company Name:</b> {companyName}<br>" +
+                       $"<b>Company ID:</b> {companyId}<br><br>" +
+                       $"Regards,<br>Smart Billing System"
+            };
+
             return PartialView("_SendEmailPartial", model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SendEmail(SendEmailViewModel model, [FromServices] IEmailService emailService)
+        public async Task<IActionResult> SendEmail(
+            SendEmailViewModel model, 
+            [FromServices] IEmailService emailService, 
+            [FromServices] ICommonRepository commonRepository,
+            [FromServices] CompanyService companyService)
         {
+            if (!AccessHelper.HasAccess(User, "SendEmail", "View"))
+                return Forbid();
+
             if (!ModelState.IsValid)
             {
                 TempData["ErrorMessage"] = "Please fill all required fields correctly.";
@@ -244,8 +286,55 @@ namespace Client_WebApp.Controllers.Master
 
             try
             {
-                await emailService.SendEmailAsync(model.ToEmail, model.Subject, model.Body);
-                TempData["SuccessMessage"] = "Email sent successfully!";
+                int companyId = CurrentCompanyId;
+
+                // 1. Fetch Company Name
+                string companyName = "N/A";
+                try
+                {
+                    var companies = await companyService.GetCompanyAsync(companyId);
+                    var company = companies?.FirstOrDefault(c => c.Id == companyId) ?? companies?.FirstOrDefault();
+                    if (company != null && !string.IsNullOrWhiteSpace(company.Name))
+                    {
+                        companyName = company.Name;
+                    }
+                }
+                catch
+                {
+                }
+
+                // 2. Call common repository to execute stored procedure usp_SBS_getBackupData with @company_id
+                var backupDataSet = await commonRepository.GetBackupDataAsync(companyId);
+
+                var attachments = new List<(string fileName, byte[] content)>();
+
+                if (backupDataSet != null && backupDataSet.Tables.Count > 0)
+                {
+                    for (int i = 0; i < backupDataSet.Tables.Count; i++)
+                    {
+                        var dt = backupDataSet.Tables[i];
+                        byte[] csvBytes = ConvertDataTableToCsv(dt);
+
+                        string tableName = !string.IsNullOrWhiteSpace(dt.TableName) && !dt.TableName.StartsWith("Table", StringComparison.OrdinalIgnoreCase)
+                            ? dt.TableName
+                            : $"ResultSet_{i + 1}";
+
+                        string fileName = $"Backup_{tableName}_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                        attachments.Add((fileName, csvBytes));
+                    }
+                }
+
+                string formattedDefaultBody = $"Dear Team,<br><br>" +
+                                              $"Please find attached the Invoice and Payment reports for:<br>" +
+                                              $"<b>Company Name:</b> {companyName}<br>" +
+                                              $"<b>Company ID:</b> {companyId}<br><br>" +
+                                              $"Regards,<br>Smart Billing System";
+
+                string strSubject = string.IsNullOrWhiteSpace(model.Subject) ? "SBS Data Backup" : model.Subject;
+                string strBody = string.IsNullOrWhiteSpace(model.Body) ? formattedDefaultBody : model.Body;
+
+                await emailService.SendEmailAsync(model.ToEmail, strSubject, strBody, attachments);
+                TempData["SuccessMessage"] = "Email sent successfully with backup data CSV attachments!";
             }
             catch (Exception ex)
             {
@@ -253,6 +342,37 @@ namespace Client_WebApp.Controllers.Master
             }
 
             return RedirectToAction("Index");
+        }
+
+        private static byte[] ConvertDataTableToCsv(DataTable table)
+        {
+            var sb = new StringBuilder();
+
+            // Dynamic Column Headers
+            var columnNames = table.Columns.Cast<DataColumn>().Select(col => QuoteCsvField(col.ColumnName));
+            sb.AppendLine(string.Join(",", columnNames));
+
+            // Data Rows
+            foreach (DataRow row in table.Rows)
+            {
+                var fields = row.ItemArray.Select(field => QuoteCsvField(field == DBNull.Value || field == null ? "" : field.ToString()!));
+                sb.AppendLine(string.Join(",", fields));
+            }
+
+            return Encoding.UTF8.GetBytes(sb.ToString());
+        }
+
+        private static string QuoteCsvField(string field)
+        {
+            if (string.IsNullOrEmpty(field))
+                return "\"\"";
+
+            if (field.Contains("\"") || field.Contains(",") || field.Contains("\n") || field.Contains("\r"))
+            {
+                return $"\"{field.Replace("\"", "\"\"")}\"";
+            }
+
+            return field;
         }
     }
 }

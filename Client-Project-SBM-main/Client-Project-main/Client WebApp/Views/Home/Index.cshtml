@@ -1,7 +1,7 @@
 @{
     ViewData["Title"] = "Dashboard";
     var role = ViewBag.UserRole as string;
-    bool hasReportAccess = role == "Super Admin" || role == "Admin" || role == "Manager" || role == "report_user";
+    bool hasReportAccess = role == "Super Admin" || role == "Admin" || role == "Manager" || role == "report_user" || role == "data_user";
 }
 
 <link rel="stylesheet" href="~/css/home.css" />
@@ -140,11 +140,41 @@
         }
         else
         {
-            <div class="alert alert-warning d-flex align-items-center p-4 rounded-4 shadow-sm" role="alert">
-                <i class="fa-solid fa-lock fa-2x me-3 text-warning"></i>
-                <div>
-                    <h5 class="alert-heading mb-1">Access Restricted</h5>
-                    <p class="mb-0">You do not have permission to view dashboard. Please contact an administrator if you require access.</p>
+            <!-- Fancy Welcome Hero Card (No details, premium portal welcome) -->
+            <div class="welcome-hero-card p-4 p-md-5 rounded-4 shadow-sm text-center text-md-start position-relative overflow-hidden" 
+                 style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%); border: 1px solid rgba(56, 189, 248, 0.25);">
+                <!-- Ambient Glow Accents -->
+                <div class="position-absolute rounded-circle" style="width: 250px; height: 250px; background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, rgba(0,0,0,0) 70%); top: -50px; right: -50px; pointer-events: none;"></div>
+                <div class="position-absolute rounded-circle" style="width: 200px; height: 200px; background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0,0,0,0) 70%); bottom: -40px; left: -40px; pointer-events: none;"></div>
+
+                <div class="row align-items-center position-relative" style="z-index: 2;">
+                    <div class="col-md-8 mb-4 mb-md-0">
+                        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" 
+                             style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; font-size: 0.85rem; font-weight: 600;">
+                            <i class="fa-solid fa-sparkles text-warning"></i>
+                            <span>Smart Billing System Portal</span>
+                        </div>
+                        <h2 class="fw-bold text-white mb-2" style="font-size: 2rem; letter-spacing: -0.02em;">
+                            Welcome to Smart Billing System 👋
+                        </h2>
+                        <p class="text-white-50 fs-6 mb-4" style="max-width: 580px; line-height: 1.6;">
+                            Your account is active. Use the navigation panel to access authorized modules, manage transactions, or view your system features.
+                        </p>
+                        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-start gap-2">
+                            <span class="badge bg-primary bg-opacity-25 text-info px-3 py-2 rounded-pill fs-7 fw-semibold border border-info border-opacity-25">
+                                <i class="fa-solid fa-shield-halved me-1"></i> Authorized Session
+                            </span>
+                            <span class="badge bg-success bg-opacity-25 text-success px-3 py-2 rounded-pill fs-7 fw-semibold border border-success border-opacity-25">
+                                <i class="fa-solid fa-circle-check me-1"></i> System Active
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="welcome-icon-illustration d-inline-flex align-items-center justify-content-center rounded-circle p-4 shadow-lg"
+                             style="background: radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, rgba(30, 41, 59, 0.8) 100%); border: 2px solid rgba(56, 189, 248, 0.35); width: 130px; height: 130px;">
+                            <img src="~/logo-icon.svg" alt="SBS Emblem" style="width: 75px; height: 75px; filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.5));" />
+                        </div>
+                    </div>
                 </div>
             </div>
         }

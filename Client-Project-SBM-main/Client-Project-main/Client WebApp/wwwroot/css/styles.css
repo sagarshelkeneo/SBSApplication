@@ -11345,3 +11345,24 @@ div.dataTables_paginate {
     letter-spacing: 0.03em !important;
     margin-top: 2px !important;
 }
+
+/* Mobile Responsive Topnav Tweaks */
+@media (max-width: 575.98px) {
+    .sb-topnav {
+        padding-left: 0.25rem !important;
+        padding-right: 0.25rem !important;
+    }
+    .user-navbar-card {
+        padding: 0.2rem !important;
+        border-radius: 50% !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .user-nav-avatar {
+        margin-right: 0 !important;
+    }
+    .navbar-brand {
+        font-size: 0.85rem !important;
+    }
+}

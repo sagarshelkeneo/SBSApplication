@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -31,6 +31,7 @@ namespace Client.Persistence
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IRoleAccessRepository, RoleAccessRepository>();
             services.AddScoped<IAdditionalEntityRepository, AdditionalEntityRepository>();
+            services.AddScoped<ICommonRepository, CommonRepository>();
 
             return services;
         }

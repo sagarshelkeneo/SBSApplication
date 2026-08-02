@@ -24,6 +24,11 @@
     <meta name="author" content="" />
     <title>@ViewData["Title"] - SBS</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg" />
+    <link rel="icon" type="image/png" href="~/favicon.png?v=2" />
+    <link rel="shortcut icon" href="~/favicon.ico?v=2" />
+
     <!-- Bootstrap & Custom Styles -->
     <link href="~/css/styles.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" crossorigin="anonymous" />
@@ -33,7 +38,13 @@
 <body class="sb-nav-fixed">
     <!-- Top Navbar -->
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-        <a class="navbar-brand ps-3" href="@Url.Action("Index", "Home")">Smart Billing System</a>
+        <a class="navbar-brand ps-3 d-flex align-items-center gap-2" href="@Url.Action("Index", "Home")">
+            <img src="~/logo-icon.svg" alt="SBS Logo" style="height: 32px; width: 32px; object-fit: contain;" class="d-inline-block" />
+            <span class="d-flex flex-column text-start ms-1" style="line-height: 1.15;">
+                <span class="fw-bold text-white" style="font-size: 0.95rem; letter-spacing: 0.3px;">Smart Billing System</span>
+                <span class="fw-semibold text-info" style="font-size: 0.65rem; letter-spacing: 1.8px;">SBS PORTAL</span>
+            </span>
+        </a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle">
             <i class="fas fa-bars"></i>
         </button>
@@ -78,7 +89,7 @@
 
                         <div class="sb-sidenav-menu-heading">Dashboard</div>
                         <a class="nav-link" href="@Url.Action("Index", "Home")">
-                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            <div class="sb-nav-link-icon"><i class="fa-solid fa-chart-pie text-info"></i></div>
                             Home
                         </a>
                         
@@ -87,15 +98,15 @@
                         {
                             <div class="sb-sidenav-menu-heading">Transactions</div>
                             <a class="nav-link" href="@Url.Action("Index", "Invoice")">
-                                <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-calendar-check text-success"></i></div>
                                 Bookings
                             </a>
                             <a class="nav-link" href="@Url.Action("getInvoiceData", "Invoice")">
-                                <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-stacked text-warning"></i></div>
                                 Legrand & Indo List
                             </a>
                             <a class="nav-link" href="@Url.Action("Index", "Payment")">
-                                <div class="sb-nav-link-icon"><i class="fas fa-credit-card"></i></div>
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-building-columns text-primary"></i></div>
                                 Bank Payment
                             </a>
                             @* <a class="nav-link" href="@Url.Action("Index", "AdditionalEntity")">
@@ -103,7 +114,7 @@
                                 Trolly
                             </a> *@
                             <a class="nav-link" href="@Url.Action("Index", "SalaryDetails")">
-                                <div class="sb-nav-link-icon"><i class="fas fa-layer-group"></i></div>
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-wallet text-info"></i></div>
                                 Salary Details
                             </a>
                         }
@@ -118,14 +129,14 @@
                             @* <div class="sb-sidenav-menu-heading">Manage Data</div> *@
                             <a class="nav-link collapsed" href="#super" data-bs-toggle="collapse" data-bs-target="#collapseProfile"
                             aria-expanded="false" aria-controls="collapseProfile">
-                                <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-user-shield text-danger"></i></div>
                                 SuperAdmin
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
                             <div class="collapse" id="collapseProfile" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="javascript:void(0)" onclick="openChangePasswordModal()">Change Password</a>
-                                    <a class="nav-link" href="javascript:void(0)" onclick="openSendEmailModal()">Send Email</a>
+                                    <a class="nav-link" href="javascript:void(0)" onclick="openChangePasswordModal()"><i class="fa-solid fa-key me-2 text-muted"></i>Change Password</a>
+                                    <a class="nav-link" href="javascript:void(0)" onclick="openSendEmailModal()"><i class="fa-solid fa-paper-plane me-2 text-muted"></i>Send Email</a>
                                 </nav>
                             </div>
                         }
@@ -136,15 +147,15 @@
                             @* <div class="sb-sidenav-menu-heading">Configuration</div> *@
                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseConfig"
                                aria-expanded="false" aria-controls="collapseConfig">
-                                <div class="sb-nav-link-icon"><i class="fas fa-cogs"></i></div>
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-gears text-secondary"></i></div>
                                 Config
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
                             <div class="collapse" id="collapseConfig" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="@Url.Action("Index", "Company")">Company</a>
-                                    <a class="nav-link" href="@Url.Action("Index", "Role")">Role</a>
-                                    <a class="nav-link" href="@Url.Action("Index", "RoleAccess")">Role Access</a>
+                                    <a class="nav-link" href="@Url.Action("Index", "Company")"><i class="fa-solid fa-building me-2 text-muted"></i>Company</a>
+                                    <a class="nav-link" href="@Url.Action("Index", "Role")"><i class="fa-solid fa-user-tag me-2 text-muted"></i>Role</a>
+                                    <a class="nav-link" href="@Url.Action("Index", "RoleAccess")"><i class="fa-solid fa-shield-halved me-2 text-muted"></i>Role Access</a>
                                 </nav>
                             </div>
                         }
@@ -155,16 +166,16 @@
                             @* <div class="sb-sidenav-menu-heading">Master</div> *@
                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseMaster"
                                aria-expanded="false" aria-controls="collapseMaster">
-                                <div class="sb-nav-link-icon"><i class="fas fa-database"></i></div>
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-server text-warning"></i></div>
                                 Master
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
                             <div class="collapse" id="collapseMaster" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="@Url.Action("Index", "Bank")">Bank</a>
-                                    <a class="nav-link" href="@Url.Action("Index", "User")">User</a>
-                                    <a class="nav-link" href="@Url.Action("Index", "Product")">Product</a>
-                                    <a class="nav-link" href="@Url.Action("Index", "SubContractor")">Sub Contractor</a>
+                                    <a class="nav-link" href="@Url.Action("Index", "Bank")"><i class="fa-solid fa-piggy-bank me-2 text-muted"></i>Bank</a>
+                                    <a class="nav-link" href="@Url.Action("Index", "User")"><i class="fa-solid fa-users me-2 text-muted"></i>User</a>
+                                    <a class="nav-link" href="@Url.Action("Index", "Product")"><i class="fa-solid fa-box-open me-2 text-muted"></i>Product</a>
+                                    <a class="nav-link" href="@Url.Action("Index", "SubContractor")"><i class="fa-solid fa-users-gear me-2 text-muted"></i>Sub Contractor</a>
                                 </nav>
                             </div>
                         }
@@ -175,14 +186,14 @@
                             @* <div class="sb-sidenav-menu-heading">Reports</div> *@
                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseReports"
                                aria-expanded="false" aria-controls="collapseReports">
-                                <div class="sb-nav-link-icon"><i class="fas fa-file-alt"></i></div>
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-chart-column text-info"></i></div>
                                 Reports
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
                             <div class="collapse" id="collapseReports" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="@Url.Action("ContractorReport", "Report")">Contractor Report</a>
-                                    <a class="nav-link" href="@Url.Action("ProfitLossReport", "Report")">Profit & Loss</a>
+                                    <a class="nav-link" href="@Url.Action("ContractorReport", "Report")"><i class="fa-solid fa-file-contract me-2 text-muted"></i>Contractor Report</a>
+                                    <a class="nav-link" href="@Url.Action("ProfitLossReport", "Report")"><i class="fa-solid fa-scale-balanced me-2 text-muted"></i>Profit & Loss</a>
                                     @* <a class="nav-link" href="@Url.Action("ProductWise", "Report")">Product Wise</a>
                                     <a class="nav-link" href="@Url.Action("SubContractorWise", "Report")">Sub-Contractor Wise</a>
                                     
@@ -191,16 +202,16 @@
                             </div>
                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseReports2"
                                aria-expanded="false" aria-controls="collapseReports2">
-                                <div class="sb-nav-link-icon"><i class="fas fa-file-alt"></i></div>
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-chart-line text-success"></i></div>
                                 Reports-Legrand & Indo
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
                             <div class="collapse" id="collapseReports2" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="@Url.Action("ContractorLegrandReport", "Report")">Contractor Report</a>
-                                    <a class="nav-link" href="@Url.Action("ProfitLossLegrandReport", "Report")">Profit & Loss</a>
-                                    <a class="nav-link" href="@Url.Action("CombinedSubContractorEntity", "Report")">Legrand Levhi Report</a>
-                                    <a class="nav-link" href="@Url.Action("CombinedSubContractorIndoListEntity", "Report")">Indo Levhi Report</a>
+                                    <a class="nav-link" href="@Url.Action("ContractorLegrandReport", "Report")"><i class="fa-solid fa-file-lines me-2 text-muted"></i>Contractor Report</a>
+                                    <a class="nav-link" href="@Url.Action("ProfitLossLegrandReport", "Report")"><i class="fa-solid fa-chart-pie me-2 text-muted"></i>Profit & Loss</a>
+                                    <a class="nav-link" href="@Url.Action("CombinedSubContractorEntity", "Report")"><i class="fa-solid fa-file-invoice-dollar me-2 text-muted"></i>Legrand Levhi Report</a>
+                                    <a class="nav-link" href="@Url.Action("CombinedSubContractorIndoListEntity", "Report")"><i class="fa-solid fa-clipboard-list me-2 text-muted"></i>Indo Levhi Report</a>
                                 </nav>
                             </div>
                         }
@@ -264,34 +275,51 @@
     </div>
 
     <!-- Toaster Message -->
-    @if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null)
-    {
-        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
-            <div id="toastMessage"
-                 class="toast align-items-center text-white border-0"
-                 role="alert"
-                 aria-live="assertive"
-                 aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        @(TempData["SuccessMessage"] ?? TempData["ErrorMessage"])
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto"
-                            data-bs-dismiss="toast" aria-label="Close"></button>
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+        <div id="toastMessage" class="toast align-items-center text-white border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-semibold" id="toastMessageBody">
+                    @(TempData["SuccessMessage"] ?? TempData["ErrorMessage"] ?? "")
                 </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
+    </div>
 
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                var toastEl = document.getElementById('toastMessage');
-                var isSuccess = '@TempData["SuccessMessage"]' !== '';
-                toastEl.classList.add(isSuccess ? 'bg-success' : 'bg-danger');
-                var toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+    <script>
+        function showAppToast(message, isSuccess) {
+            if (typeof isSuccess === 'undefined') isSuccess = true;
+            var toastEl = document.getElementById('toastMessage');
+            var toastBody = document.getElementById('toastMessageBody');
+            if (!toastEl || !toastBody) return;
+
+            toastBody.textContent = message;
+            toastEl.classList.remove('bg-success', 'bg-danger');
+            toastEl.classList.add(isSuccess ? 'bg-success' : 'bg-danger');
+
+            if (typeof bootstrap !== 'undefined' && bootstrap.Toast) {
+                var toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 3500 });
                 toast.show();
-            });
-        </script>
-    }
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var serverSuccess = '@Html.Raw(TempData["SuccessMessage"] ?? "")';
+            var serverError   = '@Html.Raw(TempData["ErrorMessage"] ?? "")';
+
+            if (serverSuccess) {
+                showAppToast(serverSuccess, true);
+            } else if (serverError) {
+                showAppToast(serverError, false);
+            }
+
+            var localToast = localStorage.getItem('toastMessage');
+            if (localToast) {
+                showAppToast(localToast, true);
+                localStorage.removeItem('toastMessage');
+            }
+        });
+    </script>
 
     <!-- Load jQuery -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -329,7 +357,7 @@
         const tableSelector = config.tableSelector;       // e.g., '#invoiceTable'
         const customInfoId = config.customInfoId || 'table_info_custom';
         const pageLength = config.pageLength || 25;
-        const lengthMenu = config.lengthMenu || [5, 10, 25, 50];
+        const lengthMenu = config.lengthMenu || [25, 50, 100, 200];
         const order = config.order || [[1, 'asc']];
         const columnDefs = config.columnDefs || [];
         const columnsSearchable = config.columnsSearchable || [];
@@ -418,7 +446,7 @@
    //  const tableSelector = config.tableSelector;       // e.g., '#invoiceTable'
    //  const customInfoId = config.customInfoId || 'table_info_custom';
    //  const pageLength = config.pageLength || 25;
-   //  const lengthMenu = config.lengthMenu || [5, 10, 25, 50];
+   //  const lengthMenu = config.lengthMenu || [25, 50, 100, 200];
    //  const order = config.order || [[1, 'asc']];
    //  const columnDefs = config.columnDefs || [];
    //  const columnsSearchable = config.columnsSearchable || [];

@@ -42,7 +42,7 @@ BEGIN
     BEGIN
         SET @isValid = 1;
     END
-	SET @isValid = 1;
+	-- SET @isValid = 1;
     RETURN @isValid;
 END;
 GO
@@ -207,6 +207,12 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+Text
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--usp_PaidBalancePaymentReport
+--usp_UnPaidBalancePaymentReport
+
+
 -- ===========================================
 -- Reports
 -- ===========================================
@@ -227,30 +233,26 @@ AS
 BEGIN
     BEGIN TRY
         SELECT 
-            -- Date	Receipt No.	LR No.	Description	Box	Peti	Motor	Total Type Rate	Total Amount
             inv.invoiceDate AS InvoiceDate,
             inv.invoiceNo ReceiptNumber,
             inv.LRNumber,
             sc.name AS SubContractor,
             inv.VehicleNumber,
-            -- bm.bankName AS BankName,
             inv.unitAmount as 'TotalTypeRate',
             
-            --inv.totalAmount,
-            --inv.quantity
 
-            SUM(inv.totalAmount - ISNULL(inv.commissionPercentage,0)) AS InvoiceAmount,
-            (CASE WHEN inv.ProductId = 1 THEN CAST(inv.quantity AS VARCHAR(10)) ELSE '-' END) AS Box,
-            (CASE WHEN inv.ProductId = 2 THEN CAST(inv.quantity AS VARCHAR(10)) ELSE '-' END) AS Peti,
-            (CASE WHEN inv.ProductId = 3 THEN CAST(inv.quantity AS VARCHAR(10)) ELSE '-' END) AS Motors
+            AVG(inv.totalAmount - ISNULL(inv.commissionPercentage,0)) AS InvoiceAmount,
+            (SUM((CASE WHEN invd.ProductId = 1 THEN ISNULL(invd.quantity,0) ELSE 0 END))) AS Box,
+            (SUM((CASE WHEN invd.ProductId = 2 THEN ISNULL(invd.quantity,0) ELSE 0 END))) AS Peti,
+            (SUM((CASE WHEN invd.ProductId = 3 THEN ISNULL(invd.quantity,0) ELSE 0 END))) AS Motors
+
             
         FROM sbs_invoiceDetails inv
-        JOIN sbs_subContractor sc ON inv.subcontractorId = sc.id
+        INNER JOIN sbs_subContractor sc ON inv.subcontractorId = sc.id
+        INNER JOIN SBS_InvoiceTransactionDetails invd on inv.id = invd.invoiceId
         WHERE 
             inv.IsLeviApplicable = @p_isLevhiApplicable 
-            -- AND inv.invoiceNo = '26166'
-            AND inv.isDeleted = 0 
-            -- AND pd.isDeleted = 0 
+            AND inv.isDeleted = 0 AND invd.isDeleted = 0 
             AND inv.invoiceDate BETWEEN ISNULL(@p_fromDate,'01-01-1900') AND ISNULL(@p_toDate,GETDATE()) 
             AND (sc.name LIKE '%' + ISNULL(@p_subcontractorName,'') + '%') 
             AND (
@@ -266,8 +268,9 @@ BEGIN
             sc.name,
             inv.VehicleNumber,
             inv.unitAmount,
+            inv.totalAmount,
             inv.ProductId,
-            inv.quantity
+            inv.quantity 
 
 
     END TRY
@@ -276,6 +279,7 @@ BEGIN
     END CATCH
 END
 GO
+
 
 
 
@@ -849,7 +853,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
---use SBSApplication
+
 -- EXEC usp_sbs_invoiceDetails_get NULL, 1, 0
 CREATE PROCEDURE usp_sbs_invoiceDetails_get
     @p_id INT = NULL,
@@ -864,19 +868,19 @@ BEGIN
         inv.subcontractorId AS R_subcontractorId,
         sc.name AS R_subcontractorName,
         inv.productId AS R_productId,
-        pm.description AS R_productName,
-        pm.unitPrice AS unitPrice,
+        pm.description AS R_productName, -- pm.description 
+        pm.unitPrice AS unitPrice, -- pm.unitPrice 
         inv.invoiceDate AS R_invoiceDate,
         inv.status AS R_status,
         inv.paymentMode AS R_invoiceType,
-        inv.quantity AS R_quantity,
-        inv.unitAmount AS R_unitAmount,
-        inv.totalAmount AS R_totalAmount,
+        tr.R_quantity AS R_quantity, -- inv.quantity AS R_quantity,
+        tr.R_unitAmount AS R_unitAmount, -- inv.unitAmount AS R_unitAmount,
+        tr.R_totalAmount AS R_totalAmount, -- inv.totalAmount AS R_totalAmount,
         inv.commissionPercentage AS R_commissionPercentage,
         inv.commissionAmount AS R_commissionAmount,
         inv.paymentMode AS R_paymentMode,
 		inv.GroupNumber AS R_GroupNumber,
-		inv.LRNumber AS R_LRNumber,
+		'' AS R_LRNumber, -- inv.LRNumber AS R_LRNumber,
 		inv.VehicleNumber AS R_VehicleNumber,
 		inv.IsLeviApplicable AS R_IsLeviApplicable,
 		inv.Levi AS R_Levi,
@@ -893,12 +897,15 @@ BEGIN
     INNER JOIN sbs_productMaster pm ON inv.productId = pm.id
     INNER JOIN sbs_subContractor sc ON inv.subcontractorId = sc.id
     INNER JOIN SBS_UserMaster um ON inv.createdBy = um.id
+    INNER JOIN fn_sbs_invoiceTransactionDetails_getSummary(0,0) tr ON inv.id = tr.R_invoiceid
     WHERE inv.isDeleted = 0
       AND inv.companyID = @P_companyID
       AND (@p_id IS NULL OR inv.id = @p_id)
 	  AND IsLeviApplicable = @P_IsLeviApplicable;
 END
 GO
+
+
 /****** Object:  StoredProcedure [SBSAppDBUser].[usp_sbs_invoiceDetails_insert]    Script Date: 2026-05-25 3:11:29 PM ******/
 SET ANSI_NULLS ON
 GO
@@ -978,12 +985,21 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE   PROCEDURE [SBSAppDBUser].[usp_sbs_invoiceDetails_insertBulk]
+
+
+--Update sbs_invoiceDetails
+--set isDeleted = 1
+--where id > 298
+
+CREATE PROCEDURE [SBSAppDBUser].[usp_sbs_invoiceDetails_insertBulk]
     @P_invoiceNo          VARCHAR(100),
     @P_companyId          INT,
     @P_subcontractorId    INT,
     @P_productId          INT,
     @P_invoiceDate        DATETIME2,
+    @P_quantity           INT,
+    @P_unitAmount         DECIMAL(10,2),
+    @P_totalAmount        DECIMAL(10,2),
     @P_commissionPercentage DECIMAL(5,2)  = NULL,
     @P_commissionAmount   DECIMAL(18,2)  = NULL,
     @P_paymentMode        VARCHAR(100),
@@ -995,41 +1011,55 @@ CREATE   PROCEDURE [SBSAppDBUser].[usp_sbs_invoiceDetails_insertBulk]
     @P_DocketNumber       VARCHAR(20),
     @P_TrollyQuantity     INT,
     @P_TrollyAmount       DECIMAL(18,2),
-    -- JSON array: [{"lrNumber":"...","unitAmount":100,"quantity":2,"totalAmount":200}, ...]
-    @P_LRItemsJson        NVARCHAR(MAX)
+    -- JSON array: [{"productid":"1","lrNumber":"...","unitAmount":100,"quantity":2,"totalAmount":200}, ...]
+   
+ @P_LRItemsJson        NVARCHAR(MAX)
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
         BEGIN TRANSACTION;
+        DECLARE @V_InsertedID INT = NULL;
 
         INSERT INTO sbs_invoiceDetails (
-            invoiceNo, companyId, subcontractorId, productId, invoiceDate,
-            quantity, unitAmount, totalAmount,
-            commissionPercentage, commissionAmount, paymentMode,
-            createdBy, createdAt, isActive, isDeleted,
-            GroupNumber, LRNumber, VehicleNumber,
-            IsLeviApplicable, Levi, DocketNumber, TrollyQuantity, TrollyAmount
+            invoiceNo, companyId, subcontractorId, productId, invoiceDate, 
+            quantity, unitAmount, totalAmount, 
+            commissionPercentage, commissionAmount,
+            paymentMode, createdBy, createdAt, isActive, isDeleted,GroupNumber,LRNumber,
+            VehicleNumber,IsLeviApplicable,Levi,DocketNumber,TrollyQuantity,TrollyAmount
+        )
+        VALUES (
+            @P_invoiceNo, @P_companyId, @P_subcontractorId, @P_productId, @P_invoiceDate, 
+            @P_quantity,@P_unitAmount, @P_totalAmount, 
+            @P_commissionPercentage, @P_commissionAmount,
+            @P_paymentMode, @P_createdBy, GETDATE(), 1, 0,@P_GroupNumber,
+            NULL, -- @P_LRNumber,
+            @P_VehicleNumber,@P_IsLeviApplicable,@P_Levi,@P_DocketNumber,@P_TrollyQuantity,@P_TrollyAmount
+        );
+
+        SET @V_InsertedID = SCOPE_IDENTITY();
+
+        INSERT INTO sbs_invoiceTransactionDetails (
+            invoiceId,invoiceDate,LRNumber, ProductId, quantity,unitAmount,totalAmount,
+            commissionPercentage,commissionAmount,paymentMode,-- status,
+            createdBy,createdAt,isActive,isDeleted
         )
         SELECT
-            @P_invoiceNo, @P_companyId, @P_subcontractorId, @P_productId, @P_invoiceDate,
-            CAST(j.quantity   AS INT),
-            CAST(j.unitAmount AS DECIMAL(10,2)),
-            CAST(j.totalAmount AS DECIMAL(18,2)),
+            @V_InsertedID, @P_invoiceDate, j.lrNumber, j.productId,
+            CAST(j.quantity   AS INT), CAST(j.unitAmount AS DECIMAL(10,2)), CAST(j.totalAmount AS DECIMAL(18,2)),
             @P_commissionPercentage, @P_commissionAmount, @P_paymentMode,
-            @P_createdBy, GETDATE(), 1, 0,
-            @P_GroupNumber, j.lrNumber, @P_VehicleNumber,
-            @P_IsLeviApplicable, @P_Levi, @P_DocketNumber, @P_TrollyQuantity, @P_TrollyAmount
+            @P_createdBy, GETDATE(), 1, 0
         FROM OPENJSON(@P_LRItemsJson)
         WITH (
             lrNumber    VARCHAR(50)     '$.lrNumber',
             unitAmount  DECIMAL(10,2)   '$.unitAmount',
             quantity    INT             '$.quantity',
-            totalAmount DECIMAL(18,2)   '$.totalAmount'
+            totalAmount DECIMAL(18,2)   '$.totalAmount',
+            productId   INT             '$.productId'
         ) j;
 
         COMMIT TRANSACTION;
-        SELECT 'SUCCESS' AS R_Status, @@ROWCOUNT AS R_InsertedCount,
+        SELECT 'SUCCESS' AS R_Status, @V_InsertedID AS R_InsertedID,
                NULL AS R_ErrorNumber, NULL AS R_ErrorMessage;
     END TRY
     BEGIN CATCH
@@ -1047,6 +1077,7 @@ BEGIN
     END CATCH
 END;
 GO
+
 
 /****** Object:  StoredProcedure [SBSAppDBUser].[usp_sbs_invoiceDetails_update]    Script Date: 2026-05-25 3:11:29 PM ******/
 SET ANSI_NULLS ON
@@ -1214,10 +1245,13 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+
+-- EXEC usp_sbs_paymentDetails_get 0,1,''
 -- GET
-CREATE PROCEDURE [SBSAppDBUser].[usp_sbs_paymentDetails_get]
+CREATE PROCEDURE usp_sbs_paymentDetails_get
     @p_id INT = NULL,
-    @P_companyID INT
+    @P_companyID INT,
+    @P_Search VARCHAR(20) =  NULL
 AS
 BEGIN
     SELECT 
@@ -1241,9 +1275,14 @@ BEGIN
 	LEFT JOIN SBS_SubContractor sc ON pd.subcontractorId = sc.id
     WHERE pd.isDeleted = 0
       AND (ISNULL(inv.isDeleted,0) = 0)
-      AND (@p_id IS NULL OR pd.id = @p_id);
+      AND (ISNULL(@p_id,0) = 0 OR pd.id = @p_id)
+      AND (bm.BankName LIKE '%'+ ISNULL(@P_Search,'') +'%'
+            OR sc.Name LIKE '%'+ ISNULL(@P_Search,'') +'%'
+            OR scInv.Name LIKE '%'+ ISNULL(@P_Search,'') +'%');
 END;
 GO
+
+
 /****** Object:  StoredProcedure [SBSAppDBUser].[usp_sbs_paymentDetails_insert]    Script Date: 2026-05-25 3:11:29 PM ******/
 SET ANSI_NULLS ON
 GO
@@ -2667,11 +2706,11 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+
 -- ======================================
 -- SP: UnPaidBalancePaymentReport (Updated)
 -- ======================================
 -- EXEC usp_UnPaidBalancePaymentReport NULL, NULL, NULL, 0
-
 CREATE PROCEDURE usp_UnPaidBalancePaymentReport
 -- DECLARE    
     @p_subcontractorName VARCHAR(255) = NULL, -- 'jain', --NULL,
@@ -2700,14 +2739,15 @@ BEGIN
             ISNULL((CASE 
                     WHEN (pd.invoiceId IS NOT NULL AND pd.bankId != @CashBankMasterID)  THEN CAST(FORMAT(SUM(pd.amountPaid),'N2') AS VARCHAR(10)) 
                     ELSE '0' END),0) AS Bank,
-            ISNULL((CASE WHEN inv.paymentMode = 'CASH' THEN CAST(FORMAT(AVG(inv.totalAmount),'N2') AS VARCHAR(20))
+
+            ISNULL((CASE WHEN inv.paymentMode = 'CASH' THEN CAST(FORMAT(AVG(inv.totalAmount - ISNULL(inv.commissionPercentage,0)),'N2') AS VARCHAR(20))
                          WHEN inv.paymentMode = 'BALANCE' AND pd.bankId = @CashBankMasterID 
                                 THEN CAST(FORMAT(AVG(pd.amountPaid),'N2') AS VARCHAR(20))
                          ELSE '0' END),0) AS Cash,
             
             ISNULL((CASE WHEN inv.paymentMode = 'CASH' THEN '0' 
-                WHEN inv.paymentMode = 'Balance' AND pd.invoiceId IS NOT NULL AND (CAST((AVG(inv.totalAmount) - ISNULL(SUM(pd.amountPaid),0)) AS DECIMAL(18,2)) <= 0) 
-                THEN '0' ELSE CAST((AVG(inv.totalAmount) - ISNULL(SUM(pd.amountPaid),0)) AS VARCHAR(10)) END),0) AS Balance
+                WHEN inv.paymentMode = 'Balance' AND pd.invoiceId IS NOT NULL AND (CAST((AVG(inv.totalAmount - ISNULL(inv.commissionPercentage,0)) - ISNULL(SUM(pd.amountPaid),0)) AS DECIMAL(18,2)) <= 0) 
+                THEN '0' ELSE CAST((AVG(inv.totalAmount - ISNULL(inv.commissionPercentage,0)) - ISNULL(SUM(pd.amountPaid),0)) AS VARCHAR(10)) END),0) AS Balance
             
         FROM sbs_invoiceDetails inv
         JOIN sbs_subContractor sc ON inv.subcontractorId = sc.id
@@ -2748,3 +2788,408 @@ BEGIN
     END CATCH
 END
 GO
+
+
+--use SBSApplication
+-- usp_sbs_invoiceDetails_get
+-- EXEC usp_sbs_invoiceDetails_get_InvoiceAsPerContrator NULL, 115, NULL, '2026-07-09', '2026-07-15', 0
+CREATE   PROCEDURE usp_sbs_invoiceDetails_get_InvoiceAsPerContrator
+    @p_InvoiceId INT = NULL,
+    @P_SubContractorId INT = NULL,
+	@P_PaymentDate DATETIME = NULL,
+    @P_FromDate DATETIME = NULL,
+    @P_ToDate DATETIME = NULL,
+    @P_IsLeviApplicable BIT = 0
+AS
+BEGIN
+    SELECT
+		inv.id AS R_id,
+        inv.invoiceNo AS R_invoiceNo,
+        inv.companyId AS R_companyId,
+        inv.subcontractorId AS R_subcontractorId,
+        sc.name AS R_subcontractorName,
+        inv.productId AS R_productId,
+        pm.description AS R_productName,
+        pm.unitPrice AS unitPrice,
+        inv.invoiceDate AS R_invoiceDate,
+        inv.status AS R_status,
+        inv.paymentMode AS R_invoiceType,
+        inv.quantity AS R_quantity,
+        inv.unitAmount AS R_unitAmount,
+        inv.totalAmount AS R_totalAmount,
+        inv.commissionPercentage AS R_commissionPercentage,
+        inv.commissionAmount AS R_commissionAmount,
+        inv.paymentMode AS R_paymentMode,
+		inv.GroupNumber AS R_GroupNumber,
+		inv.LRNumber AS R_LRNumber,
+		inv.VehicleNumber AS R_VehicleNumber,
+		inv.IsLeviApplicable AS R_IsLeviApplicable,
+		inv.Levi AS R_Levi,
+		inv.DocketNumber AS R_DocketNumber,
+		inv.TrollyQuantity AS R_TrollyQuantity,
+		inv.TrollyAmount AS R_TrollyAmount,
+        inv.invoiceNo + ' (' + sc.name + ')'  AS R_invoiceNoSelect,
+        inv.invoiceNo + ' (' + sc.name + ') ' + FORMAT(inv.invoiceDate,'yyyy-MMM-dd')   AS R_invoiceNoDateSelect,
+        inv.createdBy,
+        um.username,
+        FORMAT((inv.createdAt AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time' ),'yyyy-MMM-dd hh:mm:ss tt') createdAt
+
+    FROM sbs_invoiceDetails inv
+    INNER JOIN sbs_productMaster pm ON inv.productId = pm.id
+    INNER JOIN sbs_subContractor sc ON inv.subcontractorId = sc.id
+    INNER JOIN SBS_UserMaster um ON inv.createdBy = um.id
+    WHERE inv.isDeleted = 0
+      AND (inv.id = ISNULL(@p_InvoiceId, 0) OR 0 = ISNULL(@p_InvoiceId, 0))
+      AND (inv.subcontractorId = ISNULL(@P_subcontractorId, 0) OR 0 = ISNULL(@P_subcontractorId, 0))
+      -- AND (inv.invoiceDate =  @P_PaymentDate OR @P_PaymentDate IS NULL)
+      AND (inv.invoiceDate BETWEEN ISNULL(@P_FromDate,'01-01-1900') AND ISNULL(@P_ToDate,GETDATE()) )
+	  AND IsLeviApplicable = @P_IsLeviApplicable;
+END
+GO
+
+
+
+-- UPDATE 
+CREATE   PROCEDURE usp_sbs_invoiceDetails_updateBulk
+    @p_id INT,
+    @P_invoiceNo VARCHAR(100),
+    @P_productId INT,
+    @P_companyID INT,
+    @P_subcontractorId INT,
+    @P_invoiceDate DATETIME2,
+    @P_quantity INT,
+    @P_unitAmount DECIMAL(10,2),
+    @P_totalAmount DECIMAL(10,2),
+    @P_commissionPercentage DECIMAL(5,2) = NULL,
+    @P_commissionAmount DECIMAL(18,2) = NULL,
+    @P_paymentMode VARCHAR(100),
+    @P_status VARCHAR(20),
+    @P_updatedBy INT,
+	@P_GroupNumber VARCHAR(50),
+	@P_LRNumber VARCHAR(50),
+	@P_VehicleNumber VARCHAR(50),
+	@P_Levi VARCHAR(20),
+	@P_DocketNumber VARCHAR(20),
+	@P_TrollyQuantity INT,
+	@P_TrollyAmount Decimal(18,2),
+    -- JSON array: [{"productid":"1","lrNumber":"...","unitAmount":100,"quantity":2,"totalAmount":200}, ...]   
+ @P_LRItemsJson        NVARCHAR(MAX)
+AS
+BEGIN
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        UPDATE sbs_invoiceDetails
+        SET invoiceNo = @P_invoiceNo,
+            productId = @P_productId,
+            companyId = @P_companyID,
+            subcontractorId = @P_subcontractorId,
+            invoiceDate = @P_invoiceDate,
+            quantity = @P_quantity,
+            unitAmount = @P_unitAmount,
+            totalAmount = @P_totalAmount,
+            commissionPercentage = @P_commissionPercentage,
+            commissionAmount = @P_commissionAmount,
+            paymentMode = @P_paymentMode,
+            -- status = @P_status,
+            updatedBy = @P_updatedBy,
+            updatedAt = GETDATE(),
+			GroupNumber = @P_GroupNumber,
+			LRNumber = @P_LRNumber,
+			VehicleNumber = @P_VehicleNumber,
+			Levi = @P_Levi,
+			DocketNumber = @P_DocketNumber,
+			TrollyQuantity = @P_TrollyQuantity,
+			TrollyAmount = @P_TrollyAmount
+			WHERE id = @p_id AND isDeleted = 0;
+
+        UPDATE sbs_invoiceTransactionDetails
+        SET
+        isDeleted = 1,
+        updatedBy = @P_updatedBy,
+        updatedAt = GETDATE()
+        WHERE invoiceId = @p_id AND isDeleted = 0
+
+        INSERT INTO sbs_invoiceTransactionDetails (
+            invoiceId,invoiceDate,LRNumber, ProductId, quantity,unitAmount,totalAmount,
+            commissionPercentage,commissionAmount,paymentMode,-- status,
+            createdBy,createdAt,isActive,isDeleted
+        )
+        SELECT
+            @p_id, @P_invoiceDate, j.lrNumber, j.productId,
+            CAST(j.quantity   AS INT), CAST(j.unitAmount AS DECIMAL(10,2)), CAST(j.totalAmount AS DECIMAL(18,2)),
+            @P_commissionPercentage, @P_commissionAmount, @P_paymentMode,
+            @P_updatedBy, GETDATE(), 1, 0
+        FROM OPENJSON(@P_LRItemsJson)
+        WITH (
+            lrNumber    VARCHAR(50)     '$.lrNumber',
+            unitAmount  DECIMAL(10,2)   '$.unitAmount',
+            quantity    INT             '$.quantity',
+            totalAmount DECIMAL(18,2)   '$.totalAmount',
+            productId   INT             '$.productId'
+        ) j;
+
+        COMMIT TRANSACTION;
+        SELECT 'SUCCESS' AS R_Status, @p_id AS R_targetId, NULL AS R_ErrorNumber, NULL AS R_ErrorMessage;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        DECLARE @V_ErrorNumber INT = ERROR_NUMBER();
+        DECLARE @V_ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @V_ErrorLine INT = ERROR_LINE();
+        DECLARE @V_ProcName SYSNAME = OBJECT_NAME(@@PROCID);
+
+        SELECT 'FAIL' AS R_Status, @p_id AS R_targetId, @V_ErrorNumber AS R_ErrorNumber, @V_ErrorMessage AS R_ErrorMessage;
+        EXEC usp_sbs_logError 
+            @p_errorCode = @V_ErrorNumber,
+            @p_errorMsg = @V_ErrorMessage,
+            @p_errorLine = @V_ErrorLine,
+            @p_recordId = @p_id,
+            @p_procName = @V_ProcName;
+    END CATCH
+END;
+GO
+
+
+
+-- SELECT * FROM fn_sbs_invoiceTransactionDetails_getSummary (0, 0)
+-- SELECT * FROM fn_sbs_invoiceTransactionDetails_getSummary (0, 4990)
+CREATE FUNCTION  fn_sbs_invoiceTransactionDetails_getSummary
+(    @p_id INT = NULL,
+    @P_invoiceID INT
+)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT
+        invd.invoiceid AS R_invoiceid,
+        
+        SUM(invd.quantity) AS R_quantity,
+        SUM(invd.unitAmount) AS R_unitAmount,
+        SUM(invd.totalAmount) AS R_totalAmount
+
+    FROM sbs_invoiceDetails inv
+    INNER JOIN SBS_InvoiceTransactionDetails invd ON inv.id  = invd.invoiceId
+    INNER JOIN sbs_productMaster pm ON invd.productId = pm.id
+
+    WHERE inv.isDeleted = 0 AND invd.isDeleted = 0
+      AND (inv.id = @P_invoiceID OR 0 = ISNULL(@P_invoiceID,0))
+      AND (invd.id = @p_id OR 0 = ISNULL(@p_id,0))
+
+    GROUP BY 
+    invd.invoiceid
+
+)
+GO
+
+
+
+--use SBSApplication
+-- SELECT * FROM fn_sbs_invoiceTransactionDetails_get (0, 0)
+-- SELECT * FROM fn_sbs_invoiceTransactionDetails_get (0, 4990)
+CREATE FUNCTION  fn_sbs_invoiceTransactionDetails_get
+(    @p_id INT = NULL,
+    @P_invoiceID INT
+)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT
+		invd.id AS R_id,
+        invd.invoiceid AS R_invoiceid,
+        
+        invd.quantity AS R_quantity,
+        invd.unitAmount AS R_unitAmount,
+        invd.totalAmount AS R_totalAmount,
+        invd.LRNumber AS R_LRNumber,
+        invd.ProductId AS R_ProductId,
+        pm.description AS R_productName,
+        invd.createdBy,
+        FORMAT((invd.createdAt AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time' ),'yyyy-MMM-dd hh:mm:ss tt') createdAt
+
+    FROM sbs_invoiceDetails inv
+    INNER JOIN SBS_InvoiceTransactionDetails invd ON inv.id  = invd.invoiceId
+    INNER JOIN sbs_productMaster pm ON invd.productId = pm.id
+
+    WHERE inv.isDeleted = 0 AND invd.isDeleted = 0
+      AND (inv.id = @P_invoiceID OR 0 = ISNULL(@P_invoiceID,0))
+      AND (invd.id = @p_id OR 0 = ISNULL(@p_id,0))
+)
+GO
+
+
+--use SBSApplication
+-- EXEC usp_sbs_InvoiceTransactionDetails_get 0, 4990
+CREATE PROCEDURE usp_sbs_InvoiceTransactionDetails_get
+    @p_id INT = NULL,
+    @P_invoiceID INT
+AS
+BEGIN
+   SELECT * FROM fn_sbs_invoiceTransactionDetails_get (@p_id, @P_invoiceID)
+END
+GO
+
+
+
+
+-- EXEC usp_SBS_getBackupData 1
+-- for email 
+alter   PROCEDURE usp_SBS_getBackupData
+    @company_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+
+        SELECT 
+c.id AS [Company ID]
+,c.name AS [Company Name]
+,i.id AS [InvoiceID]
+,CONVERT(VARCHAR(10), i.invoiceDate, 120) AS [Invoice Date]
+,i.invoiceNo
+,i.subcontractorId
+,sc.name AS SubContractorName
+,tr.R_ProductId AS ProductId
+,pm.description AS ProductName
+,i.invoiceDate
+,i.status
+--,i.quantity
+--,i.unitAmount
+--,i.totalAmount
+,tr.R_quantity AS quantity -- inv.quantity AS R_quantity,
+,tr.R_unitAmount AS unitAmount -- inv.unitAmount AS R_unitAmount,
+,tr.R_totalAmount AS totalAmount -- inv.totalAmount AS R_totalAmount,
+
+,i.commissionPercentage
+,i.commissionAmount
+,i.paymentMode
+,i.createdBy
+,i.createdAt
+,i.updatedBy
+,i.updatedAt
+,i.isActive
+,i.isDeleted
+,i.GroupNumber
+,tr.R_LRNumber AS LRNumber
+,i.VehicleNumber
+,i.IsLeviApplicable
+,i.Levi
+,i.DocketNumber
+,i.TrollyQuantity
+,i.TrollyAmount
+,i.createdBy
+,um.username
+,FORMAT((i.createdAt AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time' ),'yyyy-MMM-dd hh:mm:ss tt') createdAt
+
+        FROM sbs_companyMaster c
+        INNER JOIN sbs_invoiceDetails i ON c.id = i.companyId
+        INNER JOIN sbs_subContractor sc ON i.subcontractorId = sc.id
+        INNER JOIN SBS_UserMaster um ON i.createdBy = um.id
+        -- INNER JOIN fn_sbs_invoiceTransactionDetails_getSummary(0,0) tr ON i.id = tr.R_invoiceid
+        INNER JOIN fn_sbs_invoiceTransactionDetails_get(0,0) tr ON i.id = tr.R_invoiceid
+        INNER JOIN sbs_productMaster pm ON tr.R_ProductId = pm.id
+
+        WHERE 
+            c.id = @company_id 
+            AND i.IsDeleted = 0
+        ORDER BY 
+            i.id desc, i.invoiceDate DESC -- , tr.R_ProductId
+
+            -- usp_sbs_paymentDetails_get
+        SELECT 
+        c.id AS [CompanyID],
+        c.name AS [CompanyName],
+        p.id AS paymentid,
+        p.invoiceId AS invoiceId,
+        i.invoiceNo AS invoiceNo,
+        p.paymentDate AS paymentDate,
+        CONVERT(VARCHAR(10), p.paymentDate, 120) AS [PaymentDateFormatted],
+        p.fromDate AS fromDate,
+        p.toDate AS toDate,
+        p.amountPaid AS amountPaid,
+        p.paymentMode AS paymentMode,
+        p.bankId AS bankId,
+        b.bankName AS bankName,
+        p.paymentStatus AS paymentStatus,
+		p.subcontractorId AS subcontractorId,
+		(CASE WHEN ISNULL(p.invoiceId,0) = 0 THEN sc.Name ELSE scInv.Name END) AS subcontractorName
+
+        FROM 
+            sbs_companyMaster c
+        JOIN sbs_invoiceDetails i ON c.id = i.companyId
+        LEFT JOIN sbs_paymentDetails p ON i.id = p.invoiceId
+        LEFT JOIN sbs_bankMaster b ON p.bankId = b.id
+        
+        -- LEFT JOIN sbs_invoiceDetails inv ON pd.invoiceId = inv.id -- AND inv.companyID = @P_companyID
+        LEFT JOIN SBS_SubContractor scInv ON i.subcontractorId = scInv.id
+	    LEFT JOIN SBS_SubContractor sc ON p.subcontractorId = sc.id
+        WHERE 
+            c.id = @company_id 
+            AND i.IsDeleted = 0 AND p.IsDeleted = 0
+        ORDER BY 
+            p.paymentDate DESC;
+
+
+        SELECT 
+rac.id
+,rm.roleName as RoleName
+,rm.description as Description
+,rac.roleId
+,rac.screenName
+,rac.screenCode
+,rac.viewAccess
+,rac.createAccess
+,rac.editAccess
+,rac.deleteAccess
+,rac.createdBy
+,rac.createdAt
+,rac.updatedBy
+,rac.updatedAt
+,rac.ExcelDownloadAccess
+,rac.PDFDownloadAccess
+
+
+        FROM SBS_RoleAccessControl rac
+        INNER JOIN SBS_RoleMaster rm ON rac.roleid = rm.id
+    
+        WHERE 
+            rm.IsDeleted = 0 
+        ORDER BY 
+            rm.id, rac.id DESC
+
+
+
+            
+SELECT
+id
+,bankName
+,branch
+,createdBy
+,createdAt
+,updatedBy
+,updatedAt
+,isActive
+,isDeleted
+FROM SBS_BankMaster bm
+WHERE bm.IsDeleted = 0 
+
+SELECT 
+sc.id
+,sc.companyId
+,c.name AS [CompanyName]
+,sc.name ContractorName
+,sc.createdBy
+,sc.createdAt
+,sc.updatedBy
+,sc.updatedAt
+,sc.isActive
+,sc.isDeleted
+FROM SBS_SubContractor sc
+INNER JOIN sbs_companyMaster c  ON sc.companyId = c.id
+WHERE sc.IsDeleted = 0 AND c.IsDeleted = 0 
+
+
+END
+GO
+

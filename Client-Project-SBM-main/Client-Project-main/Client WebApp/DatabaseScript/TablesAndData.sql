@@ -1,5 +1,11 @@
 USE [SBSApplication]
 GO
+
+
+--SBS_RoleAccessControl
+--SBS_InvoiceTransactionDetails
+
+
 /****** Object:  Table [SBSAppDBUser].[receiptsCSV]    Script Date: 2026-05-25 3:08:16 PM ******/
 SET ANSI_NULLS ON
 GO
@@ -136,7 +142,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [SBSAppDBUser].[SBS_InvoiceDetails](
 	[id] [int] IDENTITY(1,1) NOT NULL,
-	[invoiceNo] [varchar](20) NULL,
+	[invoiceNo] [varchar](50) NULL,
 	[companyId] [int] NOT NULL,
 	[subcontractorId] [int] NOT NULL,
 	[productId] [int] NULL,
@@ -269,6 +275,7 @@ CREATE TABLE [SBSAppDBUser].[SBS_ProductMaster](
 	[updatedAt] [datetime2](7) NULL,
 	[isActive] [int] NULL,
 	[isDeleted] [int] NULL,
+	[productId] [int] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
@@ -293,6 +300,8 @@ CREATE TABLE [SBSAppDBUser].[SBS_RoleAccessControl](
 	[createdAt] [datetime2](7) NULL,
 	[updatedBy] [int] NULL,
 	[updatedAt] [datetime2](7) NULL,
+	[ExcelDownloadAccess] [bit] NULL,
+	[PDFDownloadAccess] [bit] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
